@@ -103,6 +103,9 @@ public final class de/quadrixyt/qavlen/language/Translations$Builder {
 	public final fun build ()Lde/quadrixyt/qavlen/language/Translations;
 	public final fun defaultLocale (Ljava/util/Locale;)Lde/quadrixyt/qavlen/language/Translations$Builder;
 	public final fun directory (Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/language/Translations$Builder;
+	public final fun editableResources (Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/util/List;Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/language/Translations$Builder;
+	public final fun editableResources (Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/util/List;Ljava/nio/file/Path;Ljava/lang/String;)Lde/quadrixyt/qavlen/language/Translations$Builder;
+	public static synthetic fun editableResources$default (Lde/quadrixyt/qavlen/language/Translations$Builder;Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/util/List;Ljava/nio/file/Path;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/Translations$Builder;
 	public final fun messages (Ljava/util/Locale;Ljava/util/Map;)Lde/quadrixyt/qavlen/language/Translations$Builder;
 	public final fun messages (Ljava/util/Locale;Ljava/util/Map;Ljava/lang/String;)Lde/quadrixyt/qavlen/language/Translations$Builder;
 	public static synthetic fun messages$default (Lde/quadrixyt/qavlen/language/Translations$Builder;Ljava/util/Locale;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/Translations$Builder;

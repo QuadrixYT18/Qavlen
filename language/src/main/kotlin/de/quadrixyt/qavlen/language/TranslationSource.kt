@@ -1,6 +1,7 @@
 package de.quadrixyt.qavlen.language
 
 import de.quadrixyt.qavlen.config.ConfigException
+import de.quadrixyt.qavlen.config.ConfigOptions
 import de.quadrixyt.qavlen.config.ConfigSection
 import de.quadrixyt.qavlen.config.JsonConfig
 import de.quadrixyt.qavlen.config.YamlConfig
@@ -62,6 +63,37 @@ internal class ResourceSource(
             ?: throw TranslationException("No translation resource for $locale in '$path'")
         val text = loader.getResourceAsStream(resource)!!.use { it.readBytes().toString(Charsets.UTF_8) }
         Catalog(namespace, locale, parse(text, extension, resource), resource)
+    }
+}
+
+/**
+ * Bundled translations copied to [directory] as editable files. Missing keys are added on every load, keys the
+ * server owner changed are kept, and a file that cannot be parsed is reported instead of being replaced.
+ */
+internal class EditableSource(
+    private val loader: ClassLoader,
+    private val path: String,
+    private val locales: List<Locale>,
+    private val directory: Path,
+    private val namespace: String,
+) : TranslationSource {
+    override fun load(): List<Catalog> = locales.map { locale ->
+        val tag = locale.toLanguageTag()
+        val (resource, extension) = listOf(tag, locale.toString()).distinct()
+            .flatMap { name -> listOf("yml", "yaml", "json").map { "$path/$name.$it" to it } }
+            .firstOrNull { (resource, _) -> loader.getResource(resource) != null }
+            ?: throw TranslationException("No YAML or JSON translation resource for $locale in '$path'")
+        val target = (if (namespace.isEmpty()) directory else directory.resolve(namespace)).resolve("$tag.$extension")
+        try {
+            val bundled = loader.getResourceAsStream(resource)!!.use { input ->
+                if (extension == "json") JsonConfig.read(input) else YamlConfig.read(input)
+            }
+            val options = ConfigOptions { defaults(bundled) }
+            val file = if (extension == "json") JsonConfig.load(target, options) else YamlConfig.load(target, options)
+            Catalog(namespace, locale, flatten(file, target.toString()), target.toString())
+        } catch (exception: ConfigException) {
+            throw TranslationException("Could not update $target: ${exception.message}", exception)
+        }
     }
 }
 

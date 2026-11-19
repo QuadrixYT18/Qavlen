@@ -6,6 +6,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.util.Locale
 import kotlin.io.path.createDirectories
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -155,5 +156,25 @@ class TranslationsTest {
         assertFailsWith<TranslationException> {
             Translations.builder().messages(Locale.ENGLISH, mapOf("items" to "{count:choice:0#none|1<{count items}")).build()
         }
+    }
+
+    @Test
+    fun `editable resources keep edits and add new keys`(@TempDir directory: Path) {
+        val de = directory.resolve("de.yml")
+        de.writeText("greeting: Servus {player}\n")
+
+        val translations = Translations.builder()
+            .editableResources(javaClass.classLoader, "editable", listOf(Locale.ENGLISH, german), directory)
+            .build()
+
+        assertEquals("Servus Alex", translations.format(german, "greeting", placeholder("player", "Alex")))
+        assertEquals("Tschüss", translations.format(german, "farewell"))
+        assertTrue("greeting: Servus {player}" in de.readText() && "farewell: Tschüss" in de.readText(), de.readText())
+        assertTrue(java.nio.file.Files.exists(directory.resolve("en.yml")))
+
+        de.writeText("greeting: [broken")
+        assertFailsWith<TranslationException> { translations.reload() }
+        assertEquals("Servus Alex", translations.format(german, "greeting", placeholder("player", "Alex")))
+        assertEquals("greeting: [broken", de.readText())
     }
 }

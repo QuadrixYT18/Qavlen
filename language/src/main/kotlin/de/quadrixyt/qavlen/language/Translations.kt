@@ -185,6 +185,20 @@ public class Translations private constructor(
             sources += ResourceSource(loader, path.trim('/'), locales, namespace)
         }
 
+        /**
+         * Copies bundled `<path>/<locale>.yml|json` resources to [directory] as files server owners can edit, for
+         * example `plugins/MyPlugin/lang/de.yml`. On every build and [reload], keys added in a new version are
+         * written to the files while existing texts are kept; files are never replaced as a whole.
+         */
+        @JvmOverloads
+        public fun editableResources(
+            loader: ClassLoader,
+            path: String,
+            locales: List<Locale>,
+            directory: Path,
+            namespace: String = "",
+        ): Builder = apply { sources += EditableSource(loader, path.trim('/'), locales, directory, namespace) }
+
         /** Adds messages from memory. */
         @JvmOverloads
         public fun messages(locale: Locale, messages: Map<String, String>, namespace: String = ""): Builder = apply {
