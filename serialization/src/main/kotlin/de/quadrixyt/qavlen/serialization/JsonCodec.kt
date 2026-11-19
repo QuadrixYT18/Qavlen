@@ -9,6 +9,8 @@ import tools.jackson.databind.DeserializationContext
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.JacksonModule
 import tools.jackson.databind.JavaType
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.PropertyNamingStrategy
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.ValueDeserializer
@@ -102,6 +104,14 @@ public class JsonCodec private constructor(private val mapper: JsonMapper) {
                 },
             )
         }
+
+        /** Maps property names, for example `PropertyNamingStrategies.KEBAB_CASE` turns `poolSize` into `pool-size`. */
+        public fun propertyNaming(strategy: PropertyNamingStrategy): Builder = apply { builder.propertyNamingStrategy(strategy) }
+
+        /** Accepts enum constants regardless of case, so `fast` reads as `FAST`. */
+        public fun caseInsensitiveEnums(
+            enabled: Boolean,
+        ): Builder = apply { builder.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, enabled) }
 
         /** Registers a Jackson module for full control over serialization. */
         public fun module(module: JacksonModule): Builder = apply { builder.addModule(module) }
