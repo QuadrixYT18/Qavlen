@@ -74,4 +74,16 @@ class ConfigBindingTest {
 
         assertEquals(Database(host = "remote", timeout = Duration.ofMinutes(2)), YamlConfig.load(file).bind<Database>("database"))
     }
+
+    @Test
+    fun `binding checks validation annotations with full paths`() {
+        val config = YamlConfig.parse("server:\n  database:\n    host: ' '\n    port: 0\n")
+
+        val error = assertFailsWith<de.quadrixyt.qavlen.config.ConfigValidationException> { config.bind<DatabaseConfig>("server.database") }
+
+        assertEquals(
+            listOf("server.database.host: must not be blank", "server.database.port: expected value between 1 and 65535, got 0"),
+            error.violations.map { it.toString() },
+        )
+    }
 }

@@ -2,6 +2,8 @@ package de.quadrixyt.qavlen.serialization
 
 import de.quadrixyt.qavlen.config.ConfigException
 import de.quadrixyt.qavlen.config.ConfigSection
+import de.quadrixyt.qavlen.config.ConfigValidationException
+import de.quadrixyt.qavlen.config.ConfigViolation
 import de.quadrixyt.qavlen.core.Durations
 import tools.jackson.core.JacksonException
 import tools.jackson.databind.PropertyNamingStrategies
@@ -33,6 +35,8 @@ import java.time.Duration
  * default, or a value of the wrong type, fails with a [ConfigException] that names the full path. Unknown keys are
  * ignored, so a newer configuration file still loads with older code.
  *
+ * Validation annotations such as [Range] and [NotBlank] are checked, as for [Configs].
+ *
  * Kotlin classes, records and Java beans are supported, as with [JsonCodec].
  */
 public object ConfigBinding {
@@ -50,7 +54,7 @@ public object ConfigBinding {
     @JvmStatic
     @JvmOverloads
     public fun <T> bind(section: ConfigSection, type: Class<T>, codec: JsonCodec = ConfigBinding.codec): T = try {
-        codec.convert(section.toMap(), type)
+        codec.convert(section.toMap(), type).also { value -> validate(value, section.path, codec) }
     } catch (exception: SerializationException) {
         val path = listOf(section.path, exception.path.orEmpty()).filter(String::isNotEmpty).joinToString(".")
         val reason = (exception.cause as? JacksonException)?.originalMessage ?: exception.message
@@ -63,6 +67,14 @@ public object ConfigBinding {
     public fun <T> bind(section: ConfigSection, path: String, type: Class<T>, codec: JsonCodec = ConfigBinding.codec): T {
         val nested = section.getSection(path) ?: return bind(EmptySection(join(section.path, path)), type, codec)
         return bind(nested, type, codec)
+    }
+
+    /** Checks the validation annotations of [value]'s class, such as [Range], and throws for every violation at once. */
+    private fun validate(value: Any?, path: String, codec: JsonCodec) {
+        val model = value?.let { ConfigModel.of(it.javaClass, codec) } ?: return
+        val violations = mutableListOf<ConfigViolation>()
+        model.validate(toMap(value, codec), path, violations)
+        if (violations.isNotEmpty()) throw ConfigValidationException(violations)
     }
 
     /** Converts [value] into the map form used by configurations, for example to pass it to `ConfigOptions.defaults`. */
