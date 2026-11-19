@@ -25,7 +25,8 @@ List<String> names = database.query("SELECT name FROM players WHERE coins > ?", 
 - `transaction { session -> ... }` commits when the block returns and rolls back when it throws.
 - Asynchronous calls run on a thread pool sized like the connection pool, so waiting work queues in memory instead of occupying threads.
 - `forbidBlockingWhen` makes synchronous calls throw while the check is true, which catches accidental queries on a game thread.
-- `close()` waits for running queries and closes the pool.
+- `queryTimeout(Duration)` cancels statements that run longer; without it, statements have no time limit.
+- `close()` waits for running queries and closes the pool. Asynchronous calls after that complete exceptionally.
 - `driver(className)` loads a driver explicitly, which helps in plugin class loaders.
 
 ## Migrations

@@ -7,10 +7,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ### Added
 
 - `commands`: `Cooldowns.tryStart` starts a cooldown atomically.
+- `storage`: `Database.Builder.queryTimeout` cancels statements that run too long.
 - `commands`: `CommandDispatcher.suggestions` filters argument suggestions by prefix; Paper, Velocity and Discord now share it.
 
 ### Fixed
 
+- `storage`: asynchronous calls after `close()` complete exceptionally instead of throwing, and a failure while restoring auto-commit no longer hides the error that rolled back a transaction.
 - `commands-processor`: the javac processor now picks up `@Subcommand` and `@Execute` methods inherited from base classes, as the KSP processor already did.
 - `commands`, `brigadier`, `jda`: an exception in a custom `ArgumentType.suggest` is logged and yields no suggestions instead of breaking tab completion or Discord autocomplete.
 - `jda`: interactions that arrive after `close()` are ignored instead of throwing on JDA's event thread, unexpected exceptions while reading options are reported, and `close()` waits for running executors before stopping the deferral timer.

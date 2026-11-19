@@ -7,6 +7,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class DatabaseTest {
     private var blocked = false
@@ -76,5 +77,27 @@ class DatabaseTest {
             }.join().single().let { if (it == 3) 1 else 0 },
         )
         assertContentEquals(intArrayOf(1, 1), database.batchAsync("UPDATE players SET coins = ? WHERE name = ?", listOf(listOf(4, "Async"), listOf(5, "Async"))).join())
+    }
+
+    @Test
+    fun `slow statements are cancelled after the query timeout`() {
+        Database.builder("jdbc:h2:mem:${UUID.randomUUID()}").queryTimeout(java.time.Duration.ofSeconds(1)).connect().use { slow ->
+            val started = System.nanoTime()
+
+            assertFailsWith<DatabaseException> {
+                slow.query("SELECT SUM(a.X * b.X) FROM SYSTEM_RANGE(1, 100000) a, SYSTEM_RANGE(1, 100000) b", { it.getLong(1) })
+            }
+
+            assertTrue(System.nanoTime() - started < java.util.concurrent.TimeUnit.SECONDS.toNanos(10))
+        }
+    }
+
+    @Test
+    fun `async calls after close fail instead of throwing`() {
+        val closed = Database.builder("jdbc:h2:mem:${UUID.randomUUID()}").connect()
+        closed.close()
+
+        val failure = assertFailsWith<java.util.concurrent.CompletionException> { closed.updateAsync("SELECT 1").join() }
+        assertTrue(failure.cause is IllegalStateException)
     }
 }

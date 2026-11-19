@@ -13,6 +13,7 @@ import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.BooleanSupplier
@@ -67,6 +68,7 @@ public interface SqlSession {
 public class Database private constructor(
     private val dataSource: HikariDataSource,
     private val blockingCheck: BooleanSupplier?,
+    private val queryTimeoutSeconds: Int,
 ) : SqlSession, AutoCloseable {
     private val executor: ExecutorService = Executors.newFixedThreadPool(dataSource.maximumPoolSize) { runnable ->
         Thread(runnable, "qavlen-db-${threadIds.incrementAndGet()}").apply { isDaemon = true }
@@ -76,11 +78,11 @@ public class Database private constructor(
     public val source: DataSource get() = dataSource
 
     override fun <T> query(sql: String, mapper: RowMapper<T>, vararg parameters: Any?): List<T> =
-        connection { ConnectionSession(it).query(sql, mapper, *parameters) }
+        connection { session(it).query(sql, mapper, *parameters) }
 
-    override fun update(sql: String, vararg parameters: Any?): Int = connection { ConnectionSession(it).update(sql, *parameters) }
+    override fun update(sql: String, vararg parameters: Any?): Int = connection { session(it).update(sql, *parameters) }
 
-    override fun insert(sql: String, vararg parameters: Any?): Long? = connection { ConnectionSession(it).insert(sql, *parameters) }
+    override fun insert(sql: String, vararg parameters: Any?): Long? = connection { session(it).insert(sql, *parameters) }
 
     override fun batch(sql: String, rows: List<List<Any?>>): IntArray = transaction { it.batch(sql, rows) }
 
@@ -88,18 +90,19 @@ public class Database private constructor(
     public fun <T> transaction(work: TransactionWork<T>): T = connection { connection ->
         val autoCommit = connection.autoCommit
         connection.autoCommit = false
-        try {
-            work.run(ConnectionSession(connection)).also { connection.commit() }
+        val result = try {
+            work.run(session(connection)).also { connection.commit() }
         } catch (exception: Throwable) {
             try {
                 connection.rollback()
             } catch (rollback: SQLException) {
                 exception.addSuppressed(rollback)
             }
+            restoreAutoCommit(connection, autoCommit, exception)
             throw exception
-        } finally {
-            connection.autoCommit = autoCommit
         }
+        restoreAutoCommit(connection, autoCommit, null)
+        result
     }
 
     public fun <T> queryAsync(sql: String, mapper: RowMapper<T>, vararg parameters: Any?): CompletableFuture<List<T>> =
@@ -122,7 +125,23 @@ public class Database private constructor(
         dataSource.close()
     }
 
-    private fun <T> async(block: () -> T): CompletableFuture<T> = CompletableFuture.supplyAsync(block, executor)
+    /** Runs [block] on the database executor, or fails the future when the database was closed. */
+    private fun <T> async(block: () -> T): CompletableFuture<T> = try {
+        CompletableFuture.supplyAsync(block, executor)
+    } catch (exception: RejectedExecutionException) {
+        CompletableFuture.failedFuture(IllegalStateException("The database is closed", exception))
+    }
+
+    private fun session(connection: Connection) = ConnectionSession(connection, queryTimeoutSeconds)
+
+    /** A broken connection must not hide the transaction's own failure; the pool resets auto-commit anyway. */
+    private fun restoreAutoCommit(connection: Connection, autoCommit: Boolean, failure: Throwable?) {
+        try {
+            connection.autoCommit = autoCommit
+        } catch (exception: SQLException) {
+            if (failure == null) throw exception else failure.addSuppressed(exception)
+        }
+    }
 
     private fun <T> connection(block: (Connection) -> T): T {
         if (blockingCheck?.asBoolean == true) {
@@ -137,6 +156,7 @@ public class Database private constructor(
 
     public class Builder internal constructor(private val config: HikariConfig) {
         private var blockingCheck: BooleanSupplier? = null
+        private var queryTimeoutSeconds = 0
 
         public fun credentials(username: String, password: String): Builder = apply {
             config.username = username
@@ -150,6 +170,15 @@ public class Database private constructor(
         }
 
         public fun connectionTimeout(timeout: Duration): Builder = apply { config.connectionTimeout = timeout.toMillis() }
+
+        /**
+         * Cancels statements that run longer than [timeout], rounded up to whole seconds, so a stuck query cannot
+         * occupy a connection indefinitely. Without it, statements have no time limit.
+         */
+        public fun queryTimeout(timeout: Duration): Builder = apply {
+            require(!timeout.isNegative && !timeout.isZero) { "Query timeout must be positive" }
+            queryTimeoutSeconds = Math.toIntExact(timeout.toSeconds() + if (timeout.toNanosPart() > 0) 1 else 0)
+        }
 
         /** Loads the driver class explicitly, which works in plugin class loaders where `DriverManager` cannot see it. */
         public fun driver(className: String): Builder = apply { config.driverClassName = className }
@@ -167,7 +196,7 @@ public class Database private constructor(
 
         /** Opens the pool. Fails if the database cannot be reached within the connection timeout. */
         public fun connect(): Database = try {
-            Database(HikariDataSource(config), blockingCheck)
+            Database(HikariDataSource(config), blockingCheck, queryTimeoutSeconds)
         } catch (exception: RuntimeException) {
             val cause = exception.cause as? SQLException ?: throw exception
             throw DatabaseException("Could not connect to ${config.jdbcUrl}: ${cause.message}", cause)
@@ -199,34 +228,37 @@ public class Database private constructor(
     }
 }
 
-internal class ConnectionSession(private val connection: Connection) : SqlSession {
+internal class ConnectionSession(private val connection: Connection, private val timeoutSeconds: Int) : SqlSession {
     override fun <T> query(sql: String, mapper: RowMapper<T>, vararg parameters: Any?): List<T> =
-        connection.prepareStatement(sql).use { statement ->
+        prepare(sql).use { statement ->
             bind(statement, parameters.asList())
             statement.executeQuery().use { result ->
                 buildList { while (result.next()) add(mapper.map(result)) }
             }
         }
 
-    override fun update(sql: String, vararg parameters: Any?): Int = connection.prepareStatement(sql).use { statement ->
+    override fun update(sql: String, vararg parameters: Any?): Int = prepare(sql).use { statement ->
         bind(statement, parameters.asList())
         statement.executeUpdate()
     }
 
     override fun insert(sql: String, vararg parameters: Any?): Long? =
-        connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { statement ->
+        prepare(sql, Statement.RETURN_GENERATED_KEYS).use { statement ->
             bind(statement, parameters.asList())
             statement.executeUpdate()
             statement.generatedKeys.use { keys -> if (keys.next()) keys.getLong(1) else null }
         }
 
-    override fun batch(sql: String, rows: List<List<Any?>>): IntArray = connection.prepareStatement(sql).use { statement ->
+    override fun batch(sql: String, rows: List<List<Any?>>): IntArray = prepare(sql).use { statement ->
         for (row in rows) {
             bind(statement, row)
             statement.addBatch()
         }
         statement.executeBatch()
     }
+
+    private fun prepare(sql: String, keys: Int = Statement.NO_GENERATED_KEYS): PreparedStatement =
+        connection.prepareStatement(sql, keys).also { if (timeoutSeconds > 0) it.queryTimeout = timeoutSeconds }
 
     private fun bind(statement: PreparedStatement, parameters: List<Any?>) {
         parameters.forEachIndexed { index, value ->
