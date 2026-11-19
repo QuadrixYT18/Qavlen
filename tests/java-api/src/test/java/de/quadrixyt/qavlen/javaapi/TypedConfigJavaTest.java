@@ -8,6 +8,8 @@ import de.quadrixyt.qavlen.serialization.Configuration;
 import de.quadrixyt.qavlen.serialization.Range;
 import de.quadrixyt.qavlen.serialization.TypedConfig;
 import de.quadrixyt.qavlen.serialization.TypedConfigOptions;
+import de.quadrixyt.qavlen.storage.Database;
+import de.quadrixyt.qavlen.storage.DatabaseSettings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -33,8 +35,31 @@ class TypedConfigJavaTest {
         }
     }
 
+    record AppConfig(DatabaseSettings database) {
+    }
+
     @TempDir
     Path directory;
+
+    @Test
+    void databaseSettingsInConfigurationsKeepSecretsOutOfTheFile() throws Exception {
+        Path file = directory.resolve("app.yml");
+        Files.writeString(file, "database:\n  url: jdbc:h2:mem:java-config\n  username: sa\n");
+        TypedConfigOptions<AppConfig> options = TypedConfigOptions.<AppConfig>builder()
+            .environment("APP", Map.of("APP_DATABASE_PASSWORD", "from-env"))
+            .build();
+
+        TypedConfig<AppConfig> config = Configs.open(file, AppConfig.class, options);
+
+        assertEquals("from-env", config.getValue().database().getPassword());
+        assertEquals(4, config.getValue().database().getPoolSize());
+        assertTrue(!Files.readString(file).contains("from-env"), Files.readString(file));
+        assertTrue(Files.readString(file).contains("pool-size: 4"), Files.readString(file));
+        try (Database database = Database.connect(config.getValue().database())) {
+            Integer one = database.queryFirst("SELECT 1", row -> row.getInt(1));
+            assertEquals(1, one);
+        }
+    }
 
     @Test
     void recordsWithCommentsValidationAndOverrides() throws Exception {
