@@ -1,0 +1,23 @@
+public final class de/quadrixyt/qavlen/scheduler/ScheduledTask {
+	public final fun cancel ()Z
+	public final fun getDelay ()Ljava/time/Duration;
+	public final fun isCancelled ()Z
+	public final fun isDone ()Z
+}
+
+public final class de/quadrixyt/qavlen/scheduler/TaskScheduler : java/lang/AutoCloseable {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;I)V
+	public fun <init> (Ljava/lang/String;ILjava/util/function/Consumer;)V
+	public synthetic fun <init> (Ljava/lang/String;ILjava/util/function/Consumer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public final fun runLater (Ljava/time/Duration;Ljava/lang/Runnable;)Lde/quadrixyt/qavlen/scheduler/ScheduledTask;
+	public final fun runRepeating (Ljava/time/Duration;Ljava/time/Duration;Ljava/lang/Runnable;)Lde/quadrixyt/qavlen/scheduler/ScheduledTask;
+	public final fun runWithFixedDelay (Ljava/time/Duration;Ljava/time/Duration;Ljava/lang/Runnable;)Lde/quadrixyt/qavlen/scheduler/ScheduledTask;
+	public final fun shutdown ()V
+	public final fun shutdown (Ljava/time/Duration;)V
+	public static synthetic fun shutdown$default (Lde/quadrixyt/qavlen/scheduler/TaskScheduler;Ljava/time/Duration;ILjava/lang/Object;)V
+	public final fun submit (Ljava/util/concurrent/Callable;)Ljava/util/concurrent/CompletableFuture;
+}
+

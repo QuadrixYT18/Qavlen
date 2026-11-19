@@ -1,0 +1,297 @@
+public final class de/quadrixyt/qavlen/config/ConfigChange {
+	public final fun affects (Ljava/lang/String;)Z
+	public final fun getConfig ()Lde/quadrixyt/qavlen/config/ConfigFile;
+	public final fun getPaths ()Ljava/util/Set;
+	public final fun getReload ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public class de/quadrixyt/qavlen/config/ConfigException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract class de/quadrixyt/qavlen/config/ConfigFile : de/quadrixyt/qavlen/config/ConfigSection {
+	public synthetic fun <init> (Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigFormat;Lde/quadrixyt/qavlen/config/ConfigOptions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addListener (Lde/quadrixyt/qavlen/config/ConfigListener;)Ljava/lang/AutoCloseable;
+	public fun contains (Ljava/lang/String;)Z
+	public fun get (Ljava/lang/String;)Ljava/lang/Object;
+	public fun getBoolean (Ljava/lang/String;)Ljava/lang/Boolean;
+	public fun getBoolean (Ljava/lang/String;Z)Z
+	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
+	public fun getDouble (Ljava/lang/String;D)D
+	public final fun getFile ()Ljava/nio/file/Path;
+	public final fun getFormat ()Lde/quadrixyt/qavlen/config/ConfigFormat;
+	public fun getInt (Ljava/lang/String;)Ljava/lang/Integer;
+	public fun getInt (Ljava/lang/String;I)I
+	public fun getIntList (Ljava/lang/String;)Ljava/util/List;
+	public fun getList (Ljava/lang/String;)Ljava/util/List;
+	public fun getLong (Ljava/lang/String;)Ljava/lang/Long;
+	public fun getLong (Ljava/lang/String;J)J
+	public fun getMap (Ljava/lang/String;)Ljava/util/Map;
+	public final fun getOptions ()Lde/quadrixyt/qavlen/config/ConfigOptions;
+	public fun getPath ()Ljava/lang/String;
+	public fun getSection (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigSection;
+	public fun getString (Ljava/lang/String;)Ljava/lang/String;
+	public fun getString (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun getStringList (Ljava/lang/String;)Ljava/util/List;
+	public final fun isDirty ()Z
+	public fun keys ()Ljava/util/Set;
+	public fun keys (Z)Ljava/util/Set;
+	public final fun reload ()Ljava/util/List;
+	public final fun reloadIfModified ()Z
+	public fun remove (Ljava/lang/String;)Z
+	public final fun save ()Z
+	public final fun saveTo (Ljava/nio/file/Path;)V
+	public final fun saveToString ()Ljava/lang/String;
+	public fun set (Ljava/lang/String;Ljava/lang/Object;)V
+	public fun toMap ()Ljava/util/Map;
+	public fun toString ()Ljava/lang/String;
+	public final fun writeTo (Ljava/io/Writer;)V
+}
+
+public abstract class de/quadrixyt/qavlen/config/ConfigFormat : java/lang/Enum {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigFormat$Companion;
+	public static final field JSON Lde/quadrixyt/qavlen/config/ConfigFormat;
+	public static final field YAML Lde/quadrixyt/qavlen/config/ConfigFormat;
+	public static final fun fromFileName (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigFormat;
+	public static fun values ()[Lde/quadrixyt/qavlen/config/ConfigFormat;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigFormat$Companion {
+	public final fun fromFileName (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigFormat;
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/ConfigListener {
+	public abstract fun onChange (Lde/quadrixyt/qavlen/config/ConfigChange;)V
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/ConfigMigration {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigMigration$Companion;
+	public abstract fun getFromVersion ()I
+	public abstract fun migrate (Lde/quadrixyt/qavlen/config/ConfigSection;)V
+	public static fun of (ILde/quadrixyt/qavlen/config/ConfigMigration$Migrator;)Lde/quadrixyt/qavlen/config/ConfigMigration;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigMigration$Companion {
+	public final fun of (ILde/quadrixyt/qavlen/config/ConfigMigration$Migrator;)Lde/quadrixyt/qavlen/config/ConfigMigration;
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/ConfigMigration$Migrator {
+	public abstract fun migrate (Lde/quadrixyt/qavlen/config/ConfigSection;)V
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigOptions {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigOptions$Companion;
+	public static final field DEFAULT Lde/quadrixyt/qavlen/config/ConfigOptions;
+	public static final fun builder ()Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun getBackups ()Z
+	public final fun getDefaults ()Ljava/util/Map;
+	public final fun getMigrations ()Ljava/util/List;
+	public final fun getValidators ()Ljava/util/List;
+	public final fun getVersion ()Ljava/lang/Integer;
+	public final fun getVersionKey ()Ljava/lang/String;
+	public final fun getWriteDefaults ()Z
+	public final fun toBuilder ()Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigOptions$Builder {
+	public final fun backups (Z)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun build ()Lde/quadrixyt/qavlen/config/ConfigOptions;
+	public final fun defaults (Lde/quadrixyt/qavlen/config/ConfigSection;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun defaults (Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun migration (ILde/quadrixyt/qavlen/config/ConfigMigration$Migrator;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun migration (Lde/quadrixyt/qavlen/config/ConfigMigration;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun schema (Lde/quadrixyt/qavlen/config/ConfigSchema;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun validator (Lde/quadrixyt/qavlen/config/ConfigValidator;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun version (I)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun version (ILjava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public static synthetic fun version$default (Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;ILjava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+	public final fun writeDefaults (Z)Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigOptions$Companion {
+	public final fun builder ()Lde/quadrixyt/qavlen/config/ConfigOptions$Builder;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigOptionsKt {
+	public static final fun ConfigOptions (Lkotlin/jvm/functions/Function1;)Lde/quadrixyt/qavlen/config/ConfigOptions;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigSchema : de/quadrixyt/qavlen/config/ConfigValidator {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigSchema$Companion;
+	public static final fun builder ()Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public fun validate (Lde/quadrixyt/qavlen/config/ConfigSection;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigSchema$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/config/ConfigSchema;
+	public final fun oneOf (Ljava/lang/String;[Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public final fun optional (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigType;)Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public final fun range (Ljava/lang/String;DD)Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public final fun range (Ljava/lang/String;JJ)Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public final fun rejectUnknownKeys ()Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+	public final fun required (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigType;)Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigSchema$Companion {
+	public final fun builder ()Lde/quadrixyt/qavlen/config/ConfigSchema$Builder;
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
+	public abstract fun contains (Ljava/lang/String;)Z
+	public abstract fun get (Ljava/lang/String;)Ljava/lang/Object;
+	public fun getBoolean (Ljava/lang/String;)Ljava/lang/Boolean;
+	public fun getBoolean (Ljava/lang/String;Z)Z
+	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
+	public fun getDouble (Ljava/lang/String;D)D
+	public fun getInt (Ljava/lang/String;)Ljava/lang/Integer;
+	public fun getInt (Ljava/lang/String;I)I
+	public fun getIntList (Ljava/lang/String;)Ljava/util/List;
+	public fun getList (Ljava/lang/String;)Ljava/util/List;
+	public fun getLong (Ljava/lang/String;)Ljava/lang/Long;
+	public fun getLong (Ljava/lang/String;J)J
+	public fun getMap (Ljava/lang/String;)Ljava/util/Map;
+	public abstract fun getPath ()Ljava/lang/String;
+	public abstract fun getSection (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigSection;
+	public fun getString (Ljava/lang/String;)Ljava/lang/String;
+	public fun getString (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun getStringList (Ljava/lang/String;)Ljava/util/List;
+	public fun keys ()Ljava/util/Set;
+	public abstract fun keys (Z)Ljava/util/Set;
+	public abstract fun remove (Ljava/lang/String;)Z
+	public abstract fun set (Ljava/lang/String;Ljava/lang/Object;)V
+	public abstract fun toMap ()Ljava/util/Map;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
+	public static fun getBoolean (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Boolean;
+	public static fun getBoolean (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Z)Z
+	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Double;
+	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;D)D
+	public static fun getInt (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Integer;
+	public static fun getInt (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;I)I
+	public static fun getIntList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
+	public static fun getList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
+	public static fun getLong (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Long;
+	public static fun getLong (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;J)J
+	public static fun getMap (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/Map;
+	public static fun getString (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/String;
+	public static fun getString (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static fun getStringList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
+	public static fun keys (Lde/quadrixyt/qavlen/config/ConfigSection;)Ljava/util/Set;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigType : java/lang/Enum {
+	public static final field BOOLEAN Lde/quadrixyt/qavlen/config/ConfigType;
+	public static final field DECIMAL Lde/quadrixyt/qavlen/config/ConfigType;
+	public static final field INTEGER Lde/quadrixyt/qavlen/config/ConfigType;
+	public static final field LIST Lde/quadrixyt/qavlen/config/ConfigType;
+	public static final field SECTION Lde/quadrixyt/qavlen/config/ConfigType;
+	public static final field STRING Lde/quadrixyt/qavlen/config/ConfigType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigType;
+	public static fun values ()[Lde/quadrixyt/qavlen/config/ConfigType;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigValidationException : de/quadrixyt/qavlen/config/ConfigException {
+	public fun <init> (Ljava/util/List;)V
+	public final fun getViolations ()Ljava/util/List;
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/ConfigValidator {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigValidator$Companion;
+	public static fun range (Ljava/lang/String;JJ)Lde/quadrixyt/qavlen/config/ConfigValidator;
+	public static fun required ([Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigValidator;
+	public abstract fun validate (Lde/quadrixyt/qavlen/config/ConfigSection;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigValidator$Companion {
+	public final fun range (Ljava/lang/String;JJ)Lde/quadrixyt/qavlen/config/ConfigValidator;
+	public final fun required ([Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigValidator;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigValueException : de/quadrixyt/qavlen/config/ConfigException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun getValuePath ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigViolation {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/config/ConfigViolation;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/config/ConfigViolation;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/ConfigViolation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/config/JsonConfig : de/quadrixyt/qavlen/config/ConfigFile {
+	public static final field Companion Lde/quadrixyt/qavlen/config/JsonConfig$Companion;
+	public static final fun load (Ljava/io/File;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun load (Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun load (Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun load (Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun read (Ljava/io/InputStream;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun read (Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun read (Ljava/io/Reader;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static final fun read (Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+}
+
+public final class de/quadrixyt/qavlen/config/JsonConfig$Companion {
+	public final fun load (Ljava/io/File;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun load (Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun load (Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun load (Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static synthetic fun load$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static synthetic fun load$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static synthetic fun parse$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun read (Ljava/io/InputStream;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun read (Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun read (Ljava/io/Reader;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public final fun read (Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
+	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
+}
+
+public final class de/quadrixyt/qavlen/config/YamlConfig : de/quadrixyt/qavlen/config/ConfigFile {
+	public static final field Companion Lde/quadrixyt/qavlen/config/YamlConfig$Companion;
+	public static final fun load (Ljava/io/File;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun load (Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun load (Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun load (Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun read (Ljava/io/InputStream;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun read (Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun read (Ljava/io/Reader;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static final fun read (Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+}
+
+public final class de/quadrixyt/qavlen/config/YamlConfig$Companion {
+	public final fun load (Ljava/io/File;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun load (Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun load (Ljava/nio/file/Path;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun load (Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static synthetic fun load$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/io/File;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static synthetic fun load$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/nio/file/Path;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static synthetic fun parse$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/lang/String;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun read (Ljava/io/InputStream;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun read (Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun read (Ljava/io/Reader;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public final fun read (Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+}
+

@@ -1,0 +1,52 @@
+public abstract interface class de/quadrixyt/qavlen/cache/Cache {
+	public abstract fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun get (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+	public abstract fun getAsync (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun invalidate (Ljava/lang/Object;)V
+	public abstract fun invalidateAll ()V
+	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun stats ()Lde/quadrixyt/qavlen/cache/CacheStats;
+}
+
+public final class de/quadrixyt/qavlen/cache/CacheStats {
+	public fun <init> (JJJ)V
+	public final fun component1 ()J
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun copy (JJJ)Lde/quadrixyt/qavlen/cache/CacheStats;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/cache/CacheStats;JJJILjava/lang/Object;)Lde/quadrixyt/qavlen/cache/CacheStats;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEvictions ()J
+	public final fun getHitRate ()D
+	public final fun getHits ()J
+	public final fun getMisses ()J
+	public final fun getRequests ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/cache/LocalCache : de/quadrixyt/qavlen/cache/Cache {
+	public static final field Companion Lde/quadrixyt/qavlen/cache/LocalCache$Companion;
+	public static final fun builder ()Lde/quadrixyt/qavlen/cache/LocalCache$Builder;
+	public final fun cleanUp ()V
+	public fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun get (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+	public fun getAsync (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/util/concurrent/CompletableFuture;
+	public fun invalidate (Ljava/lang/Object;)V
+	public fun invalidateAll ()V
+	public fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public final fun size ()J
+	public fun stats ()Lde/quadrixyt/qavlen/cache/CacheStats;
+}
+
+public final class de/quadrixyt/qavlen/cache/LocalCache$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/cache/LocalCache;
+	public final fun expireAfterAccess (Ljava/time/Duration;)Lde/quadrixyt/qavlen/cache/LocalCache$Builder;
+	public final fun expireAfterWrite (Ljava/time/Duration;)Lde/quadrixyt/qavlen/cache/LocalCache$Builder;
+	public final fun maximumSize (J)Lde/quadrixyt/qavlen/cache/LocalCache$Builder;
+}
+
+public final class de/quadrixyt/qavlen/cache/LocalCache$Companion {
+	public final fun builder ()Lde/quadrixyt/qavlen/cache/LocalCache$Builder;
+}
+

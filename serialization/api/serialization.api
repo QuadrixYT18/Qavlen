@@ -1,0 +1,53 @@
+public final class de/quadrixyt/qavlen/serialization/ConfigBinding {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/serialization/ConfigBinding;
+	public static final fun bind (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/Class;)Ljava/lang/Object;
+	public static final fun bind (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/Class;Lde/quadrixyt/qavlen/serialization/JsonCodec;)Ljava/lang/Object;
+	public static final fun bind (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;
+	public static final fun bind (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Class;Lde/quadrixyt/qavlen/serialization/JsonCodec;)Ljava/lang/Object;
+	public static synthetic fun bind$default (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/Class;Lde/quadrixyt/qavlen/serialization/JsonCodec;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun bind$default (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Class;Lde/quadrixyt/qavlen/serialization/JsonCodec;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun getCodec ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
+	public static final fun toMap (Ljava/lang/Object;)Ljava/util/Map;
+	public static final fun toMap (Ljava/lang/Object;Lde/quadrixyt/qavlen/serialization/JsonCodec;)Ljava/util/Map;
+	public static synthetic fun toMap$default (Ljava/lang/Object;Lde/quadrixyt/qavlen/serialization/JsonCodec;ILjava/lang/Object;)Ljava/util/Map;
+	public static final fun write (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Object;)V
+	public static final fun write (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Object;Lde/quadrixyt/qavlen/serialization/JsonCodec;)V
+	public static synthetic fun write$default (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Object;Lde/quadrixyt/qavlen/serialization/JsonCodec;ILjava/lang/Object;)V
+}
+
+public final class de/quadrixyt/qavlen/serialization/JsonCodec {
+	public static final field Companion Lde/quadrixyt/qavlen/serialization/JsonCodec$Companion;
+	public static final fun builder ()Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun convert (Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;
+	public final fun decode (Ljava/io/InputStream;Ljava/lang/Class;)Ljava/lang/Object;
+	public final fun decode (Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;
+	public final fun decode (Ljava/lang/String;Ltools/jackson/core/type/TypeReference;)Ljava/lang/Object;
+	public final fun decode ([BLjava/lang/Class;)Ljava/lang/Object;
+	public final fun decodeList (Ljava/lang/String;Ljava/lang/Class;)Ljava/util/List;
+	public final fun decodeMap (Ljava/lang/String;Ljava/lang/Class;)Ljava/util/Map;
+	public final fun encode (Ljava/lang/Object;)Ljava/lang/String;
+	public final fun encodeToBytes (Ljava/lang/Object;)[B
+	public static final fun getDefault ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
+	public final fun toBuilder ()Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+}
+
+public final class de/quadrixyt/qavlen/serialization/JsonCodec$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
+	public final fun caseInsensitiveEnums (Z)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun failOnUnknownProperties (Z)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun module (Ltools/jackson/databind/JacksonModule;)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun prettyPrint (Z)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun propertyNaming (Ltools/jackson/databind/PropertyNamingStrategy;)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun stringType (Ljava/lang/Class;Ljava/util/function/Function;Ljava/util/function/Function;)Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+}
+
+public final class de/quadrixyt/qavlen/serialization/JsonCodec$Companion {
+	public final fun builder ()Lde/quadrixyt/qavlen/serialization/JsonCodec$Builder;
+	public final fun getDefault ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
+}
+
+public final class de/quadrixyt/qavlen/serialization/SerializationException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V
+	public final fun getPath ()Ljava/lang/String;
+}
+

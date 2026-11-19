@@ -13,6 +13,9 @@ val catalog = versionCatalogs.named("libs")
 kotlin {
     jvmToolchain(25)
     explicitApi()
+    // Public signatures are recorded in api/<module>.api; `check` fails when they change without updating the dump.
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    abiValidation()
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_25)
         allWarningsAsErrors.set(true)

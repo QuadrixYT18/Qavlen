@@ -1,0 +1,23 @@
+public final class de/quadrixyt/qavlen/cache/redis/RedisCache : de/quadrixyt/qavlen/cache/Cache {
+	public static final field Companion Lde/quadrixyt/qavlen/cache/redis/RedisCache$Companion;
+	public static final fun builder (Lredis/clients/jedis/UnifiedJedis;Ljava/lang/String;Ljava/lang/Class;)Lde/quadrixyt/qavlen/cache/redis/RedisCache$Builder;
+	public fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun get (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+	public fun getAsync (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/util/concurrent/CompletableFuture;
+	public fun invalidate (Ljava/lang/Object;)V
+	public fun invalidateAll ()V
+	public fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun stats ()Lde/quadrixyt/qavlen/cache/CacheStats;
+}
+
+public final class de/quadrixyt/qavlen/cache/redis/RedisCache$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/cache/redis/RedisCache;
+	public final fun codec (Lde/quadrixyt/qavlen/serialization/JsonCodec;)Lde/quadrixyt/qavlen/cache/redis/RedisCache$Builder;
+	public final fun expireAfterWrite (Ljava/time/Duration;)Lde/quadrixyt/qavlen/cache/redis/RedisCache$Builder;
+	public final fun keyText (Ljava/util/function/Function;)Lde/quadrixyt/qavlen/cache/redis/RedisCache$Builder;
+}
+
+public final class de/quadrixyt/qavlen/cache/redis/RedisCache$Companion {
+	public final fun builder (Lredis/clients/jedis/UnifiedJedis;Ljava/lang/String;Ljava/lang/Class;)Lde/quadrixyt/qavlen/cache/redis/RedisCache$Builder;
+}
+

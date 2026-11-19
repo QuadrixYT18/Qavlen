@@ -1,0 +1,75 @@
+public final class de/quadrixyt/qavlen/network/HttpResponseTooLargeException : java/lang/RuntimeException {
+	public fun <init> (J)V
+	public final fun getLimit ()J
+}
+
+public final class de/quadrixyt/qavlen/network/HttpResult {
+	public final fun getBody ()Ljava/lang/String;
+	public final fun getHeaders ()Ljava/net/http/HttpHeaders;
+	public final fun getStatus ()I
+	public final fun isSuccess ()Z
+	public final fun json (Ljava/lang/Class;)Ljava/lang/Object;
+	public final fun requireSuccess ()Lde/quadrixyt/qavlen/network/HttpResult;
+}
+
+public final class de/quadrixyt/qavlen/network/HttpStatusException : java/lang/RuntimeException {
+	public fun <init> (ILjava/lang/String;)V
+	public final fun getBody ()Ljava/lang/String;
+	public final fun getStatus ()I
+}
+
+public final class de/quadrixyt/qavlen/network/RestClient : java/lang/AutoCloseable {
+	public static final field Companion Lde/quadrixyt/qavlen/network/RestClient$Companion;
+	public static final fun builder (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public fun close ()V
+	public final fun delete (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun get (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun getCodec ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
+	public final fun patch (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun post (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun put (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun request (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+}
+
+public final class de/quadrixyt/qavlen/network/RestClient$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/network/RestClient;
+	public final fun codec (Lde/quadrixyt/qavlen/serialization/JsonCodec;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun connectTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun header (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun maxResponseSize (J)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun requestTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun retry (Lde/quadrixyt/qavlen/network/RetryPolicy;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+}
+
+public final class de/quadrixyt/qavlen/network/RestClient$Companion {
+	public final fun builder (Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+}
+
+public final class de/quadrixyt/qavlen/network/RestClient$Request {
+	public final fun body (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun header (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun json (Ljava/lang/Object;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun query (Ljava/lang/String;Ljava/lang/Object;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+	public final fun send ()Ljava/util/concurrent/CompletableFuture;
+	public final fun sendJson (Ljava/lang/Class;)Ljava/util/concurrent/CompletableFuture;
+	public final fun timeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/network/RestClient$Request;
+}
+
+public final class de/quadrixyt/qavlen/network/RetryPolicy {
+	public static final field Companion Lde/quadrixyt/qavlen/network/RetryPolicy$Companion;
+	public static final field NONE Lde/quadrixyt/qavlen/network/RetryPolicy;
+	public fun <init> ()V
+	public fun <init> (I)V
+	public fun <init> (ILjava/time/Duration;)V
+	public fun <init> (ILjava/time/Duration;Ljava/time/Duration;)V
+	public fun <init> (ILjava/time/Duration;Ljava/time/Duration;Ljava/util/Set;)V
+	public synthetic fun <init> (ILjava/time/Duration;Ljava/time/Duration;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getInitialDelay ()Ljava/time/Duration;
+	public final fun getMaxAttempts ()I
+	public final fun getMaxDelay ()Ljava/time/Duration;
+	public final fun getStatuses ()Ljava/util/Set;
+}
+
+public final class de/quadrixyt/qavlen/network/RetryPolicy$Companion {
+}
+

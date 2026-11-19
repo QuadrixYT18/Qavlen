@@ -1,0 +1,80 @@
+public final class de/quadrixyt/qavlen/storage/Database : de/quadrixyt/qavlen/storage/SqlSession, java/lang/AutoCloseable {
+	public static final field Companion Lde/quadrixyt/qavlen/storage/Database$Companion;
+	public fun batch (Ljava/lang/String;Ljava/util/List;)[I
+	public final fun batchAsync (Ljava/lang/String;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun builder (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public fun close ()V
+	public final fun getSource ()Ljavax/sql/DataSource;
+	public fun insert (Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Long;
+	public final fun insertAsync (Ljava/lang/String;[Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun mariadb (Ljava/lang/String;ILjava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public static final fun postgresql (Ljava/lang/String;ILjava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public fun query (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/util/List;
+	public final fun queryAsync (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public fun queryFirst (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun queryFirstAsync (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public final fun transaction (Lde/quadrixyt/qavlen/storage/TransactionWork;)Ljava/lang/Object;
+	public final fun transactionAsync (Lde/quadrixyt/qavlen/storage/TransactionWork;)Ljava/util/concurrent/CompletableFuture;
+	public fun update (Ljava/lang/String;[Ljava/lang/Object;)I
+	public final fun updateAsync (Ljava/lang/String;[Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+}
+
+public final class de/quadrixyt/qavlen/storage/Database$Builder {
+	public final fun connect ()Lde/quadrixyt/qavlen/storage/Database;
+	public final fun connectionTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun credentials (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun driver (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun forbidBlockingWhen (Ljava/util/function/BooleanSupplier;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun poolName (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun poolSize (I)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun property (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun queryTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+}
+
+public final class de/quadrixyt/qavlen/storage/Database$Companion {
+	public final fun builder (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun mariadb (Ljava/lang/String;ILjava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+	public final fun postgresql (Ljava/lang/String;ILjava/lang/String;)Lde/quadrixyt/qavlen/storage/Database$Builder;
+}
+
+public final class de/quadrixyt/qavlen/storage/DatabaseException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/sql/SQLException;)V
+	public final fun getSqlState ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/Migration {
+	public fun <init> (ILjava/lang/String;Ljava/util/List;)V
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getStatements ()Ljava/util/List;
+	public final fun getVersion ()I
+}
+
+public final class de/quadrixyt/qavlen/storage/Migrations {
+	public fun <init> (Lde/quadrixyt/qavlen/storage/Database;)V
+	public fun <init> (Lde/quadrixyt/qavlen/storage/Database;Ljava/lang/String;)V
+	public synthetic fun <init> (Lde/quadrixyt/qavlen/storage/Database;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun add (ILjava/lang/String;[Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/Migrations;
+	public final fun add (Lde/quadrixyt/qavlen/storage/Migration;)Lde/quadrixyt/qavlen/storage/Migrations;
+	public final fun migrate ()Ljava/util/List;
+}
+
+public abstract interface class de/quadrixyt/qavlen/storage/RowMapper {
+	public abstract fun map (Ljava/sql/ResultSet;)Ljava/lang/Object;
+}
+
+public abstract interface class de/quadrixyt/qavlen/storage/SqlSession {
+	public abstract fun batch (Ljava/lang/String;Ljava/util/List;)[I
+	public abstract fun insert (Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Long;
+	public abstract fun query (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/util/List;
+	public fun queryFirst (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun update (Ljava/lang/String;[Ljava/lang/Object;)I
+}
+
+public final class de/quadrixyt/qavlen/storage/SqlSession$DefaultImpls {
+	public static fun queryFirst (Lde/quadrixyt/qavlen/storage/SqlSession;Ljava/lang/String;Lde/quadrixyt/qavlen/storage/RowMapper;[Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class de/quadrixyt/qavlen/storage/TransactionWork {
+	public abstract fun run (Lde/quadrixyt/qavlen/storage/SqlSession;)Ljava/lang/Object;
+}
+

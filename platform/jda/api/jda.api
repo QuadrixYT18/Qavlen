@@ -1,0 +1,58 @@
+public abstract class de/quadrixyt/qavlen/jda/DiscordArgument : de/quadrixyt/qavlen/commands/ArgumentType {
+	public static final field Companion Lde/quadrixyt/qavlen/jda/DiscordArgument$Companion;
+	public synthetic fun <init> (Ljava/lang/Class;Lnet/dv8tion/jda/api/interactions/commands/OptionType;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun getAll ()Ljava/util/List;
+	public fun getGreedy ()Z
+	public fun getValueType ()Ljava/lang/Class;
+	public fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/lang/Object;
+	public fun suggest (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/jda/DiscordArgument$Companion {
+	public final fun getAll ()Ljava/util/List;
+}
+
+public abstract interface class de/quadrixyt/qavlen/jda/DiscordPermissions {
+	public static final field Companion Lde/quadrixyt/qavlen/jda/DiscordPermissions$Companion;
+	public static final field GUILD_PERMISSIONS Lde/quadrixyt/qavlen/jda/DiscordPermissions;
+	public abstract fun hasPermission (Lde/quadrixyt/qavlen/jda/JdaCommandSource;Ljava/lang/String;)Z
+}
+
+public final class de/quadrixyt/qavlen/jda/DiscordPermissions$Companion {
+}
+
+public final class de/quadrixyt/qavlen/jda/JdaCommandSource : de/quadrixyt/qavlen/commands/CommandSource {
+	public final fun defer ()V
+	public fun getHandle ()Ljava/lang/Object;
+	public fun getId ()Ljava/lang/String;
+	public final fun getInteraction ()Lnet/dv8tion/jda/api/interactions/Interaction;
+	public fun getLocale ()Ljava/util/Locale;
+	public final fun getMember ()Lnet/dv8tion/jda/api/entities/Member;
+	public fun getName ()Ljava/lang/String;
+	public fun hasPermission (Ljava/lang/String;)Z
+	public final fun reply (Ljava/lang/String;Z)V
+	public fun sendMessage (Ljava/lang/String;)V
+	public fun sendTranslated (Lde/quadrixyt/qavlen/language/Translations;Ljava/lang/String;Ljava/util/Map;)V
+	public fun unwrap (Ljava/lang/Class;)Ljava/lang/Object;
+}
+
+public final class de/quadrixyt/qavlen/jda/JdaCommands : net/dv8tion/jda/api/hooks/ListenerAdapter, java/lang/AutoCloseable {
+	public fun <init> (Lde/quadrixyt/qavlen/commands/CommandDispatcher;)V
+	public fun <init> (Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/jda/DiscordPermissions;)V
+	public fun <init> (Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/jda/DiscordPermissions;Ljava/util/concurrent/ExecutorService;)V
+	public synthetic fun <init> (Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/jda/DiscordPermissions;Ljava/util/concurrent/ExecutorService;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public final fun commandData ()Ljava/util/List;
+	public final fun getDeferAfter ()Ljava/time/Duration;
+	public final fun getDispatcher ()Lde/quadrixyt/qavlen/commands/CommandDispatcher;
+	public final fun getEphemeralReplies ()Z
+	public fun onCommandAutoCompleteInteraction (Lnet/dv8tion/jda/api/events/interaction/command/CommandAutoCompleteInteractionEvent;)V
+	public fun onSlashCommandInteraction (Lnet/dv8tion/jda/api/events/interaction/command/SlashCommandInteractionEvent;)V
+	public final fun register (Lde/quadrixyt/qavlen/commands/CommandDefinition;)Lde/quadrixyt/qavlen/commands/CommandDefinition;
+	public final fun register (Ljava/lang/Object;)Lde/quadrixyt/qavlen/commands/CommandDefinition;
+	public final fun setDeferAfter (Ljava/time/Duration;)V
+	public final fun setEphemeralReplies (Z)V
+	public final fun syncGlobal (Lnet/dv8tion/jda/api/JDA;)Ljava/util/concurrent/CompletableFuture;
+	public final fun syncGuild (Lnet/dv8tion/jda/api/entities/Guild;)Ljava/util/concurrent/CompletableFuture;
+}
+

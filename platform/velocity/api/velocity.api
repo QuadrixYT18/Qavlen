@@ -1,0 +1,51 @@
+public final class de/quadrixyt/qavlen/velocity/PluginChannel : java/lang/AutoCloseable {
+	public fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;Ljava/lang/Object;Lcom/velocitypowered/api/proxy/messages/MinecraftChannelIdentifier;Ljava/util/function/BiConsumer;)V
+	public fun close ()V
+	public final fun getIdentifier ()Lcom/velocitypowered/api/proxy/messages/MinecraftChannelIdentifier;
+	public final fun send (Lcom/velocitypowered/api/proxy/Player;[B)Z
+	public final fun send (Lcom/velocitypowered/api/proxy/server/RegisteredServer;[B)Z
+}
+
+public final class de/quadrixyt/qavlen/velocity/ProxyPlayerArgument : de/quadrixyt/qavlen/commands/ArgumentType {
+	public fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;)V
+	public fun getGreedy ()Z
+	public fun getValueType ()Ljava/lang/Class;
+	public fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Lcom/velocitypowered/api/proxy/Player;
+	public synthetic fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/lang/Object;
+	public fun suggest (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/velocity/ServerArgument : de/quadrixyt/qavlen/commands/ArgumentType {
+	public fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;)V
+	public fun getGreedy ()Z
+	public fun getValueType ()Ljava/lang/Class;
+	public fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Lcom/velocitypowered/api/proxy/server/RegisteredServer;
+	public synthetic fun parse (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/lang/Object;
+	public fun suggest (Ljava/lang/String;Lde/quadrixyt/qavlen/commands/CommandSource;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/velocity/VelocityCommandSource : de/quadrixyt/qavlen/commands/CommandSource {
+	public fun <init> (Lcom/velocitypowered/api/command/CommandSource;Lde/quadrixyt/qavlen/adventure/AdventureMessages;)V
+	public fun getHandle ()Ljava/lang/Object;
+	public fun getId ()Ljava/lang/String;
+	public fun getLocale ()Ljava/util/Locale;
+	public fun getName ()Ljava/lang/String;
+	public final fun getSource ()Lcom/velocitypowered/api/command/CommandSource;
+	public fun hasPermission (Ljava/lang/String;)Z
+	public fun sendMessage (Ljava/lang/String;)V
+	public fun sendTranslated (Lde/quadrixyt/qavlen/language/Translations;Ljava/lang/String;Ljava/util/Map;)V
+	public fun unwrap (Ljava/lang/Class;)Ljava/lang/Object;
+}
+
+public final class de/quadrixyt/qavlen/velocity/VelocityCommands {
+	public fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;Ljava/lang/Object;Lde/quadrixyt/qavlen/commands/CommandDispatcher;)V
+	public fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;Ljava/lang/Object;Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/adventure/AdventureMessages;)V
+	public synthetic fun <init> (Lcom/velocitypowered/api/proxy/ProxyServer;Ljava/lang/Object;Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/adventure/AdventureMessages;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDispatcher ()Lde/quadrixyt/qavlen/commands/CommandDispatcher;
+	public final fun getMessages ()Lde/quadrixyt/qavlen/adventure/AdventureMessages;
+	public final fun register (Lde/quadrixyt/qavlen/commands/CommandDefinition;)Lde/quadrixyt/qavlen/commands/CommandDefinition;
+	public final fun register (Ljava/lang/Object;)Lde/quadrixyt/qavlen/commands/CommandDefinition;
+	public final fun source (Lcom/velocitypowered/api/command/CommandSource;)Lde/quadrixyt/qavlen/velocity/VelocityCommandSource;
+	public final fun unregister (Ljava/lang/String;)V
+}
+

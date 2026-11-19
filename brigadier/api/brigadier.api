@@ -1,0 +1,16 @@
+public abstract interface class de/quadrixyt/qavlen/brigadier/BrigadierPlatform {
+	public fun convert (Lcom/mojang/brigadier/context/CommandContext;Lde/quadrixyt/qavlen/commands/CommandArgument;)Ljava/lang/Object;
+	public fun nativeType (Lde/quadrixyt/qavlen/commands/ArgumentType;)Lcom/mojang/brigadier/arguments/ArgumentType;
+	public abstract fun source (Ljava/lang/Object;)Lde/quadrixyt/qavlen/commands/CommandSource;
+}
+
+public final class de/quadrixyt/qavlen/brigadier/BrigadierPlatform$DefaultImpls {
+	public static fun convert (Lde/quadrixyt/qavlen/brigadier/BrigadierPlatform;Lcom/mojang/brigadier/context/CommandContext;Lde/quadrixyt/qavlen/commands/CommandArgument;)Ljava/lang/Object;
+	public static fun nativeType (Lde/quadrixyt/qavlen/brigadier/BrigadierPlatform;Lde/quadrixyt/qavlen/commands/ArgumentType;)Lcom/mojang/brigadier/arguments/ArgumentType;
+}
+
+public final class de/quadrixyt/qavlen/brigadier/BrigadierTree {
+	public fun <init> (Lde/quadrixyt/qavlen/commands/CommandDispatcher;Lde/quadrixyt/qavlen/brigadier/BrigadierPlatform;)V
+	public final fun build (Lde/quadrixyt/qavlen/commands/CommandDefinition;)Lcom/mojang/brigadier/tree/LiteralCommandNode;
+}
+
