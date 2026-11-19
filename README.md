@@ -55,7 +55,7 @@ The annotation processor (KSP for Kotlin, javac for Java) validates command clas
 
 ## Installation
 
-Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.1.0` or a commit hash.
+Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.2.0` or a commit hash.
 
 ```kotlin
 repositories {
