@@ -49,6 +49,10 @@ data class DatabaseConfig(
 
 data class MessagesConfig(val welcome: String = "<green>Welcome!")
 
+data class Inner(val url: String = "inner-default", val password: String = "")
+
+data class Outer(val inner: Inner = Inner(url = "outer-default"))
+
 data class Greeting(val text: String? = "Hello", val footer: String? = null, val lines: List<String?> = emptyList())
 
 data class Everything(
@@ -317,5 +321,15 @@ class TypedConfigTest {
         assertFailsWith<ConfigException> { config.save() }
         assertFailsWith<ConfigException> { Configs.encode(Greeting(text = null), ConfigFileFormat.TOML) }
         assertEquals(Greeting(), Configs.parse<Greeting>(Configs.encode(Greeting(), ConfigFileFormat.TOML), ConfigFileFormat.TOML).value)
+    }
+
+    @Test
+    fun `overrides keep defaults of enclosing classes`() {
+        val path = directory.resolve("outer.yml")
+
+        val config = Configs.open<Outer>(path) { environment("APP", mapOf("APP_INNER_PASSWORD" to "secret")) }
+
+        assertEquals(Outer(Inner(url = "outer-default", password = "secret")), config.value)
+        assertTrue("url: outer-default" in path.readText() && "secret" !in path.readText(), path.readText())
     }
 }

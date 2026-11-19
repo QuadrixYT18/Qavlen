@@ -204,13 +204,17 @@ public class TypedConfig<T : Any> internal constructor(
         val overrides = linkedMapOf<String, Any?>()
         val paths = model?.scalarPaths().orEmpty()
         options.sources.forEach { overrides.putAll(it.values(paths)) }
-        val effective = ConfigSection.of(section.toMap()).also { tree -> overrides.forEach { (path, value) -> tree.set(path, value) } }
+        // The file decoded on its own carries the defaults of enclosing classes; overrides are applied on top of it,
+        // so overriding one nested value does not reset its siblings to the defaults of the nested class.
+        val fileValue = if (overrides.isEmpty()) null else runCatching { codec.convert(section.toMap(), type) }.getOrNull()
+        val base = fileValue?.let { ConfigBinding.toMap(it, codec) } ?: section.toMap()
+        val effective = ConfigSection.of(base).also { tree -> overrides.forEach { (path, value) -> tree.set(path, value) } }
         val value = decode(effective.toMap(), source)
         validate(value, source)
 
         // Defaults come from the file's own values, so overrides never end up in the file.
-        val fileValue = if (overrides.isEmpty()) value else runCatching { codec.convert(section.toMap(), type) }.getOrNull()
-        val known = fileValue?.let { ConfigBinding.toMap(it, codec) }
+        val fileSide = if (overrides.isEmpty()) value else fileValue
+        val known = fileSide?.let { ConfigBinding.toMap(it, codec) }
         val unknown = if (known == null) {
             emptySet()
         } else {
