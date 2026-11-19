@@ -78,7 +78,7 @@ Defaults only add missing keys; existing values are never replaced. Missing keys
 - Duplicate keys are rejected in YAML and JSON.
 - Values are kept as written: unquoted YAML dates stay text, and numbers that do not fit `Long` or `Double` exactly are kept as `BigInteger` or `BigDecimal`.
 - An explicit `null` is a stored value: `contains` returns `true`, getters return `null`, and defaults do not replace it. JSON parsing is strict (no comments or trailing commas). YAML alias expansion is limited.
-- **Comments are not preserved.** SnakeYAML does not keep them, so a file rewritten by Qavlen loses them. Files are only rewritten when defaults or migrations changed them or when you call `save()` after changes.
+- **YAML comments are kept** when Qavlen rewrites a file, see [Format limits](Typed-Configuration#format-limits). Files are only rewritten when defaults or migrations changed them or when you call `save()` after changes.
 
 ## Validation
 

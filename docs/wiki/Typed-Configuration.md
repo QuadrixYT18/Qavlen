@@ -90,15 +90,27 @@ Nested classes and list elements are validated too (`rewards[2].amount`). Add ch
 
 ## Formats
 
-The format follows the extension (`.yml`, `.yaml`, `.json`, `.toml`) or `format(...)`.
+The format follows the extension (`.yml`, `.yaml`, `.json`, `.toml`) or `format(...)`. The object API is the same for all three.
+
+## Format limits
 
 | | YAML | JSON | TOML |
 | --- | --- | --- | --- |
-| Comments from `@Comment` and the header | written | none (JSON has no comments) | not written |
-| `null` | stored | stored | not representable: omitted and read back as the default |
-| Comments written by people | lost when Qavlen rewrites the file | — | lost when Qavlen rewrites the file |
+| `@Comment` and header for new keys | written | not possible | not written |
+| Comments written by people | kept | not possible | lost when the file is rewritten |
+| `null` | stored | stored | see below |
+| Key order | kept, new keys are appended | kept, new keys are appended | kept, but tables follow plain values as TOML requires |
 
-Comments written by hand are not preserved: the parsers do not keep them. Qavlen therefore rewrites a file only when it has to (new defaults, migrations, removed keys, or `save()` after a change).
+**YAML comments.** When Qavlen rewrites a YAML file (new defaults, migrations, removed keys or `save()`), it carries every comment of the previous file over to the same key path: comments above a key, comments after a value on the same line, blank lines between entries, comments inside lists and at the end of a section or of the file. The header is the comment above the first key, so it is kept too. Limits that follow from how YAML parsers work:
+
+- Comments of keys that are removed are removed with them.
+- For keys that already exist, the file's comments win: a changed `@Comment` text in a new version only appears for keys the file does not have yet.
+- Formatting is normalized: indentation becomes two spaces, list items are not indented below their key (`- item`), and quoting follows YAML's rules. Values are never changed by this.
+- Comments inside flow collections (`[a, b]` or `{a: 1}`) cannot be attached to individual entries.
+
+The same preservation applies to the path-based [Configuration](Configuration) API and is available as `preserveYamlComments(previous, updated)` (Java: `YamlComments.preserveYamlComments`).
+
+**TOML and null.** TOML has no null. A null value is left out of the file only when reading the file back gives the same value, which is the case when the property's default is null as well. Otherwise `save()` fails with a `ConfigException` naming the paths, and the file stays unchanged; use a non-null value, a property whose default is null, or YAML or JSON. Lists cannot contain null in TOML at all. A null default is not treated as missing, so TOML files are not rewritten on every load.
 
 ## Overrides and sources
 

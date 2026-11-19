@@ -22,7 +22,8 @@ import kotlin.concurrent.write
  * values are only replaced when every step succeeded, and a file that cannot be parsed is never overwritten.
  * [save] writes atomically and skips the write when the serialized content did not change.
  *
- * Comments are not preserved: the underlying parsers do not expose them, so files rewritten by Qavlen lose them.
+ * YAML comments written by people are kept when the file is rewritten (see [preserveYamlComments]); JSON has no
+ * comments.
  *
  * All operations are thread-safe.
  */
