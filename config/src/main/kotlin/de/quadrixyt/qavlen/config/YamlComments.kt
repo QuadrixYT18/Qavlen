@@ -21,7 +21,8 @@ import org.yaml.snakeyaml.nodes.Node as YamlNode
  * Both texts must be valid YAML. When either cannot be read, [updated] is returned unchanged.
  */
 public fun preserveYamlComments(previous: String, updated: String): String {
-    if (previous.isBlank() || updated.isBlank() || '#' !in previous && "\n\n" !in previous) return updated
+    val hasComments = '#' in previous || "\n\n" in previous
+    if (!hasComments || updated.isBlank()) return updated
     val old = compose(previous) ?: return updated
     val new = compose(updated) ?: return updated
     transfer(old, new)
