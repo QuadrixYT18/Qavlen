@@ -19,4 +19,5 @@ rootProject.name = "qavlen"
 include(
     "core",
     "config",
+    "language",
 )
