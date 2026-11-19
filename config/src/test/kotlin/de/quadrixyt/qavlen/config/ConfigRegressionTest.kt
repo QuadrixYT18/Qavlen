@@ -127,4 +127,15 @@ class ConfigRegressionTest {
         assertTrue(config.contains("empty") && config.get("empty") == null)
         assertEquals(mapOf("a" to 1, "b" to 2), config.getMap("merged"))
     }
+
+    @Test
+    fun `yaml decimals keep their precision`() {
+        val config = YamlConfig.parse("precise: 1.23456789012345678901\nplain: 0.5\nlarge: 1.5e300\ninfinite: .inf\n")
+
+        assertEquals(BigDecimal("1.23456789012345678901"), config.get("precise"))
+        assertEquals(0.5, config.get("plain"))
+        assertEquals(1.5e300, config.get("large"))
+        assertEquals(Double.POSITIVE_INFINITY, config.get("infinite"))
+        assertTrue("precise: 1.23456789012345678901" in config.saveToString(), config.saveToString())
+    }
 }

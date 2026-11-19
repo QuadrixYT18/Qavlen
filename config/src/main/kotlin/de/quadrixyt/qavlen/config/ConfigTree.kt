@@ -7,8 +7,10 @@ import com.google.gson.stream.JsonToken
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.AbstractConstruct
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.error.YAMLException
+import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.representer.Representer
 import org.yaml.snakeyaml.resolver.Resolver
@@ -18,6 +20,7 @@ import java.math.BigInteger
 import java.util.Date
 import java.util.UUID
 import java.util.regex.Pattern
+import org.yaml.snakeyaml.nodes.Node as YamlNode
 
 internal typealias Node = MutableMap<String, Any?>
 
@@ -212,7 +215,20 @@ private fun yaml(): Yaml {
         width = 4096
         isProcessComments = false
     }
-    return Yaml(SafeConstructor(loader), Representer(dumper), dumper, loader, PlainTimestamps())
+    return Yaml(PreciseConstructor(loader), Representer(dumper), dumper, loader, PlainTimestamps())
+}
+
+/** Reads YAML floats as exact decimals; [normalize] narrows them to `Double` when that loses nothing. */
+private class PreciseConstructor(options: LoaderOptions) : SafeConstructor(options) {
+    init {
+        val standard = yamlConstructors.getValue(Tag.FLOAT)
+        yamlConstructors[Tag.FLOAT] = object : AbstractConstruct() {
+            override fun construct(node: YamlNode): Any? {
+                val text = (node as ScalarNode).value.replace("_", "")
+                return text.toBigDecimalOrNull() ?: standard.construct(node)
+            }
+        }
+    }
 }
 
 /**
