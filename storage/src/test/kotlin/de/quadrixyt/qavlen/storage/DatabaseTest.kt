@@ -100,4 +100,15 @@ class DatabaseTest {
         val failure = assertFailsWith<java.util.concurrent.CompletionException> { closed.updateAsync("SELECT 1").join() }
         assertTrue(failure.cause is IllegalStateException)
     }
+
+    @Test
+    fun `connects from settings and hides the password`() {
+        val settings = DatabaseSettings(url = "jdbc:h2:mem:${UUID.randomUUID()}", username = "sa", password = "secret", poolSize = 2)
+
+        Database.connect(settings).use { database -> assertEquals(1, database.queryFirst("SELECT 1", { it.getInt(1) })) }
+
+        assertTrue("secret" !in settings.toString())
+        assertEquals("jdbc:postgresql://db:5432/game", DatabaseSettings(DatabaseType.POSTGRESQL, "db", database = "game").jdbcUrl)
+        assertFailsWith<IllegalArgumentException> { Database.builder(settings.copy(poolSize = 0)) }
+    }
 }

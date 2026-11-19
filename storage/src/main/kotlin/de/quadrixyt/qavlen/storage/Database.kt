@@ -216,6 +216,25 @@ public class Database private constructor(
             },
         )
 
+        /** A builder prepared from [settings]; further options can still be changed. */
+        @JvmStatic
+        public fun builder(settings: DatabaseSettings): Builder {
+            require(settings.poolSize in 1..100) { "poolSize must be between 1 and 100" }
+            require(settings.port in 1..65535) { "port must be between 1 and 65535" }
+            val builder = builder(settings.jdbcUrl)
+                .credentials(settings.username, settings.password)
+                .poolSize(settings.poolSize)
+                .connectionTimeout(settings.connectionTimeout)
+            if (settings.url == null) builder.driver(settings.type.driver)
+            settings.queryTimeout?.let(builder::queryTimeout)
+            settings.properties.forEach { (name, value) -> builder.property(name, value) }
+            return builder
+        }
+
+        /** Connects with [settings]. */
+        @JvmStatic
+        public fun connect(settings: DatabaseSettings): Database = builder(settings).connect()
+
         /** MariaDB or MySQL through the MariaDB driver (`org.mariadb.jdbc:mariadb-java-client`). */
         @JvmStatic
         public fun mariadb(host: String, port: Int, database: String): Builder =
