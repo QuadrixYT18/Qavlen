@@ -4,8 +4,13 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## Unreleased
 
+### Added
+
+- `commands`: `Cooldowns.tryStart` starts a cooldown atomically.
+
 ### Fixed
 
+- `commands`: cooldowns are reserved atomically before a command runs, so concurrent executions on Velocity or Discord can no longer bypass them; failed executions still do not consume the cooldown. Expired cooldowns are purged automatically.
 - `core`: `writeAtomically` flushes the file to disk before replacing the target, keeps the target's POSIX permissions and writes through symbolic links instead of replacing them.
 - `config`: migrations are saved even when `writeDefaults(false)` is set; previously they ran again on every load.
 - `config`: migration backups never overwrite an existing backup from the same second.

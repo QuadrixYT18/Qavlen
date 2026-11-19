@@ -141,19 +141,17 @@ public class CommandDispatcher @JvmOverloads constructor(
         if (!canUse(source, path)) return deny(source)
         val node = path.last()
         val executor = node.executor ?: throw IllegalArgumentException("Command '${node.name}' has no executor")
-        val cooldownKey = node.cooldown?.let { "${source.id}:${path.joinToString(" ") { it.name }}" }
         val bypass = cooldownBypassPermission?.let(source::hasPermission) == true
-        if (cooldownKey != null && !bypass) {
-            val remaining = cooldowns.remaining(cooldownKey)
-            if (!remaining.isZero) {
-                val rounded = Duration.ofSeconds(remaining.toSeconds() + if (remaining.toMillisPart() > 0) 1 else 0)
-                messages.send(source, CommandException.COOLDOWN, mapOf("remaining" to Durations.format(rounded)))
-                return CommandResult.COOLDOWN
-            }
+        val cooldown = node.cooldown?.takeUnless { bypass }
+        val cooldownKey = cooldown?.let { "${source.id}:${path.joinToString(" ") { it.name }}" }
+        // The cooldown is reserved before running, so concurrent executions cannot both pass the check.
+        val reservation = if (cooldown != null && cooldownKey != null) {
+            cooldowns.reserve(cooldownKey, cooldown) ?: return cooldownActive(source, cooldownKey)
+        } else {
+            null
         }
-        return try {
+        val result = try {
             executor.execute(CommandContext(source, path.toList(), arguments, messages))
-            if (cooldownKey != null && !bypass) cooldowns.start(cooldownKey, node.cooldown)
             CommandResult.SUCCESS
         } catch (exception: CommandException) {
             messages.send(source, exception.key, exception.placeholders)
@@ -163,6 +161,17 @@ public class CommandDispatcher @JvmOverloads constructor(
             messages.send(source, CommandException.FAILED, emptyMap())
             CommandResult.ERROR
         }
+        // Failed executions do not consume the cooldown.
+        if (result != CommandResult.SUCCESS && cooldownKey != null && reservation != null) cooldowns.release(cooldownKey, reservation)
+        return result
+    }
+
+    private fun cooldownActive(source: CommandSource, key: String): CommandResult {
+        val remaining = cooldowns.remaining(key)
+        val seconds = remaining.toSeconds() + if (remaining.toMillisPart() > 0) 1 else 0
+        val rounded = Duration.ofSeconds(seconds.coerceAtLeast(1))
+        messages.send(source, CommandException.COOLDOWN, mapOf("remaining" to Durations.format(rounded)))
+        return CommandResult.COOLDOWN
     }
 
     /** Completions for the last, possibly empty, word of [input]. */

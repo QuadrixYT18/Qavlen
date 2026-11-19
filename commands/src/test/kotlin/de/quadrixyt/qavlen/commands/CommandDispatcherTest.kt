@@ -193,4 +193,50 @@ class CommandDispatcherTest {
         assertEquals(Mode.FAST, registry.resolve(Mode::class.java).parse("FAST", TestSource()))
         assertFailsWith<IllegalArgumentException> { registry.resolve(Thread::class.java) }
     }
+
+    @Test
+    fun `concurrent executions cannot bypass a cooldown and failures release it`() {
+        val running = java.util.concurrent.CountDownLatch(1)
+        val finish = java.util.concurrent.CountDownLatch(1)
+        var fail = true
+        val dispatcher = CommandDispatcher().apply {
+            register(
+                command("vote") {
+                    it.cooldown(Duration.ofMinutes(5)).executes {
+                        if (fail) throw CommandException("custom.reason")
+                        running.countDown()
+                        finish.await()
+                    }
+                },
+            )
+        }
+        val source = TestSource(name = "alex")
+
+        assertEquals(CommandResult.REJECTED, dispatcher.execute(source, "vote"))
+        fail = false
+        val first = java.util.concurrent.CompletableFuture.supplyAsync { dispatcher.execute(source, "vote") }
+        running.await()
+        assertEquals(CommandResult.COOLDOWN, dispatcher.execute(source, "vote"))
+        finish.countDown()
+
+        assertEquals(CommandResult.SUCCESS, first.join())
+        assertEquals(CommandResult.COOLDOWN, dispatcher.execute(source, "vote"))
+        assertTrue(source.messages.contains("Please wait 5m before using this command again."), source.messages.toString())
+    }
+
+    @Test
+    fun `cooldowns can be started atomically and expire`() {
+        var now = Instant.parse("2025-01-01T00:00:00Z")
+        val clock = object : Clock() {
+            override fun getZone() = ZoneOffset.UTC
+            override fun withZone(zone: java.time.ZoneId) = this
+            override fun instant() = now
+        }
+        val cooldowns = Cooldowns(clock)
+
+        assertTrue(cooldowns.tryStart("a", Duration.ofSeconds(10)))
+        assertEquals(false, cooldowns.tryStart("a", Duration.ofSeconds(10)))
+        now = now.plusSeconds(11)
+        assertTrue(cooldowns.tryStart("a", Duration.ofSeconds(10)))
+    }
 }
