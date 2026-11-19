@@ -101,4 +101,30 @@ class ConfigRegressionTest {
         assertEquals("fallback", config.getString("value", "fallback"))
         assertEquals("default", config.getString("missing"))
     }
+
+    @Test
+    fun `yaml dates stay unchanged text`() {
+        val path = directory.resolve("config.yml")
+        path.writeText("event: 2025-01-01\nupdated: 2025-01-01 10:00:00\n")
+
+        val config = YamlConfig.load(path)
+        config.set("other", 1)
+        config.save()
+
+        assertEquals("2025-01-01", config.getString("event"))
+        assertTrue("event: 2025-01-01\nupdated: 2025-01-01 10:00:00\n" in path.readText(), path.readText())
+    }
+
+    @Test
+    fun `yaml scalars keep their types`() {
+        val config = YamlConfig.parse("flag: true\nyes-word: yes\ncount: 0x1F\nratio: 1.5e3\nnothing: ~\nempty:\nbase: &base {a: 1}\nmerged:\n  <<: *base\n  b: 2\n")
+
+        assertEquals(true, config.get("flag"))
+        assertEquals(true, config.get("yes-word"))
+        assertEquals(31, config.get("count"))
+        assertEquals(1500.0, config.get("ratio"))
+        assertTrue(config.contains("nothing") && config.get("nothing") == null)
+        assertTrue(config.contains("empty") && config.get("empty") == null)
+        assertEquals(mapOf("a" to 1, "b" to 2), config.getMap("merged"))
+    }
 }

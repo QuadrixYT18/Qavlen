@@ -9,12 +9,15 @@ import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.error.YAMLException
+import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.representer.Representer
+import org.yaml.snakeyaml.resolver.Resolver
 import java.io.StringReader
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.Date
 import java.util.UUID
+import java.util.regex.Pattern
 
 internal typealias Node = MutableMap<String, Any?>
 
@@ -200,7 +203,21 @@ private fun yaml(): Yaml {
         width = 4096
         isProcessComments = false
     }
-    return Yaml(SafeConstructor(loader), Representer(dumper), dumper, loader)
+    return Yaml(SafeConstructor(loader), Representer(dumper), dumper, loader, PlainTimestamps())
+}
+
+/**
+ * Keeps unquoted dates such as `2025-01-01` as text. SnakeYAML would turn them into `Date` objects, which would be
+ * written back as a different string and change the user's file.
+ */
+private class PlainTimestamps : Resolver() {
+    override fun addImplicitResolver(tag: Tag, regexp: Pattern, first: String?) {
+        if (tag != Tag.TIMESTAMP) super.addImplicitResolver(tag, regexp, first)
+    }
+
+    override fun addImplicitResolver(tag: Tag, regexp: Pattern, first: String?, limit: Int) {
+        if (tag != Tag.TIMESTAMP) super.addImplicitResolver(tag, regexp, first, limit)
+    }
 }
 
 private fun readJson(reader: JsonReader, path: String): Any? = when (reader.peek()) {
