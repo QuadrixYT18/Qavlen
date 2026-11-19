@@ -29,6 +29,6 @@ channel.send(registeredServer, bytes)
 channel.close()
 ```
 
-Messages on the channel are always marked as handled and never forwarded. Only messages from backend servers reach the handler; messages sent by clients are dropped, because any client can send arbitrary data on any channel.
+Messages on the channel are always marked as handled and never forwarded. On the backend, use the [Paper](Paper) `PluginChannel` with the same channel name. Only messages from backend servers reach the handler; messages sent by clients are dropped, because any client can send arbitrary data on any channel.
 
 The Kotlin example writes `velocity-plugin.json` by hand because Velocity's annotation processor does not see Kotlin sources; Java plugins can use `annotationProcessor("com.velocitypowered:velocity-api:...")`.

@@ -1,6 +1,6 @@
 # Paper example (Kotlin)
 
-A Paper plugin with Brigadier commands, MiniMessage translations with a prefix, a paginated menu, persistent data and Folia-aware scheduling.
+A Paper plugin with Brigadier commands, MiniMessage translations with a prefix, a paginated menu with translated item icons built by `ItemBuilder`, persistent data and Folia-aware scheduling.
 
 ```shell
 ./gradlew :examples:paper-kotlin:shadowJar

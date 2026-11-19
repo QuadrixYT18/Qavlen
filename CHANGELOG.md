@@ -4,6 +4,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## Unreleased
 
+### Added
+
+- `paper`: `ItemBuilder` for item stacks based on the data component API, with translated, non-italic names and lore.
+- `paper`: `PluginChannel`, the backend counterpart of the Velocity plugin messaging channel.
+- `adventure`: `AdventureMessages.renderLines` renders multi-line translations as one component per line.
+
 ### Changed
 
 - `brigadier`: incomplete commands on Paper and Velocity reply with the translated usage line instead of the platform's generic error.

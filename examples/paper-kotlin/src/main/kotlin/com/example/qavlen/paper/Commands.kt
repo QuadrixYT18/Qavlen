@@ -9,6 +9,7 @@ import de.quadrixyt.qavlen.commands.annotations.Range
 import de.quadrixyt.qavlen.commands.annotations.Sender
 import de.quadrixyt.qavlen.commands.annotations.Subcommand
 import de.quadrixyt.qavlen.language.placeholder
+import de.quadrixyt.qavlen.paper.ItemBuilder
 import de.quadrixyt.qavlen.paper.PaginatedMenu
 import de.quadrixyt.qavlen.paper.PaperScheduler
 import de.quadrixyt.qavlen.paper.PersistentKey
@@ -16,7 +17,6 @@ import de.quadrixyt.qavlen.paper.SafeTeleport
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
 @Command("coins", description = "coins.description")
 class CoinsCommand(
@@ -53,13 +53,20 @@ class PlayersCommand(private val messages: AdventureMessages) {
             contentSlots = (0 until 45).toList(),
             items = player.server.onlinePlayers.toList(),
             render = { online ->
-                ItemStack(Material.PLAYER_HEAD).apply {
-                    editMeta { it.displayName(messages.render(locale, "players.entry", placeholder("player", online.name))) }
-                }
+                ItemBuilder.of(Material.PLAYER_HEAD)
+                    .profile(online.playerProfile)
+                    .name(messages, locale, "players.entry", placeholder("player", online.name))
+                    .lore(messages, locale, "players.lore", placeholder("world", online.world.name))
+                    .build()
             },
             action = { click, online -> click.player.sendMessage(Component.text(online.name)) },
         )
-        menu.navigation(45, ItemStack(Material.ARROW), 53, ItemStack(Material.ARROW))
+        menu.navigation(
+            45,
+            ItemBuilder.of(Material.ARROW).name(messages, locale, "players.previous").build(),
+            53,
+            ItemBuilder.of(Material.ARROW).name(messages, locale, "players.next").build(),
+        )
         menu.open(player)
     }
 }

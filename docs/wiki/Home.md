@@ -9,7 +9,7 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Annotations](Annotations) | `qavlen-commands-processor` | KSP and javac processor for `@Command` classes |
 | [Adventure](Adventure) | `qavlen-adventure` | MiniMessage rendering of translations with injection-safe placeholders |
 | [Brigadier](Brigadier) | `qavlen-brigadier` | Shared Brigadier tree builder used by Paper and Velocity |
-| [Paper](Paper) | `qavlen-paper` | Brigadier commands, menus, Folia-aware scheduling, events, persistent data, safe teleports |
+| [Paper](Paper) | `qavlen-paper` | Brigadier commands, menus, items, plugin messaging, Folia-aware scheduling, events, persistent data, safe teleports |
 | [Velocity](Velocity) | `qavlen-velocity` | Proxy commands and plugin messaging |
 | [JDA](JDA) | `qavlen-jda` | Localized slash commands with autocomplete and change-aware registration |
 | [Storage](Storage) | `qavlen-storage` | HikariCP pool, prepared statements, transactions, migrations |

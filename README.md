@@ -44,7 +44,7 @@ The annotation processor (KSP for Kotlin, javac for Java) validates command clas
 | `qavlen-commands-processor` | Annotation processor for `ksp` and `annotationProcessor` |
 | `qavlen-adventure` | MiniMessage rendering with injection-safe placeholders |
 | `qavlen-brigadier` | Brigadier tree builder shared by Paper and Velocity |
-| `qavlen-paper` | Brigadier commands, menus, Folia-aware scheduling, events, persistent data, safe teleports |
+| `qavlen-paper` | Brigadier commands, menus, items, plugin messaging, Folia-aware scheduling, events, persistent data, safe teleports |
 | `qavlen-velocity` | Proxy commands and plugin messaging |
 | `qavlen-jda` | Localized slash commands, autocomplete, change-aware registration |
 | `qavlen-storage` | HikariCP, prepared statements, transactions, async queries, migrations |

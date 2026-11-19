@@ -54,6 +54,39 @@ subscription.close() // unregisters
 
 `plugin.listen<PlayerJoinEvent> { ... }` is the Kotlin shorthand. Priority and `ignoreCancelled` are optional parameters.
 
+## Items
+
+`ItemBuilder` creates item stacks through Paper's data component API. Names and lore are rendered without Minecraft's default italics, and both can come from translations so menus show the viewer's language. A multi-line translation becomes one lore line per line.
+
+```kotlin
+val locale = messages.locale(player)
+val icon = ItemBuilder.of(Material.DIAMOND)
+    .name(messages, locale, "shop.diamond.name")
+    .lore(messages, locale, "shop.diamond.lore", placeholder("price", 250))
+    .glint(true)
+    .hide(DataComponentTypes.ENCHANTMENTS)
+    .data(priceKey, 250)
+    .build()
+
+val head = ItemBuilder.of(Material.PLAYER_HEAD).profile(target.playerProfile).build()
+val filler = ItemBuilder.of(Material.GRAY_STAINED_GLASS_PANE).hideTooltip().build()
+```
+
+Further methods: `amount`, `unbreakable`, `enchant` (also above the normal maximum level), `model` (item model from a resource pack) and `customModelData`. `ItemBuilder.from(item)` starts from a copy; `build()` returns a new stack each time.
+
+In multi-line translations, close MiniMessage tags on the line that opens them, because lines are split before parsing.
+
+## Plugin messaging
+
+```kotlin
+val channel = PluginChannel(plugin, "myplugin:sync") { player, data -> ... }
+channel.send(player, bytes) // through this player's connection
+channel.send(bytes)         // through any online player; false if nobody is online
+channel.close()
+```
+
+This is the backend counterpart of the [Velocity](Velocity) `PluginChannel`. Plugin messages travel through a player's connection, so a player must be online. The backend cannot distinguish messages written by the proxy from messages written by the client. Only trust them when the proxy drops client messages on the channel, as Qavlen's Velocity `PluginChannel` does, and when the server is reachable only through the proxy. On Folia the handler runs on the connection's thread; use `PaperScheduler` before touching the world.
+
 ## Persistent data
 
 ```kotlin

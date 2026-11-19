@@ -7,6 +7,9 @@ coins:
 players:
   title: "Online players"
   entry: "<yellow>{player}"
+  lore: "<gray>World: <white>{world}</white>\n<dark_gray>Click to show the name"
+  previous: "<gray>Previous page"
+  next: "<gray>Next page"
 spawn:
   teleported: "<prefix> <green>Teleported to spawn."
   failed: "<prefix> <red>No safe location found."

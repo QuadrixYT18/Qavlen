@@ -6,6 +6,7 @@ messages.send(player, "shop.bought", placeholder("item", item.displayName()), pl
 messages.actionBar(player, "event.countdown", placeholder("seconds", 5))
 messages.title(player, "event.title", "event.subtitle", mapOf("round" to 3))
 val component = messages.render(Locale.GERMAN, "shop.header")
+val lore = messages.renderLines(locale, "shop.lore")          // one component per line
 ```
 
 ```java
