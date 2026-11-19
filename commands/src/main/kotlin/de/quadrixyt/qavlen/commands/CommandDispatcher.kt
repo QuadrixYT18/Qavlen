@@ -1,6 +1,7 @@
 package de.quadrixyt.qavlen.commands
 
 import de.quadrixyt.qavlen.core.Durations
+import de.quadrixyt.qavlen.language.TranslationIssue
 import de.quadrixyt.qavlen.language.Translations
 import java.time.Clock
 import java.time.Duration
@@ -213,6 +214,28 @@ public class CommandDispatcher @JvmOverloads constructor(
         val own = if (node.executor != null) listOf(CommandHelp(usage(path), describe(node.description, source.locale))) else emptyList()
         return own + node.subcommands.flatMap { helpEntries(source, path + it) }
     }
+
+    /**
+     * Reports texts of the registered commands that a locale of the dispatcher's translations cannot show in its own
+     * language: description keys of commands and arguments, and Qavlen's built-in command messages. Such texts fall
+     * back to the default locale, or to English for the built-in messages.
+     */
+    public fun translationIssues(): List<TranslationIssue> {
+        val translations = messages.translations
+        val descriptions = commands.flatMap(::descriptionKeys).filter { translations.contains(translations.defaultLocale, it) }
+        val builtIn = CommandMessages.bundled.keys(Locale.ENGLISH)
+        return translations.locales.sortedBy(Locale::toLanguageTag).flatMap { locale ->
+            val missingDescriptions = descriptions.distinct().filterNot { translations.isTranslated(locale, it) }
+            val missingBuiltIn = builtIn.filterNot {
+                translations.isTranslated(locale, it) ||
+                    CommandMessages.bundled.isTranslated(locale, it)
+            }
+            (missingDescriptions + missingBuiltIn).map { TranslationIssue(locale, it, "used by commands but not translated") }
+        }
+    }
+
+    private fun descriptionKeys(command: CommandDefinition): List<String> =
+        listOf(command.description) + command.arguments.map { it.description } + command.subcommands.flatMap(::descriptionKeys)
 
     /** A translation of [description] when it is a known key, otherwise the literal text. */
     public fun describe(description: String, locale: Locale): String {

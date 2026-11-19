@@ -81,4 +81,21 @@ class CommandFeaturesTest {
         assertEquals(CommandResult.ERROR, dispatcher.execute(source, "boom"))
         assertTrue(source.messages.single().startsWith("An internal error occurred"))
     }
+
+    @Test
+    fun `reports command texts that a language cannot show`() {
+        val french = Locale.FRENCH
+        val withFrench = Translations.builder()
+            .messages(Locale.ENGLISH, mapOf("shop.buy" to "Buy an item"))
+            .messages(french, mapOf("shop.buy" to "Acheter"))
+            .messages(Locale.GERMAN, mapOf("other" to "x"))
+            .build()
+        val dispatcher = CommandDispatcher(withFrench).apply { register(shop()) }
+
+        val issues = dispatcher.translationIssues().map { "${it.locale.toLanguageTag()} ${it.key}" }
+
+        assertTrue("de shop.buy" in issues, issues.toString())
+        assertTrue("fr qavlen:command.no-permission" in issues, issues.toString())
+        assertTrue(issues.none { it.startsWith("de qavlen:") || it.startsWith("en ") || it == "fr shop.buy" }, issues.toString())
+    }
 }
