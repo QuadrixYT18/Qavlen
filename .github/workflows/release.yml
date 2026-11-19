@@ -1,0 +1,73 @@
+name: Release checks
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Version matches the tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(grep '^qavlenVersion=' gradle.properties | cut -d= -f2)"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match qavlenVersion=${version}"
+            exit 1
+          fi
+      - name: Changelog has a section for the release
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if ! grep -q "^## ${version} " CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## ${version}' section"
+            exit 1
+          fi
+          if grep -q '^## Unreleased' CHANGELOG.md; then
+            echo "::error::CHANGELOG.md still contains an 'Unreleased' section"
+            exit 1
+          fi
+      - name: Build, test, check API compatibility and publish locally
+        run: ./gradlew build publishToMavenLocal --no-configuration-cache
+      - name: JitPack builds the release
+        run: |
+          url="https://jitpack.io/com/github/${GITHUB_REPOSITORY}/${GITHUB_REF_NAME}/build.log"
+          for attempt in $(seq 1 30); do
+            log="$(curl -fsS --max-time 600 "$url" || true)"
+            if echo "$log" | grep -q 'BUILD SUCCESSFUL'; then
+              modules="$(echo "$log" | grep -oE 'qavlen-[a-z-]+-'"${GITHUB_REF_NAME}"'\.jar' | sort -u | wc -l)"
+              echo "JitPack published ${modules} modules"
+              [ "$modules" -ge 16 ] && exit 0
+              echo "::error::JitPack published only ${modules} modules"
+              exit 1
+            fi
+            if echo "$log" | grep -q 'BUILD FAILED'; then
+              echo "$log" | tail -50
+              echo "::error::JitPack build failed"
+              exit 1
+            fi
+            sleep 20
+          done
+          echo "::error::JitPack did not finish in time"
+          exit 1
