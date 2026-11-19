@@ -23,6 +23,7 @@ include(
     "commands",
     "commands-processor",
     "adventure",
+    "brigadier",
     "platform:paper",
     "platform:velocity",
     "platform:jda",

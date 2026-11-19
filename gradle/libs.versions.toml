@@ -25,6 +25,7 @@ adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" 
 adventure-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
 adventure-plain = { module = "net.kyori:adventure-text-serializer-plain", version.ref = "adventure" }
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+brigadier = "com.mojang:brigadier:1.3.11"
 velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
