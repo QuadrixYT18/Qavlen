@@ -1,0 +1,42 @@
+[versions]
+kotlin = "2.4.21"
+ksp = "2.3.14"
+junit = "6.1.3"
+paper = "26.3.build.256-stable"
+velocity = "4.3.1"
+jda = "6.7.0"
+adventure = "5.2.0"
+shadow = "9.6.1"
+ktlint = "14.2.0"
+
+[libraries]
+snakeyaml = "org.yaml:snakeyaml:2.7"
+gson = "com.google.code.gson:gson:2.15.0"
+hikari = "com.zaxxer:HikariCP:7.1.0"
+caffeine = "com.github.ben-manes.caffeine:caffeine:3.3.1"
+jedis = "redis.clients:jedis:8.0.2"
+mariadb = "org.mariadb.jdbc:mariadb-java-client:3.5.11"
+postgresql = "org.postgresql:postgresql:42.7.14"
+h2 = "com.h2database:h2:2.5.252"
+ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
+adventure-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
+adventure-plain = { module = "net.kyori:adventure-text-serializer-plain", version.ref = "adventure" }
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+kotlin-compile-testing = "dev.zacsweers.kctfork:core:0.14.0"
+kotlin-compile-testing-ksp = "dev.zacsweers.kctfork:ksp:0.14.0"
+compile-testing = "com.google.testing.compile:compile-testing:0.24.0"
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+shadow-gradle-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

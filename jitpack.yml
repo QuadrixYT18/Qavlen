@@ -1,0 +1,7 @@
+jdk:
+  - openjdk25
+before_install:
+  - sdk install java 25-tem || true
+  - sdk use java 25-tem || true
+install:
+  - ./gradlew publishToMavenLocal -x test --no-configuration-cache
