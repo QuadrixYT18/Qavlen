@@ -8,7 +8,7 @@ import de.quadrixyt.qavlen.language.Placeholder
  *
  * @property key translation key, for example `qavlen:command.no-permission` or a key of your own translations
  */
-public open class CommandException(
+public open class CommandException @JvmOverloads constructor(
     public val key: String,
     public val placeholders: Map<String, Any?> = emptyMap(),
     cause: Throwable? = null,
