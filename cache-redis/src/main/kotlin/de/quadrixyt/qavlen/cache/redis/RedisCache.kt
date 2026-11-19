@@ -3,6 +3,7 @@ package de.quadrixyt.qavlen.cache.redis
 import de.quadrixyt.qavlen.cache.Cache
 import de.quadrixyt.qavlen.cache.CacheStats
 import de.quadrixyt.qavlen.serialization.JsonCodec
+import de.quadrixyt.qavlen.serialization.SerializationException
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.SetParams
@@ -16,6 +17,7 @@ import java.util.function.Function
 
 /**
  * A cache shared through Redis. Values are stored as JSON under `<namespace>:<key>`, optionally with a TTL.
+ * Entries that no longer match the value class, for example after a plugin update, are deleted and count as misses.
  *
  * Redis calls block, so [getAsync] runs them on virtual threads. Concurrent asynchronous loads of the same key in this
  * process share one load; loads in other processes are not coordinated. The client is owned by the caller.
@@ -32,7 +34,16 @@ public class RedisCache<K : Any, V : Any> private constructor(builder: Builder<K
     private val misses = AtomicLong()
 
     override fun get(key: K): V? {
-        val value = redis.get(redisKey(key))?.let { codec.decode(it, valueType) }
+        val redisKey = redisKey(key)
+        val value = redis.get(redisKey)?.let { json ->
+            try {
+                codec.decode(json, valueType)
+            } catch (_: SerializationException) {
+                // Written by an incompatible version of the value class; treat it as missing so it gets reloaded.
+                redis.del(redisKey)
+                null
+            }
+        }
         (if (value == null) misses else hits).incrementAndGet()
         return value
     }

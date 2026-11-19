@@ -38,4 +38,17 @@ class RedisCacheTest {
             assertEquals(CacheStats(hits = 1, misses = 3, evictions = 0), cache.stats())
         }
     }
+
+    @Test
+    fun `incompatible entries count as misses and are removed`() {
+        client().use { redis ->
+            val namespace = "qavlen-test-${UUID.randomUUID()}"
+            redis.set("$namespace:alex", """{"name": 5, "coins": "not a number"}""")
+            val cache = RedisCache.builder<String, Profile>(redis, namespace, Profile::class.java).build()
+
+            assertEquals(Profile("Alex", 1), cache.get("alex") { Profile("Alex", 1) })
+            assertEquals(Profile("Alex", 1), cache.get("alex"))
+            cache.invalidateAll()
+        }
+    }
 }
