@@ -1,6 +1,6 @@
 # JVM example (Kotlin)
 
-A console bank account built with annotated commands processed by KSP, YAML configuration and English/German translations.
+A console bank account built with annotated commands processed by KSP, YAML configuration bound to a data class and English/German translations.
 
 ```shell
 ./gradlew :examples:jvm-kotlin:run --console=plain

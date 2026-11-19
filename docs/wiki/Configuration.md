@@ -25,6 +25,47 @@ int port = config.getInt("database.port", 3306);
 
 Paths are dot-separated. Typed getters (`getString`, `getInt`, `getLong`, `getDouble`, `getBoolean`, `getList`, `getStringList`, `getIntList`, `getMap`) return `null` when the value is absent, or the given default. A value of the wrong type throws `ConfigValueException` naming the path, so a typo such as `port: 33o6` is reported instead of silently replaced. `getSection` returns a live view of a nested section.
 
+## Data classes
+
+With `qavlen-serialization` on the classpath, sections can be read into Kotlin data classes, records or Java beans:
+
+```kotlin
+data class DatabaseSettings(
+    val host: String = "localhost",
+    val port: Int = 3306,
+    val poolSize: Int = 4,
+    val timeout: Duration = Duration.ofSeconds(10),
+)
+
+val database = config.bind<DatabaseSettings>("database")
+```
+
+```java
+record Rewards(int dailyCoins, Duration cooldown, List<String> worlds) {}
+
+Rewards rewards = ConfigBinding.bind(config, "rewards", Rewards.class);
+```
+
+```yaml
+database:
+  host: db.internal
+  pool-size: 8
+  timeout: 30s
+rewards:
+  daily-coins: 50
+  cooldown: 20h
+  worlds: [world, world_nether]
+```
+
+- Property names use kebab case in the file: `poolSize` is `pool-size`.
+- Durations accept `30s`, `1h30m` or ISO-8601 and are written in the compact form.
+- Enum constants ignore case.
+- Kotlin default values fill missing keys; a missing section binds as empty, so all defaults apply. A value without a default fails.
+- Invalid values fail with a `ConfigException` naming the full path, for example `Invalid configuration at 'database.port'`.
+- Unknown keys are ignored.
+
+`ConfigBinding.toMap(DatabaseSettings())` turns an instance into defaults for `ConfigOptions.defaults`, and `ConfigBinding.write(config, "database", settings)` stores one back before `save()`. Binding uses `ConfigBinding.codec`; pass your own `JsonCodec` to any method to change the conventions.
+
 ## Defaults
 
 Defaults only add missing keys; existing values are never replaced. Missing keys are written back to the file. If the file has a value where the defaults have a section, or the other way round, loading fails with a `ConfigException` that names the key instead of discarding data. Bundled defaults can come from a resource: `defaults(YamlConfig.read(javaClass.getResourceAsStream("/config.yml")!!))`.

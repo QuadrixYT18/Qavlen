@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(project(":commands"))
     implementation(project(":config"))
+    implementation(project(":serialization"))
     ksp(project(":commands-processor"))
 }
 

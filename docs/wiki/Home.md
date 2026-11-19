@@ -15,7 +15,7 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Storage](Storage) | `qavlen-storage` | HikariCP pool, prepared statements, transactions, migrations |
 | [Cache](Cache) | `qavlen-cache` | Caffeine-backed local cache |
 | [Redis](Redis) | `qavlen-cache-redis` | Shared cache in Redis |
-| [Serialization](Serialization) | `qavlen-serialization` | Jackson-based JSON codec |
+| [Serialization](Serialization) | `qavlen-serialization` | Jackson-based JSON codec and configuration binding to data classes |
 | [Networking](Networking) | `qavlen-network` | JSON REST client with timeouts and retries |
 | [Scheduler](Scheduler) | `qavlen-scheduler` | Delayed and repeating tasks for plain JVM applications |
 

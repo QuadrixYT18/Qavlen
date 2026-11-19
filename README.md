@@ -49,7 +49,7 @@ The annotation processor (KSP for Kotlin, javac for Java) validates command clas
 | `qavlen-jda` | Localized slash commands, autocomplete, change-aware registration |
 | `qavlen-storage` | HikariCP, prepared statements, transactions, async queries, migrations |
 | `qavlen-cache` / `qavlen-cache-redis` | Caffeine local cache and optional Redis cache |
-| `qavlen-serialization` | Jackson-based JSON codec |
+| `qavlen-serialization` | Jackson-based JSON codec and configuration binding to data classes |
 | `qavlen-network` | JSON REST client with timeouts and bounded retries |
 | `qavlen-scheduler` | Error-tolerant delayed and repeating tasks |
 

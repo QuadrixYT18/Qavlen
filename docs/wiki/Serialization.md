@@ -20,4 +20,6 @@ val custom = JsonCodec.default.toBuilder()
     .build()
 ```
 
-`stringType` covers values stored as strings. For anything else, register a Jackson module with `module(...)`.
+The module also binds configuration sections to classes, see [Configuration](Configuration#data-classes). It depends on `qavlen-config` for that.
+
+`propertyNaming` and `caseInsensitiveEnums` adjust naming conventions. `stringType` covers values stored as strings. For anything else, register a Jackson module with `module(...)`.

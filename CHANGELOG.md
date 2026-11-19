@@ -2,6 +2,17 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `serialization`: `ConfigBinding` reads configuration sections into Kotlin data classes, records and Java beans and writes them back, with kebab-case keys, compact durations, case-insensitive enums and error messages that name the full path.
+- `serialization`: `JsonCodec.Builder.propertyNaming` and `caseInsensitiveEnums`.
+
+### Changed
+
+- `serialization` now depends on `config`.
+
 ## 0.2.0 - 2026-11-19
 
 ### Added
