@@ -75,7 +75,9 @@ Defaults only add missing keys; existing values are never replaced. Missing keys
 - A file that cannot be parsed is never overwritten.
 - Loading and `reload()` parse, migrate, merge and validate a copy first. If any step fails, a `ConfigException` is thrown and the previous values stay in place.
 - `save()` validates, writes atomically and skips the write when the content did not change. `isDirty` tells whether there are unsaved changes.
-- Duplicate keys are rejected in YAML and JSON. JSON parsing is strict (no comments or trailing commas). YAML alias expansion is limited.
+- Duplicate keys are rejected in YAML and JSON.
+- Values are kept as written: unquoted YAML dates stay text, and numbers that do not fit `Long` or `Double` exactly are kept as `BigInteger` or `BigDecimal`.
+- An explicit `null` is a stored value: `contains` returns `true`, getters return `null`, and defaults do not replace it. JSON parsing is strict (no comments or trailing commas). YAML alias expansion is limited.
 - **Comments are not preserved.** SnakeYAML does not keep them, so a file rewritten by Qavlen loses them. Files are only rewritten when defaults or migrations changed them or when you call `save()` after changes.
 
 ## Validation
@@ -95,7 +97,7 @@ ConfigOptions {
 }
 ```
 
-The version is stored under `config-version` (configurable); a file without it is version 1. Migrations run in order on a copy. Before the migrated file is written, the original is copied to `config.yml.v<old>-<timestamp>.bak` (disable with `backups(false)`). Files with a newer version than the code supports are rejected.
+The version is stored under `config-version` (configurable); a file without it is version 1. Migrations run in order on a copy. Before the migrated file is written, the original is copied to `config.yml.v<old>-<timestamp>.bak` (disable with `backups(false)`); existing backups are never replaced. A migrated file is saved even with `writeDefaults(false)`, so migrations run only once. Files with a newer version than the code supports are rejected.
 
 ## Streams
 

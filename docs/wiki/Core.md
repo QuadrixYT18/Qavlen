@@ -16,7 +16,7 @@ Resources registered after `close()` are closed immediately.
 
 ## writeAtomically
 
-`writeAtomically(path, text)` (Java: `QavlenFiles.writeAtomically`) writes to a temporary file in the same directory and moves it over the target, so readers never see a partially written file. If the file system does not support atomic moves, a regular replace is used.
+`writeAtomically(path, text)` (Java: `QavlenFiles.writeAtomically`) writes to a temporary file in the same directory, flushes it to disk and moves it over the target, so readers never see a partially written file and a crash leaves either the old or the new content. The target's POSIX permissions are kept, and a symbolic link is written through instead of being replaced. If the file system does not support atomic moves, a regular replace is used.
 
 ## Durations
 
