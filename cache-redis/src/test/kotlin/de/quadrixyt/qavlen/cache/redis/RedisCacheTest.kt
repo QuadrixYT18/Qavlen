@@ -1,5 +1,6 @@
 package de.quadrixyt.qavlen.cache.redis
 
+import de.quadrixyt.qavlen.cache.CacheStats
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import redis.clients.jedis.RedisClient
 import java.time.Duration
@@ -34,7 +35,7 @@ class RedisCacheTest {
             cache.invalidateAll()
             assertNull(cache.get("alex"))
             assertNull(cache.get("sam"))
-            assertEquals(2, cache.stats().hits)
+            assertEquals(CacheStats(hits = 1, misses = 3, evictions = 0), cache.stats())
         }
     }
 }
