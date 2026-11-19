@@ -219,7 +219,8 @@ public class TypedConfig<T : Any> internal constructor(
             }
         }
         val output = ConfigSection.of(section.toMap())
-        if (options.writeDefaults && known != null) addMissing(output, known, "")
+        // TOML cannot hold null, so a null default is not "missing" there and must not trigger a rewrite.
+        if (options.writeDefaults && known != null) addMissing(output, known, "", skipNulls = format == ConfigFileFormat.TOML)
         if (options.unknownKeys == UnknownKeys.REMOVE) unknown.forEach(output::remove)
         val outputTree = output.toMap()
         return State(value, withSection(root, outputTree), outputTree, overrides.keys.toSet(), unknown, migratedFrom)
@@ -283,6 +284,7 @@ public class TypedConfig<T : Any> internal constructor(
     }
 
     private fun write(target: Path, root: Map<String, Any?>) {
+        if (format == ConfigFileFormat.TOML) checkToml(root)
         try {
             val content = format.write(root, model.takeIf { options.prefix == null })
             val previous = if (format == ConfigFileFormat.YAML && Files.exists(target)) Files.readString(target) else null
@@ -293,6 +295,22 @@ public class TypedConfig<T : Any> internal constructor(
         }
         persisted = root
         stamp = FileStamp.of(target)
+    }
+
+    /**
+     * TOML has no null, so null values are left out of the file. That is only lossless when reading the file back
+     * gives the same value, which is the case when the property's default is null as well.
+     */
+    private fun checkToml(root: Map<String, Any?>) {
+        val nulls = ConfigFileFormat.nullPaths(section(root, "TOML"))
+        if (nulls.isEmpty()) return
+        val written = section(format.read(format.write(root, null), "TOML"), "TOML")
+        if (decode(written, "TOML") != decode(section(root, "TOML"), "TOML")) {
+            throw ConfigException(
+                "TOML cannot store null at ${nulls.joinToString { "'${qualify(it)}'" }}: reading the file back would give " +
+                    "a different value. Use a non-null value, a property whose default is null, or YAML or JSON.",
+            )
+        }
     }
 
     private fun notify(previous: T, next: T) {
@@ -332,14 +350,15 @@ public class TypedConfig<T : Any> internal constructor(
             return true
         }
 
-        fun addMissing(target: ConfigSection, known: Map<String, Any?>, prefix: String) {
+        fun addMissing(target: ConfigSection, known: Map<String, Any?>, prefix: String, skipNulls: Boolean) {
             for ((key, value) in known) {
                 val path = if (prefix.isEmpty()) key else "$prefix.$key"
                 when {
+                    value == null && skipNulls -> Unit
                     !target.contains(path) -> target.set(path, value)
                     value is Map<*, *> && target.get(path) is Map<*, *> -> {
                         @Suppress("UNCHECKED_CAST")
-                        addMissing(target, value as Map<String, Any?>, path)
+                        addMissing(target, value as Map<String, Any?>, path, skipNulls)
                     }
                 }
             }

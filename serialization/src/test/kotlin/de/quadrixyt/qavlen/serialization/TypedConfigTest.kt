@@ -49,6 +49,8 @@ data class DatabaseConfig(
 
 data class MessagesConfig(val welcome: String = "<green>Welcome!")
 
+data class Greeting(val text: String? = "Hello", val footer: String? = null, val lines: List<String?> = emptyList())
+
 data class Everything(
     val id: UUID = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
     val price: BigDecimal = BigDecimal("1.23456789012345678901"),
@@ -293,5 +295,27 @@ class TypedConfigTest {
             "  # Database port\n  port: 3306",
         ).forEach { assertTrue(it in text, "Missing '$it' in:\n$text") }
         assertFalse("# Example plugin configuration" in text, text)
+    }
+
+    @Test
+    fun `toml refuses nulls that would come back as a different value`() {
+        val path = directory.resolve("greeting.toml")
+        val config = Configs.open<Greeting>(path)
+
+        config.update { copy(footer = null, text = "Hi") }
+        assertTrue(config.save())
+        val written = path.readText()
+        assertEquals(Greeting(text = "Hi"), Configs.open<Greeting>(path).value)
+        assertEquals(written, path.readText(), "opening a TOML file with null defaults must not rewrite it")
+
+        config.update { copy(text = null) }
+        val error = assertFailsWith<ConfigException> { config.save() }
+        assertTrue("'text'" in error.message!!, error.message)
+        assertEquals("Hi", Configs.open<Greeting>(path).value.text)
+
+        config.update { copy(text = "Hey", lines = listOf("a", null)) }
+        assertFailsWith<ConfigException> { config.save() }
+        assertFailsWith<ConfigException> { Configs.encode(Greeting(text = null), ConfigFileFormat.TOML) }
+        assertEquals(Greeting(), Configs.parse<Greeting>(Configs.encode(Greeting(), ConfigFileFormat.TOML), ConfigFileFormat.TOML).value)
     }
 }

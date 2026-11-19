@@ -1,5 +1,6 @@
 package de.quadrixyt.qavlen.serialization
 
+import de.quadrixyt.qavlen.config.ConfigException
 import java.io.InputStream
 import java.nio.file.Path
 
@@ -54,8 +55,21 @@ public object Configs {
     /** Encodes [value] in [format], with comments for YAML. */
     @JvmStatic
     @JvmOverloads
-    public fun encode(value: Any, format: ConfigFileFormat = ConfigFileFormat.YAML, codec: JsonCodec = ConfigBinding.codec): String =
-        format.write(ConfigBinding.toMap(value, codec), ConfigModel.of(value.javaClass, codec))
+    public fun encode(value: Any, format: ConfigFileFormat = ConfigFileFormat.YAML, codec: JsonCodec = ConfigBinding.codec): String {
+        val tree = ConfigBinding.toMap(value, codec)
+        val text = format.write(tree, ConfigModel.of(value.javaClass, codec))
+        if (format == ConfigFileFormat.TOML &&
+            ConfigFileFormat.nullPaths(tree).isNotEmpty() &&
+            codec.convert(format.read(text, "TOML"), value.javaClass) != value
+        ) {
+            throw ConfigException(
+                "TOML cannot store null at ${ConfigFileFormat.nullPaths(tree).joinToString {
+                    "'$it'"
+                }} without changing the value",
+            )
+        }
+        return text
+    }
 
     /** Kotlin form of [open]: `Configs.open<PluginConfig>(path) { environment("MYPLUGIN") }`. */
     @JvmSynthetic

@@ -68,7 +68,12 @@ public enum class ConfigFileFormat {
             throw ConfigException("Invalid TOML in $source: ${exception.originalMessage}", exception)
         }
 
-        override fun write(tree: Map<String, Any?>, model: ConfigModel?): String = toml.writeValueAsString(withoutNulls(tree))
+        override fun write(tree: Map<String, Any?>, model: ConfigModel?): String {
+            nullPaths(tree).firstOrNull { it.endsWith("]") }?.let {
+                throw ConfigException("TOML cannot store null list elements, found one at '$it'")
+            }
+            return toml.writeValueAsString(withoutNulls(tree))
+        }
     }, ;
 
     internal abstract fun read(text: String, source: String): Map<String, Any?>
@@ -110,6 +115,14 @@ public enum class ConfigFileFormat {
         private fun line(text: String) = CommentLine(null, null, if (text.isEmpty()) "" else " $text", CommentType.BLOCK)
 
         private fun blank() = CommentLine(null, null, "", CommentType.BLANK_LINE)
+
+        /** Paths of `null` values, which TOML cannot store; list elements are reported as `path[index]`. */
+        internal fun nullPaths(value: Any?, path: String = ""): List<String> = when (value) {
+            null -> listOf(path)
+            is Map<*, *> -> value.flatMap { (key, entry) -> nullPaths(entry, if (path.isEmpty()) "$key" else "$path.$key") }
+            is List<*> -> value.flatMapIndexed { index, entry -> nullPaths(entry, "$path[$index]") }
+            else -> emptyList()
+        }
 
         @Suppress("UNCHECKED_CAST")
         private fun withoutNulls(tree: Map<String, Any?>): Map<String, Any?> = tree.filterValues { it != null }.mapValues { (_, value) ->
