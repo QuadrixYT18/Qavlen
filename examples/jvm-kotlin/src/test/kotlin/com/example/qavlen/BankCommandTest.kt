@@ -2,7 +2,6 @@ package com.example.qavlen
 
 import de.quadrixyt.qavlen.commands.CommandResult
 import de.quadrixyt.qavlen.commands.CommandSource
-import de.quadrixyt.qavlen.config.YamlConfig
 import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +22,7 @@ class BankCommandTest {
 
     @Test
     fun `generated command runs with translations`() {
-        val dispatcher = createDispatcher(YamlConfig.parse("bank:\n  starting-balance: 10\n"))
+        val dispatcher = createDispatcher(BankConfig(startingBalance = 10))
         val english = Source(Locale.ENGLISH)
         val german = Source(Locale.GERMAN)
 
