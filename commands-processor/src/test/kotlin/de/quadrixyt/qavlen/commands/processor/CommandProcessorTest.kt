@@ -271,4 +271,150 @@ class CommandProcessorTest {
 
         assertEquals(1, outputs.toSet().size)
     }
+
+    @Test
+    fun `kotlin conditions, lengths and execute permissions are generated`() {
+        val result = compileKotlin(
+            SourceFile.kotlin(
+                "Guarded.kt",
+                """
+                package test
+
+                import de.quadrixyt.qavlen.commands.CommandCondition
+                import de.quadrixyt.qavlen.commands.CommandException
+                import de.quadrixyt.qavlen.commands.CommandSource
+                import de.quadrixyt.qavlen.commands.annotations.*
+
+                object Daytime : CommandCondition {
+                    var day = true
+                    override fun check(source: CommandSource) { if (!day) throw CommandException("night") }
+                }
+
+                class NotConsole : CommandCondition {
+                    override fun check(source: CommandSource) { if (source.name == "console") throw CommandException("console") }
+                }
+
+                @Command("guarded")
+                @Require(Daytime::class)
+                class Guarded {
+                    val log = mutableListOf<String>()
+
+                    @Subcommand("name")
+                    @Require(NotConsole::class)
+                    fun name(@Length(min = 3, max = 5) value: String) { log += value }
+                }
+
+                @Command("secret")
+                class Secret {
+                    @Execute
+                    @Permission("secret.use")
+                    fun run() {}
+                }
+                """.trimIndent(),
+            ),
+        )
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+
+        val dispatcher = CommandDispatcher()
+        val guarded = result.classLoader.loadClass("test.Guarded").getDeclaredConstructor().newInstance()
+        dispatcher.register(guarded)
+        dispatcher.register(result.classLoader.loadClass("test.Secret").getDeclaredConstructor().newInstance())
+        val player = Source(emptySet())
+
+        assertEquals(CommandResult.SUCCESS, dispatcher.execute(player, "guarded name alex"))
+        assertEquals(CommandResult.INVALID_INPUT, dispatcher.execute(player, "guarded name al"))
+        assertEquals(CommandResult.NO_PERMISSION, dispatcher.execute(player, "secret"))
+        val daytime = result.classLoader.loadClass("test.Daytime")
+        daytime.getMethod("setDay", Boolean::class.javaPrimitiveType).invoke(daytime.getField("INSTANCE").get(null), false)
+        assertEquals(CommandResult.REJECTED, dispatcher.execute(player, "guarded name alex"))
+    }
+
+    @Test
+    fun `invalid conditions and restrictions are reported`() {
+        val result = compileKotlin(
+            SourceFile.kotlin(
+                "Invalid.kt",
+                """
+                package test
+
+                import de.quadrixyt.qavlen.commands.CommandCondition
+                import de.quadrixyt.qavlen.commands.CommandSource
+                import de.quadrixyt.qavlen.commands.annotations.*
+
+                class NeedsArgument(val text: String) : CommandCondition {
+                    override fun check(source: CommandSource) {}
+                }
+
+                class NotACondition
+
+                @Command("invalid")
+                @Permission("invalid.use")
+                class Invalid {
+                    @Execute
+                    @Permission("invalid.root")
+                    @Require(NeedsArgument::class)
+                    fun root() {}
+
+                    @Subcommand("sub")
+                    @Require(NotACondition::class)
+                    fun sub(@Length(max = 3) count: Int) {}
+                }
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals(KotlinCompilation.ExitCode.COMPILATION_ERROR, result.exitCode)
+        listOf(
+            "test.NeedsArgument needs a public constructor without required parameters",
+            "test.NotACondition does not implement CommandCondition",
+            "on the @Execute method would also restrict the subcommands",
+            "Use @Permission on either the class or the @Execute method",
+            "@Length requires a String argument",
+        ).forEach { expected -> assertTrue(expected in result.messages, "Missing '$expected' in:\n${result.messages}") }
+    }
+
+    @Test
+    fun `java conditions and lengths are generated`() {
+        val condition = JavaFileObjects.forSourceString(
+            "test.OnlyAdmins",
+            """
+            package test;
+
+            import de.quadrixyt.qavlen.commands.CommandCondition;
+            import de.quadrixyt.qavlen.commands.CommandException;
+            import de.quadrixyt.qavlen.commands.CommandSource;
+
+            public class OnlyAdmins implements CommandCondition {
+                @Override
+                public void check(CommandSource source) {
+                    if (!source.hasPermission("admin")) throw new CommandException("admins only");
+                }
+            }
+            """.trimIndent(),
+        )
+        val command = JavaFileObjects.forSourceString(
+            "test.TagCommand",
+            """
+            package test;
+
+            import de.quadrixyt.qavlen.commands.annotations.*;
+
+            @Command(name = "tag")
+            @Require(OnlyAdmins.class)
+            public class TagCommand {
+                @Subcommand(path = "set")
+                public void set(@Length(min = 2, max = 16) String tag, @Greedy @Optional @Length(max = 100) String reason) {
+                }
+            }
+            """.trimIndent(),
+        )
+
+        val compilation = javac().withProcessors(CommandAnnotationProcessor()).compile(condition, command)
+
+        assertEquals(Compilation.Status.SUCCESS, compilation.status(), compilation.diagnostics().joinToString("\n"))
+        val generated = compilation.generatedSourceFile("test.TagCommand_QavlenCommand").get().getCharContent(true).toString()
+        assertTrue(".condition(new test.OnlyAdmins())" in generated, generated)
+        assertTrue("ArgumentTypes.word(2, 16)" in generated, generated)
+        assertTrue("ArgumentTypes.greedyString(0, 100)" in generated, generated)
+    }
 }

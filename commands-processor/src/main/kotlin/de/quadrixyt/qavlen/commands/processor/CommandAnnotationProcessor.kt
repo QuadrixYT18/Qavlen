@@ -72,6 +72,7 @@ public class CommandAnnotationProcessor : AbstractProcessor() {
             generic = type.typeParameters.isNotEmpty(),
             methods = if (problem == null) methods else methods.map { it.withProblem(problem) },
             origin = type,
+            conditions = conditions(type),
         )
     }
 
@@ -97,6 +98,7 @@ public class CommandAnnotationProcessor : AbstractProcessor() {
             accessible = Modifier.PUBLIC in method.modifiers,
             frontEndProblem = problem,
             origin = method,
+            conditions = conditions(method),
         )
     }
 
@@ -132,7 +134,35 @@ public class CommandAnnotationProcessor : AbstractProcessor() {
             greedy = parameter.annotation("Greedy") != null,
             range = range?.let { (it.value("min") as? Double ?: -Double.MAX_VALUE)..(it.value("max") as? Double ?: Double.MAX_VALUE) },
             origin = parameter,
+            length = parameter.annotation("Length")?.let { (it.value("min") as? Int ?: 0)..(it.value("max") as? Int ?: Int.MAX_VALUE) },
         )
+    }
+
+    private fun conditions(element: Element): List<ConditionModel> {
+        val values = (element.annotation("Require")?.value("value") as? List<*>).orEmpty()
+        val conditionType = processingEnv.elementUtils.getTypeElement("$COMMANDS_PACKAGE.CommandCondition")?.asType()
+        return values.mapNotNull { (it as? javax.lang.model.element.AnnotationValue)?.value as? DeclaredType }.map { type ->
+            val declaration = type.asElement() as TypeElement
+            val name = declaration.qualifiedName.toString()
+            val publicNoArgs = ElementFilter.constructorsIn(declaration.enclosedElements)
+                .any { Modifier.PUBLIC in it.modifiers && it.parameters.isEmpty() }
+            // Kotlin objects compile to a class with a static INSTANCE field and a private constructor.
+            val singleton = !publicNoArgs &&
+                ElementFilter.fieldsIn(declaration.enclosedElements)
+                    .any { it.simpleName.contentEquals("INSTANCE") && Modifier.STATIC in it.modifiers && Modifier.PUBLIC in it.modifiers }
+            val problem = when {
+                conditionType == null ||
+                    !processingEnv.typeUtils.isAssignable(
+                        type,
+                        conditionType,
+                    ) -> "$name does not implement CommandCondition"
+                Modifier.ABSTRACT in declaration.modifiers -> "$name must not be abstract"
+                declaration.nestingKind == NestingKind.MEMBER && Modifier.STATIC !in declaration.modifiers -> "$name must be static"
+                !publicNoArgs && !singleton -> "$name needs a public constructor without parameters"
+                else -> null
+            }
+            ConditionModel(name, singleton, problem)
+        }
     }
 
     /** Qualified name of the boxed type and whether the declared type is primitive. */
@@ -158,7 +188,7 @@ public class CommandAnnotationProcessor : AbstractProcessor() {
 
     private fun MethodModel.withProblem(problem: String) = MethodModel(
         name, path, aliases, description, permission, cooldownSeconds, parameters, returnsVoid, accessible,
-        frontEndProblem ?: problem, origin,
+        frontEndProblem ?: problem, origin, conditions,
     )
 
     private fun error(message: String, element: Element) {

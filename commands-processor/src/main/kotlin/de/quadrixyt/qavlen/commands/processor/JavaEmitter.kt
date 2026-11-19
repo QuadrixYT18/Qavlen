@@ -27,6 +27,7 @@ internal object JavaEmitter {
         var aliases: List<String> = emptyList()
         var description = ""
         var permission: String? = null
+        var conditions: List<ConditionModel> = emptyList()
         var method: MethodModel? = null
         val children = linkedMapOf<String, Node>()
     }
@@ -36,11 +37,14 @@ internal object JavaEmitter {
             aliases = model.aliases
             description = model.description
             permission = model.permission
+            conditions = model.conditions
         }
         for (method in model.methods) {
             val path = method.path
             if (path == null) {
                 root.method = method
+                root.permission = model.permission ?: method.permission
+                root.conditions = model.conditions + method.conditions
                 continue
             }
             var node = root
@@ -49,6 +53,7 @@ internal object JavaEmitter {
             node.aliases = method.aliases
             node.description = method.description
             node.permission = method.permission
+            node.conditions = method.conditions
         }
         return root
     }
@@ -63,6 +68,10 @@ internal object JavaEmitter {
         }
         if (node.description.isNotEmpty()) newline(indent).append(".description(").append(literal(node.description)).append(")")
         node.permission?.let { newline(indent).append(".permission(").append(literal(it)).append(")") }
+        node.conditions.forEach { condition ->
+            val instance = if (condition.singleton) "${condition.typeName}.INSTANCE" else "new ${condition.typeName}()"
+            newline(indent).append(".condition(").append(instance).append(")")
+        }
         val method = node.method
         if (method != null) {
             method.cooldownSeconds?.takeIf { it > 0 }?.let { newline(indent).append(".cooldown(java.time.Duration.ofSeconds(${it}L))") }
@@ -95,6 +104,10 @@ internal object JavaEmitter {
     }
 
     private fun argumentType(parameter: ParameterModel): String {
+        parameter.length?.let { length ->
+            val factory = if (parameter.greedy) "greedyString" else "word"
+            return "$TYPES.$factory(${length.first}, ${length.last})"
+        }
         if (parameter.greedy) return "$TYPES.greedyString()"
         val range = parameter.range ?: return "types.resolve(${parameter.typeName}.class)"
         return when (parameter.valueKind) {

@@ -2,6 +2,8 @@ package de.quadrixyt.qavlen.commands.processor
 
 import com.google.devtools.ksp.ApiFeatures
 import com.google.devtools.ksp.buildApiFeatures
+import com.google.devtools.ksp.getAllSuperTypes
+import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.CodeGenerator
@@ -83,6 +85,7 @@ internal class CommandSymbolProcessor(
             generic = type.typeParameters.isNotEmpty(),
             methods = if (accessible) methods else methods.map { it.withProblem("Command classes must not be private") },
             origin = type,
+            conditions = conditions(type),
         )
     }
 
@@ -109,6 +112,7 @@ internal class CommandSymbolProcessor(
             accessible = function.isPublic(),
             frontEndProblem = problem,
             origin = function,
+            conditions = conditions(function),
         )
     }
 
@@ -147,8 +151,33 @@ internal class CommandSymbolProcessor(
                 (it.argument("min") as? Double ?: -Double.MAX_VALUE)..(it.argument("max") as? Double ?: Double.MAX_VALUE)
             },
             origin = parameter,
+            length = parameter.annotation("Length")?.let {
+                (it.argument("min") as? Int ?: 0)..(it.argument("max") as? Int ?: Int.MAX_VALUE)
+            },
         )
     }
+
+    private fun conditions(annotated: KSAnnotated): List<ConditionModel> =
+        (annotated.annotation("Require")?.argument("value") as? List<*>).orEmpty().filterIsInstance<KSType>().map { type ->
+            val declaration = type.declaration as? KSClassDeclaration
+            val name =
+                declaration?.qualifiedName?.asString() ?: return@map ConditionModel("?", false, "the condition type could not be resolved")
+            val implementsCondition = declaration.getAllSuperTypes()
+                .any { it.declaration.qualifiedName?.asString() == "$COMMANDS_PACKAGE.CommandCondition" }
+            val singleton = declaration.classKind == ClassKind.OBJECT
+            val constructible = declaration.getConstructors().any {
+                it.isPublic() && it.parameters.all { parameter -> parameter.hasDefault }
+            }
+            val problem = when {
+                !implementsCondition -> "$name does not implement CommandCondition"
+                declaration.isPrivate() -> "$name must not be private"
+                Modifier.ABSTRACT in declaration.modifiers || declaration.classKind == ClassKind.INTERFACE -> "$name must not be abstract"
+                Modifier.INNER in declaration.modifiers -> "$name must not be an inner class"
+                !singleton && !constructible -> "$name needs a public constructor without required parameters"
+                else -> null
+            }
+            ConditionModel(name, singleton, problem)
+        }
 
     private fun KSType.expandAliases(): KSType {
         val declaration = declaration
@@ -174,7 +203,7 @@ internal class CommandSymbolProcessor(
 
     private fun MethodModel.withProblem(problem: String) = MethodModel(
         name, path, aliases, description, permission, cooldownSeconds, parameters, returnsVoid, accessible,
-        frontEndProblem ?: problem, origin,
+        frontEndProblem ?: problem, origin, conditions,
     )
 
     private companion object {
