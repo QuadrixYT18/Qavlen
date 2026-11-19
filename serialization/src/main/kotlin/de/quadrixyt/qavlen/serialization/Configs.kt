@@ -56,17 +56,17 @@ public object Configs {
     @JvmOverloads
     public fun encode(value: Any, format: ConfigFileFormat = ConfigFileFormat.YAML, codec: JsonCodec = ConfigBinding.codec): String =
         format.write(ConfigBinding.toMap(value, codec), ConfigModel.of(value.javaClass, codec))
+
+    /** Kotlin form of [open]: `Configs.open<PluginConfig>(path) { environment("MYPLUGIN") }`. */
+    @JvmSynthetic
+    public inline fun <reified T : Any> open(path: Path, configure: TypedConfigOptions.Builder<T>.() -> Unit = {}): TypedConfig<T> =
+        open(path, T::class.java, TypedConfigOptions.builder<T>().apply(configure).build())
+
+    /** Kotlin form of [parse]: `Configs.parse<PluginConfig>(text, ConfigFileFormat.YAML)`. */
+    @JvmSynthetic
+    public inline fun <reified T : Any> parse(
+        text: String,
+        format: ConfigFileFormat,
+        configure: TypedConfigOptions.Builder<T>.() -> Unit = {},
+    ): TypedConfig<T> = parse(text, T::class.java, format, TypedConfigOptions.builder<T>().apply(configure).build())
 }
-
-/** `Configs.open<PluginConfig>(path) { environment("MYPLUGIN") }` */
-public inline fun <reified T : Any> Configs.open(
-    path: Path,
-    configure: TypedConfigOptions.Builder<T>.() -> Unit = {},
-): TypedConfig<T> = open(path, T::class.java, TypedConfigOptions.builder<T>().apply(configure).build())
-
-/** `Configs.parse<PluginConfig>(text, ConfigFileFormat.YAML)` */
-public inline fun <reified T : Any> Configs.parse(
-    text: String,
-    format: ConfigFileFormat,
-    configure: TypedConfigOptions.Builder<T>.() -> Unit = {},
-): TypedConfig<T> = parse(text, T::class.java, format, TypedConfigOptions.builder<T>().apply(configure).build())
