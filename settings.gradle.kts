@@ -22,6 +22,10 @@ include(
     "language",
     "commands",
     "commands-processor",
+    "adventure",
+    "platform:paper",
+    "platform:velocity",
+    "platform:jda",
     "examples:jvm-kotlin",
     "examples:jvm-java",
 )
