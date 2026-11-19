@@ -6,6 +6,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.Reader
 import java.io.Writer
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -108,18 +109,22 @@ public sealed class ConfigFile(
         val candidate = text?.let { format.decode(it, source) } ?: linkedMapOf()
         val loadedText = text?.let { format.encode(candidate) }
         val migratedFrom = migrate(candidate, isNew = text == null, source)
+        // Without writeDefaults, a migration is still saved, but the defaults added below stay in memory only.
+        val migrated = if (options.writeDefaults || migratedFrom == null) null else format.encode(candidate)
         val added = mergeDefaults(candidate, options.defaults)
         validate(candidate)
 
         val target = file
-        val encoded = format.encode(candidate)
-        val changed = encoded != loadedText
-        if (target != null && changed && options.writeDefaults) {
+        val content = migrated ?: format.encode(candidate)
+        val write = target != null && content != loadedText && (options.writeDefaults || migratedFrom != null)
+        if (write) {
             if (migratedFrom != null && options.backups && text != null) backup(target, migratedFrom)
-            write(target, encoded)
-            persisted = encoded
-        } else {
-            persisted = loadedText ?: if (target == null) encoded else null
+            write(target, content)
+        }
+        persisted = when {
+            write -> content
+            target == null -> format.encode(candidate)
+            else -> loadedText
         }
         root = candidate
         return added
@@ -161,11 +166,21 @@ public sealed class ConfigFile(
         if (violations.isNotEmpty()) throw ConfigValidationException(violations)
     }
 
+    /** Copies the file before a migration rewrites it. Existing backups are never replaced. */
     private fun backup(target: Path, version: Int) {
         val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-        val backup = target.resolveSibling("${target.fileName}.v$version-$stamp.bak")
         try {
-            Files.copy(target, backup, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+            for (attempt in 1..MAX_BACKUPS_PER_SECOND) {
+                val suffix = if (attempt == 1) "" else "-$attempt"
+                val backup = target.resolveSibling("${target.fileName}.v$version-$stamp$suffix.bak")
+                try {
+                    Files.copy(target, backup, StandardCopyOption.COPY_ATTRIBUTES)
+                    return
+                } catch (_: FileAlreadyExistsException) {
+                    continue
+                }
+            }
+            throw IOException("Too many backups for the same second")
         } catch (exception: IOException) {
             throw ConfigException("Could not back up $target before migrating it", exception)
         }
@@ -180,6 +195,10 @@ public sealed class ConfigFile(
     }
 
     override fun toString(): String = "${javaClass.simpleName}(${file ?: "detached"})"
+
+    private companion object {
+        const val MAX_BACKUPS_PER_SECOND = 1000
+    }
 }
 
 /** A YAML document. Duplicate keys, aliases bombs and non-section roots are rejected. */

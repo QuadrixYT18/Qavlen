@@ -71,8 +71,8 @@ internal fun normalize(value: Any?): Any? = when (value) {
     is Array<*> -> value.mapTo(ArrayList(), ::normalize)
     is Short, is Byte -> (value as Number).toInt()
     is Float -> value.toDouble()
-    is BigInteger -> if (value.bitLength() < 64) value.toLong() else value.toString()
-    is BigDecimal -> value.toDouble()
+    is BigInteger -> if (value.bitLength() < 64) narrow(value.toString()) else value
+    is BigDecimal -> value.toDouble().takeIf { it.isFinite() && BigDecimal(it.toString()).compareTo(value) == 0 } ?: value
     is Number -> narrow(value.toString())
     is CharSequence, is UUID -> value.toString()
     is Enum<*> -> value.name
@@ -80,9 +80,11 @@ internal fun normalize(value: Any?): Any? = when (value) {
     else -> throw ConfigException("Unsupported configuration value of type ${value.javaClass.name}")
 }
 
+/** Picks the smallest exact representation: Int, Long, BigInteger, Double, or BigDecimal when a Double would round. */
 private fun narrow(number: String): Any {
     number.toLongOrNull()?.let { return if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it }
-    return number.toDouble()
+    if (number.none { it == '.' || it == 'e' || it == 'E' }) return BigInteger(number)
+    return normalize(BigDecimal(number))!!
 }
 
 @Suppress("UNCHECKED_CAST")

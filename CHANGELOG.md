@@ -2,6 +2,15 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Fixed
+
+- `core`: `writeAtomically` flushes the file to disk before replacing the target, keeps the target's POSIX permissions and writes through symbolic links instead of replacing them.
+- `config`: migrations are saved even when `writeDefaults(false)` is set; previously they ran again on every load.
+- `config`: migration backups never overwrite an existing backup from the same second.
+- `config`: integers beyond the `Long` range stay numbers instead of turning into strings, and JSON numbers keep their full precision.
+
 ## 0.3.0 - 2026-11-19
 
 ### Added
