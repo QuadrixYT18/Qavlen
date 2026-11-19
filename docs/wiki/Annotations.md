@@ -23,11 +23,13 @@ class CoinsCommand(private val economy: Economy) {
 | `@Execute` | method | runs when the root command is used without subcommand |
 | `@Subcommand(path, aliases, description)` | method | subcommand; `"admin reset"` creates nested nodes |
 | `@Permission(value)` | class, method | required permission; on the class it applies to every subcommand |
+| `@Require(Condition::class)` | class, method | [conditions](Commands#conditions); classes need a public no-argument constructor, Kotlin objects are used directly |
 | `@Cooldown(seconds)` | method | per-source cooldown |
 | `@Arg(name, description)` | parameter | argument name and description |
 | `@Optional` | parameter | optional argument (nullable in Kotlin, wrapper type in Java) |
 | `@Greedy` | parameter | last `String` argument takes the rest of the input |
 | `@Range(min, max)` | parameter | bounds for `Int`, `Long` or `Double` |
+| `@Length(min, max)` | parameter | length bounds for `String` |
 | `@Sender` | parameter | the command source converted to the parameter type |
 
 Parameters of type `CommandContext` and `CommandSource` are injected. All other parameters are arguments; their type is resolved through the dispatcher's `ArgumentTypeRegistry` when the command is registered. Argument names default to the parameter name in kebab case (`playerName` becomes `player-name`). Descriptions are translation keys or literal text.
@@ -41,7 +43,9 @@ The build fails with a message on the offending element when, for example:
 - a method is not public, returns a value, is static, is a suspend or extension function, or uses varargs;
 - a parameter is generic, an array or a collection;
 - a required argument follows an optional one, `@Greedy` is not on the last `String`, `@Range` is not on a number;
-- an optional argument is primitive, or a non-optional Kotlin parameter is nullable.
+- an optional argument is primitive, or a non-optional Kotlin parameter is nullable;
+- `@Length` is not on a `String`, or a `@Require` class does not implement `CommandCondition` or cannot be created;
+- `@Permission` or `@Require` is on the `@Execute` method of a command that has subcommands (it would restrict them too; put it on the class), or `@Permission` is on both the class and the `@Execute` method.
 
 ## Build setup
 

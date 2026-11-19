@@ -2,6 +2,20 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `commands`: `CommandCondition` and `Builder.condition` for requirements beyond permissions; `@Require` for annotated commands.
+- `commands`: generated help with `CommandDispatcher.help`, `sendHelp` and `CommandContext.sendHelp`, translated per source.
+- `commands`: length limits for text arguments with `ArgumentTypes.word(min, max)`, `greedyString(min, max)` and `@Length`; enforced on Paper, Velocity and Discord.
+- `commands`: `CommandDispatcher.reportError` and `describe` for platform adapters.
+
+### Fixed
+
+- `commands-processor`: `@Permission` on an `@Execute` method was ignored. It now applies, and combinations that would silently restrict subcommands are reported at compile time.
+- `commands`: a failing error handler no longer prevents the failure message from being sent.
+
 ## 0.3.1 - 2026-11-19
 
 ### Added
