@@ -18,5 +18,6 @@ What Qavlen is built against and how each combination was verified. "Live" means
 | Jackson | 3.3.0 | CI |
 | Caffeine | 3.3.1 | CI |
 | SnakeYAML / Gson | 2.7 / 2.15.0 | CI |
+| Jackson TOML | 3.3.0 | CI |
 
 Java and Kotlin are equally supported: `tests/java-api` uses the public API from plain Java, and every example exists in both languages.

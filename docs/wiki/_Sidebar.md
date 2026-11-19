@@ -11,6 +11,7 @@
 
 - [Core](Core)
 - [Configuration](Configuration)
+- [Typed Configuration](Typed-Configuration)
 - [Language & Localization](Language-and-Localization)
 - [Commands](Commands)
 - [Annotations](Annotations)

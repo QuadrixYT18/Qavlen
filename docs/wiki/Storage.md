@@ -33,4 +33,18 @@ List<String> names = database.query("SELECT name FROM players WHERE coins > ?", 
 
 Migrations are recorded in `qavlen_schema_history` with a checksum. Each runs in its own transaction; an edited migration that was already applied is reported. PostgreSQL rolls back failed DDL, MariaDB commits DDL implicitly, so keep MariaDB migrations small.
 
+## Settings in configurations
+
+`DatabaseSettings` holds everything needed to connect and can be part of a [typed configuration](Typed-Configuration):
+
+```kotlin
+@Configuration
+data class PluginConfig(val database: DatabaseSettings = DatabaseSettings(database = "coins"))
+
+val config = Configs.open<PluginConfig>(path) { environment("COINS") } // COINS_DATABASE_PASSWORD stays out of the file
+val database = Database.connect(config.value.database)
+```
+
+`type` selects MariaDB or PostgreSQL and the default port; `url` replaces the generated JDBC URL, for example for H2. `toString()` never prints the password. `Database.builder(settings)` returns a builder for further options.
+
 There is no ORM; map rows with `RowMapper`.

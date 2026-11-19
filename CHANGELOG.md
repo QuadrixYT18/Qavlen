@@ -6,6 +6,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Added
 
+- `serialization`: typed configurations with `Configs.open` for Kotlin data classes, records and Java beans: files are created from defaults with `@Comment` comments, missing values are added without replacing existing ones, `update`/`save`/`reload`/`reloadIfModified` with validation before every change, protection against overwriting external edits, unknown-key policies, versioned migrations with backups, YAML, JSON and TOML, section binding with `prefix`, and environment, system property and map overrides that are never written to the file.
+- `serialization`: validation annotations `@Range`, `@Length`, `@Pattern`, `@NotBlank` and `@Required` for configurations, plus custom `TypedValidator`s.
+- `language`: `editableResources` keeps bundled translations as editable files and adds new keys on every load.
+- `adventure`: `renderText` and `sendText` render MiniMessage texts from configuration values with safe placeholders.
+- `storage`: `DatabaseSettings`, `DatabaseType` and `Database.connect(settings)` for connection settings inside configurations.
+- `core`: `backupFile`; `config`: `ConfigSection.of` for detached trees.
 - `commands`: `CommandCondition` and `Builder.condition` for requirements beyond permissions; `@Require` for annotated commands.
 - `commands`: generated help with `CommandDispatcher.help`, `sendHelp` and `CommandContext.sendHelp`, translated per source.
 - `commands`: length limits for text arguments with `ArgumentTypes.word(min, max)`, `greedyString(min, max)` and `@Length`; enforced on Paper, Velocity and Discord.
@@ -23,6 +29,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Fixed
 
+- `config`: YAML decimals keep their full precision instead of being rounded to `Double`.
 - `commands-processor`: `@Permission` on an `@Execute` method was ignored. It now applies, and combinations that would silently restrict subcommands are reported at compile time.
 - `commands`: a failing error handler no longer prevents the failure message from being sent.
 

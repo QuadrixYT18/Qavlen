@@ -33,6 +33,24 @@ public final class CoinsCommand {
 
 The annotation processor (KSP for Kotlin, javac for Java) validates command classes at compile time and generates small descriptors, so there is no classpath scanning or reflective invocation at runtime.
 
+## Configuration
+
+```kotlin
+@Configuration("My plugin")
+data class PluginConfig(
+    @Comment("Maximum player count")
+    @Range(min = 1.0, max = 100.0)
+    val maxPlayers: Int = 20,
+    val database: DatabaseSettings = DatabaseSettings(database = "myplugin"),
+)
+
+val config = Configs.open<PluginConfig>(Path.of("config.yml")) { environment("MYPLUGIN") }
+config.update { copy(maxPlayers = 50) }
+config.save()
+```
+
+The file is created with comments from the defaults, missing values are added without touching existing ones, every value is validated before it becomes active, and environment overrides never end up in the file.
+
 ## Modules
 
 | Artifact | Purpose |
@@ -49,7 +67,7 @@ The annotation processor (KSP for Kotlin, javac for Java) validates command clas
 | `qavlen-jda` | Localized slash commands, autocomplete, change-aware registration |
 | `qavlen-storage` | HikariCP, prepared statements, transactions, async queries, migrations |
 | `qavlen-cache` / `qavlen-cache-redis` | Caffeine local cache and optional Redis cache |
-| `qavlen-serialization` | Jackson-based JSON codec and configuration binding to data classes |
+| `qavlen-serialization` | Jackson-based JSON codec and typed configurations for data classes and records (YAML with comments, JSON, TOML) |
 | `qavlen-network` | JSON REST client with timeouts and bounded retries |
 | `qavlen-scheduler` | Error-tolerant delayed and repeating tasks |
 

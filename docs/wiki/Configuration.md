@@ -1,4 +1,4 @@
-`qavlen-config` reads and writes YAML (SnakeYAML) and JSON (Gson) documents.
+`qavlen-config` reads and writes YAML (SnakeYAML) and JSON (Gson) documents through paths such as `database.port`. To bind a whole file to a data class or record, with comments, TOML, validation annotations and overrides, see [Typed Configuration](Typed-Configuration).
 
 ```kotlin
 val config = YamlConfig.load(

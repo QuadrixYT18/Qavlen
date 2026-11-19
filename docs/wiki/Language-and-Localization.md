@@ -14,6 +14,8 @@ translations.format(player.locale(), "shop.bought", placeholder("item", "Diamond
 
 Translation files are YAML, JSON or `.properties`, named after the locale tag: `en.yml`, `de_DE.yml` or `de-DE.json`. Nested YAML and JSON keys become dotted keys; a list becomes a multi-line message.
 
+`editableResources(loader, "lang", locales, dataFolder.resolve("lang"))` copies bundled YAML or JSON files to the data folder so server owners can edit them. On every build and reload, keys added in a new plugin version are written to those files while edited texts are kept; a broken file is reported and left alone.
+
 `directory(path)` reads files directly in the directory into the default namespace and files in subdirectories into a namespace named after the subdirectory: `lang/shop/de.yml` defines `shop:<key>`. Resources cannot be listed portably, so `resources(...)` takes the locales explicitly. Later sources override earlier ones, which lets server owners override bundled text.
 
 ## Fallbacks

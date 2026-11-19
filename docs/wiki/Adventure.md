@@ -28,6 +28,15 @@ Placeholder values are never parsed as MiniMessage. Each placeholder becomes an 
 
 Values that are Adventure components (`ComponentLike`), such as an item's display name, are inserted with their style intact.
 
+## Texts from configurations
+
+MiniMessage texts that live in a configuration rather than a translation file, such as `messages.welcome` in a [typed configuration](Typed-Configuration), are rendered with the same placeholder rules:
+
+```kotlin
+messages.sendText(player, config.value.messages.welcome, placeholder("player", player.name))
+val component = messages.renderText(config.value.messages.welcome, locale, placeholder("player", name))
+```
+
 ## Prefix
 
 Any message may contain `<prefix>`. It renders the translation key `prefix` (configurable in the constructor) for the same locale, or nothing when the key is missing. `<prefix>` is not expanded inside the prefix itself.

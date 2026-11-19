@@ -3,7 +3,7 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | Module | Artifact | Purpose |
 | --- | --- | --- |
 | [Core](Core) | `qavlen-core` | Resource scopes, atomic file writes, duration parsing |
-| [Configuration](Configuration) | `qavlen-config` | YAML and JSON files with defaults, validation, migrations and safe reloads |
+| [Configuration](Configuration) | `qavlen-config` | YAML and JSON files by path, with defaults, schemas, migrations and safe reloads |
 | [Language](Language-and-Localization) | `qavlen-language` | Translations with locale fallbacks, namespaces and typed placeholders |
 | [Commands](Commands) | `qavlen-commands` | Command trees, typed arguments, permissions, cooldowns, localized errors |
 | [Annotations](Annotations) | `qavlen-commands-processor` | KSP and javac processor for `@Command` classes |
@@ -15,7 +15,7 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Storage](Storage) | `qavlen-storage` | HikariCP pool, prepared statements, transactions, migrations |
 | [Cache](Cache) | `qavlen-cache` | Caffeine-backed local cache |
 | [Redis](Redis) | `qavlen-cache-redis` | Shared cache in Redis |
-| [Serialization](Serialization) | `qavlen-serialization` | Jackson-based JSON codec and configuration binding to data classes |
+| [Serialization](Serialization) | `qavlen-serialization` | Jackson-based JSON codec and [typed configurations](Typed-Configuration) for data classes and records (YAML, JSON, TOML) |
 | [Networking](Networking) | `qavlen-network` | JSON REST client with timeouts and retries |
 | [Scheduler](Scheduler) | `qavlen-scheduler` | Delayed and repeating tasks for plain JVM applications |
 
