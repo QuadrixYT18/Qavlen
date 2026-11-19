@@ -1,18 +1,15 @@
 package de.quadrixyt.qavlen.config
 
+import de.quadrixyt.qavlen.core.backupFile
 import de.quadrixyt.qavlen.core.writeAtomically
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.Reader
 import java.io.Writer
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.FileTime
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -211,19 +208,8 @@ public sealed class ConfigFile(
 
     /** Copies the file before a migration rewrites it. Existing backups are never replaced. */
     private fun backup(target: Path, version: Int) {
-        val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
         try {
-            for (attempt in 1..MAX_BACKUPS_PER_SECOND) {
-                val suffix = if (attempt == 1) "" else "-$attempt"
-                val backup = target.resolveSibling("${target.fileName}.v$version-$stamp$suffix.bak")
-                try {
-                    Files.copy(target, backup, StandardCopyOption.COPY_ATTRIBUTES)
-                    return
-                } catch (_: FileAlreadyExistsException) {
-                    continue
-                }
-            }
-            throw IOException("Too many backups for the same second")
+            backupFile(target, "v$version")
         } catch (exception: IOException) {
             throw ConfigException("Could not back up $target before migrating it", exception)
         }
@@ -249,10 +235,6 @@ public sealed class ConfigFile(
     }
 
     override fun toString(): String = "${javaClass.simpleName}(${file ?: "detached"})"
-
-    private companion object {
-        const val MAX_BACKUPS_PER_SECOND = 1000
-    }
 }
 
 /** A YAML document. Duplicate keys, aliases bombs and non-section roots are rejected. */

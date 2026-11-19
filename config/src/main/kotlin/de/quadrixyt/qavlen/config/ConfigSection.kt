@@ -112,4 +112,13 @@ public interface ConfigSection {
     }
 
     private fun qualify(relative: String): String = if (path.isEmpty()) relative else "$path.$relative"
+
+    public companion object {
+        /**
+         * A section over a copy of [values] without a file, for example to run migrations or validators on a tree
+         * that comes from another source. Changes affect only the copy; read it back with [toMap].
+         */
+        @JvmStatic
+        public fun of(values: Map<String, Any?>): ConfigSection = detachedSection(deepCopy(values))
+    }
 }

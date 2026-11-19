@@ -7,10 +7,13 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
 import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Writes [text] to a temporary sibling file, flushes it to disk and moves it over [target], so readers never observe
@@ -43,6 +46,24 @@ public fun writeAtomically(target: Path, text: String, charset: Charset = Charse
     }
 }
 
+/**
+ * Copies [file] to a sibling named `<name>.<label>-<timestamp>.bak` and returns the copy. An existing backup is never
+ * replaced; a counter is appended when several backups are made within the same second.
+ */
+public fun backupFile(file: Path, label: String): Path {
+    val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+    for (attempt in 1..MAX_BACKUPS_PER_SECOND) {
+        val suffix = if (attempt == 1) "" else "-$attempt"
+        val backup = file.resolveSibling("${file.fileName}.$label-$stamp$suffix.bak")
+        try {
+            return Files.copy(file, backup, StandardCopyOption.COPY_ATTRIBUTES)
+        } catch (_: FileAlreadyExistsException) {
+            continue
+        }
+    }
+    throw IOException("Too many backups of $file within one second")
+}
+
 /** Follows symbolic links, also to targets that do not exist yet. */
 private fun resolveLinks(path: Path): Path {
     var current = path
@@ -63,3 +84,4 @@ private fun copyPermissions(source: Path, target: Path) {
 }
 
 private const val MAX_LINKS = 40
+private const val MAX_BACKUPS_PER_SECOND = 1000

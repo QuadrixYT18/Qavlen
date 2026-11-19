@@ -141,6 +141,7 @@ public final class de/quadrixyt/qavlen/config/ConfigSchema$Companion {
 }
 
 public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
+	public static final field Companion Lde/quadrixyt/qavlen/config/ConfigSection$Companion;
 	public abstract fun contains (Ljava/lang/String;)Z
 	public abstract fun get (Ljava/lang/String;)Ljava/lang/Object;
 	public fun getBoolean (Ljava/lang/String;)Ljava/lang/Boolean;
@@ -161,9 +162,14 @@ public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
 	public fun getStringList (Ljava/lang/String;)Ljava/util/List;
 	public fun keys ()Ljava/util/Set;
 	public abstract fun keys (Z)Ljava/util/Set;
+	public static fun of (Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigSection;
 	public abstract fun remove (Ljava/lang/String;)Z
 	public abstract fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun toMap ()Ljava/util/Map;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigSection$Companion {
+	public final fun of (Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigSection;
 }
 
 public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
