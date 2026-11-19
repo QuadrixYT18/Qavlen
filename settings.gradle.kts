@@ -20,4 +20,8 @@ include(
     "core",
     "config",
     "language",
+    "commands",
+    "commands-processor",
+    "examples:jvm-kotlin",
+    "examples:jvm-java",
 )
