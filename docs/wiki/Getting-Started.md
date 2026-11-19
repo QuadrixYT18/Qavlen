@@ -1,5 +1,3 @@
-# Getting Started
-
 Qavlen requires **Java 25**. Kotlin projects need Kotlin 2.4 or newer.
 
 1. Add the JitPack repository and the modules you need, see [Installation](Installation).

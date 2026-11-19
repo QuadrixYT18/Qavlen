@@ -1,5 +1,3 @@
-# Cache
-
 `qavlen-cache` provides `LocalCache`, an in-memory cache backed by Caffeine, behind the `Cache` interface that [Redis](Redis) implements as well.
 
 ```kotlin

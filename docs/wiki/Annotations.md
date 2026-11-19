@@ -1,5 +1,3 @@
-# Annotations
-
 Annotated command classes are processed at build time. The processor validates them and generates one small Java class per command, `<Class>_QavlenCommand`, which builds the `CommandDefinition` and calls your methods directly. There is no classpath scanning and no reflective method invocation at runtime; `dispatcher.register(instance)` loads the generated class by name.
 
 ```kotlin

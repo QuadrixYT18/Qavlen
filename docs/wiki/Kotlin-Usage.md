@@ -1,5 +1,3 @@
-# Kotlin Usage
-
 Qavlen is written in Kotlin and uses explicit API mode, so every public declaration has a declared type and visibility.
 
 - Builders accept `java.util.function` types, which Kotlin lambdas convert to automatically: `command("coins") { it.permission("coins.use") }`.

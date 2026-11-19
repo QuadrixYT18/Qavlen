@@ -1,5 +1,3 @@
-# Redis
-
 `qavlen-cache-redis` implements `Cache` with Redis through Jedis, for data shared between servers or processes.
 
 ```kotlin

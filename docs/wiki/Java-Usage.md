@@ -1,5 +1,3 @@
-# Java Usage
-
 Every API is designed to be called from Java without Kotlin function types, `Pair` or `Unit`.
 
 - Factories are static: `YamlConfig.load(path)`, `Translations.builder()`, `CommandDefinition.builder("coins")`, `Database.mariadb(...)`.

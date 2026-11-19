@@ -1,5 +1,3 @@
-# Troubleshooting
-
 **`No generated command descriptor ..._QavlenCommand`**
 The annotation processor did not run. Add `qavlen-commands-processor` with `ksp(...)` (Kotlin, requires the KSP plugin) or `annotationProcessor(...)` (Java). Shading must keep the generated classes; do not minimize them away.
 

@@ -1,5 +1,3 @@
-# Networking
-
 `qavlen-network` is a small JSON REST client on top of `java.net.http`.
 
 ```kotlin

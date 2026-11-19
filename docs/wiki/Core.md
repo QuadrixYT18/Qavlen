@@ -1,5 +1,3 @@
-# Core
-
 `qavlen-core` is deliberately small and has no dependencies besides the Kotlin standard library.
 
 ## ResourceScope

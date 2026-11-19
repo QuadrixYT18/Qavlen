@@ -1,5 +1,3 @@
-# Qavlen
-
 Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrations for Paper, Velocity and JDA. The general modules work without Minecraft or Discord; the platform modules build on them.
 
 | Module | Artifact | Purpose |

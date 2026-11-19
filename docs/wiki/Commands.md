@@ -1,5 +1,3 @@
-# Commands
-
 `qavlen-commands` defines commands once and runs them on every platform. The platform adapters translate the same `CommandDefinition` into Brigadier trees ([Paper](Paper), [Velocity](Velocity)) or slash commands ([JDA](JDA)); the `CommandDispatcher` parses plain text for console applications and tests.
 
 ## Defining commands

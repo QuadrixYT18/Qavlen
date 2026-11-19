@@ -1,5 +1,3 @@
-# Contributing
-
 The repository's [CONTRIBUTING.md](https://github.com/QuadrixYT18/Qavlen/blob/master/CONTRIBUTING.md) describes the workflow. In short:
 
 - Build with JDK 25 and `./gradlew build`, which compiles all modules and examples and runs tests, ktlint and detekt.

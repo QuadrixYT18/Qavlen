@@ -1,5 +1,3 @@
-# Paper
-
 `qavlen-paper` targets Paper 26.3 and is safe to use on Folia when you follow the threading notes below. Declare `paper-api` as `compileOnly`.
 
 ## Commands

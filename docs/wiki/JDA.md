@@ -1,5 +1,3 @@
-# JDA
-
 `qavlen-jda` turns Qavlen commands into Discord slash commands with JDA 6.
 
 ```kotlin

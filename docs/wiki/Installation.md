@@ -1,5 +1,3 @@
-# Installation
-
 Qavlen is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Every module is a separate artifact named `qavlen-<module>`; depend only on the modules you use.
 
 ```kotlin

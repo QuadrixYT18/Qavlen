@@ -1,5 +1,3 @@
-# Language & Localization
-
 `qavlen-language` resolves translation keys for a `java.util.Locale` and formats placeholders with the JDK's locale-aware formatters.
 
 ```kotlin

@@ -1,5 +1,3 @@
-# Scheduler
-
 `qavlen-scheduler` runs delayed and repeating tasks in plain JVM applications and bots.
 
 ```kotlin

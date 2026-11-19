@@ -1,5 +1,3 @@
-# Storage
-
 `qavlen-storage` provides pooled JDBC access with HikariCP. Add the JDBC driver yourself.
 
 ```kotlin

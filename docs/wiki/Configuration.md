@@ -1,5 +1,3 @@
-# Configuration
-
 `qavlen-config` reads and writes YAML (SnakeYAML) and JSON (Gson) documents.
 
 ```kotlin

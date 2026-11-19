@@ -1,5 +1,3 @@
-# Velocity
-
 `qavlen-velocity` targets the Velocity API 4.3. Declare `velocity-api` as `compileOnly`.
 
 ```kotlin

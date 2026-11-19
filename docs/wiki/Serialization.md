@@ -1,5 +1,3 @@
-# Serialization
-
 `qavlen-serialization` wraps Jackson 3 with defaults suited for application data.
 
 ```kotlin
