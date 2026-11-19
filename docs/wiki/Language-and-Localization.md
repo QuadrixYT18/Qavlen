@@ -36,8 +36,10 @@ Placeholder values are inserted literally; a value containing `{other}` is not e
 
 ## Validation and reload
 
-- `missingKeys(locale)` lists keys of the default locale that a locale must fall back for.
-- `validate()` reports missing translations and placeholders that do not exist in the default locale.
+- `missingKeys(locale)` lists keys of the default locale that a locale must fall back for, and `isTranslated(locale, key)` checks a single key.
+- `validate()` reports missing translations, keys that only exist in another locale (usually typos), and placeholders that do not exist in the default locale. `validate(requiredKeys)` also reports keys your code needs but the default locale lacks.
+- Templates inside `choice` patterns are checked when files are loaded.
+- `CommandDispatcher.translationIssues()` reports command descriptions and Qavlen's built-in command messages that a language in use cannot show itself. Qavlen ships English and German; define the `qavlen:command.*` keys for other languages.
 - `reload()` re-reads all sources and swaps them atomically. If a file is broken, the previous translations stay active.
 - `localizations(key)` returns the text of a key for every locale that defines it, for example for Discord command localizations.
 

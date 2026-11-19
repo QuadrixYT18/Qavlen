@@ -11,6 +11,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - `commands`: length limits for text arguments with `ArgumentTypes.word(min, max)`, `greedyString(min, max)` and `@Length`; enforced on Paper, Velocity and Discord.
 - `commands`: `CommandDispatcher.reportError` and `describe` for platform adapters.
 - `config`: `ConfigSchema` with required and optional typed values, ranges, choices and detection of unknown keys; `ConfigOptions.Builder.schema`.
+- `language`: `validate()` also reports keys that only exist outside the default locale; `validate(requiredKeys)` and `isTranslated` check keys your code needs; templates inside `choice` patterns are checked when loading.
+- `commands`: `CommandDispatcher.translationIssues()` reports command texts a language in use cannot show.
 - `config`: change listeners with `ConfigFile.addListener` and `reloadIfModified()` for cheap hot reloading.
 
 ### Fixed
