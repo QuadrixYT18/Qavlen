@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jlleitschuh.gradle.ktlint")
+    id("dev.detekt")
     `java-library`
     `maven-publish`
 }
@@ -20,6 +21,12 @@ kotlin {
 
 java {
     withSourcesJar()
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("gradle/detekt.yml"))
+    parallel = true
 }
 
 dependencies {

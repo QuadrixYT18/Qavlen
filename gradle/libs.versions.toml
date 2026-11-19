@@ -8,6 +8,7 @@ jda = "6.7.0"
 adventure = "5.2.0"
 shadow = "9.6.1"
 ktlint = "14.2.0"
+detekt = "2.0.0-alpha.6"
 
 [libraries]
 jackson-databind = "tools.jackson.core:jackson-databind:3.3.0"
@@ -40,6 +41,7 @@ compile-testing = "com.google.testing.compile:compile-testing:0.24.0"
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+detekt-gradle-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 shadow-gradle-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 
 [plugins]

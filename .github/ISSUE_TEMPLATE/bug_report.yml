@@ -1,0 +1,35 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Qavlen version
+      placeholder: v0.1.0 or commit hash
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options: [core, config, language, commands, commands-processor, adventure, brigadier, paper, velocity, jda, storage, cache, cache-redis, serialization, network, scheduler]
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and Java version
+      placeholder: Paper 26.3 build 256, Java 25
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include the expected behaviour, the actual behaviour and a minimal reproduction.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Stack trace or log output
+      render: text

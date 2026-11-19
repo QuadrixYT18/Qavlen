@@ -1,7 +1,6 @@
-jdk:
-  - openjdk25
+# JitPack's images do not ship JDK 25 yet, so the build downloads a Temurin JDK first.
 before_install:
-  - sdk install java 25-tem || true
-  - sdk use java 25-tem || true
+  - curl -fsSL "https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse" -o jdk25.tar.gz
+  - mkdir -p "$HOME/jdk25" && tar -xzf jdk25.tar.gz -C "$HOME/jdk25" --strip-components=1
 install:
-  - ./gradlew publishToMavenLocal -x test --no-configuration-cache
+  - export JAVA_HOME="$HOME/jdk25" PATH="$HOME/jdk25/bin:$PATH" && ./gradlew publishToMavenLocal -x test -x check --no-configuration-cache --no-daemon

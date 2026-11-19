@@ -70,7 +70,7 @@ public class ConfigOptions private constructor(
             } else {
                 val steps = migrations.groupBy { it.fromVersion }
                 steps.forEach { (from, list) -> require(list.size == 1) { "More than one migration from version $from" } }
-                (1 until current).forEach { from -> require(from in steps) { "Missing migration from version $from to ${from + 1}" } }
+                for (from in 1 until current) require(from in steps) { "Missing migration from version $from to ${from + 1}" }
                 require(steps.keys.all { it in 1 until current }) { "Migrations must start between 1 and ${current - 1}" }
             }
             return ConfigOptions(

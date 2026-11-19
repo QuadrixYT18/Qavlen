@@ -168,7 +168,8 @@ public class JdaCommands @JvmOverloads constructor(
         return try {
             type.parse(option.asString, source)
         } catch (exception: CommandException) {
-            throw CommandException(exception.key, mapOf("argument" to argument.name, "input" to option.asString) + exception.placeholders)
+            val placeholders = mapOf("argument" to argument.name, "input" to option.asString) + exception.placeholders
+            throw CommandException(exception.key, placeholders, exception)
         }
     }
 

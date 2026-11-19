@@ -1,0 +1,28 @@
+# Additions to detekt's default rules. Formatting is checked by ktlint.
+complexity:
+  TooManyFunctions:
+    active: false
+  LongParameterList:
+    allowedConstructorParameters: 8
+  # Parsers and compile-time validators check many independent conditions in one place on purpose.
+  CyclomaticComplexMethod:
+    allowedComplexity: 25
+exceptions:
+  # Framework boundaries (command executors, scheduled tasks, transactions) must contain failures of user code.
+  TooGenericExceptionCaught:
+    active: false
+style:
+  ThrowsCount:
+    max: 4
+  MagicNumber:
+    active: false
+  ReturnCount:
+    max: 8
+  LoopWithTooManyJumpStatements:
+    maxJumpCount: 2
+  MaxLineLength:
+    maxLineLength: 140
+    excludes: ['**/test/**']
+naming:
+  FunctionNaming:
+    excludes: ['**/test/**']
