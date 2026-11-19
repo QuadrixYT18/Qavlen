@@ -83,4 +83,55 @@ class TypedConfigJavaTest {
         assertEquals(ShopConfig.defaults().categories(), memory.getValue().categories());
         assertThrows(ConfigValidationException.class, () -> memory.update(current -> new ShopConfig(99, current.discount(), current.categories())));
     }
+
+    public static final class LegacyBean {
+        @Comment("A Java bean field")
+        public int limit = 5;
+        public String name = "bean";
+    }
+
+    @Test
+    void wholeTypedApiFromJava() throws Exception {
+        Path file = directory.resolve("bean.yml");
+        TypedConfig<LegacyBean> config = Configs.open(file, LegacyBean.class);
+        List<LegacyBean> changes = new java.util.ArrayList<>();
+        AutoCloseable subscription = config.addListener(changes::add);
+
+        config.update(current -> {
+            LegacyBean next = new LegacyBean();
+            next.limit = current.limit + 1;
+            next.name = current.name;
+            return next;
+        });
+        assertTrue(config.save());
+        config.save(true);
+        assertEquals(false, config.reloadIfModified());
+        subscription.close();
+
+        assertEquals(6, Configs.open(file, LegacyBean.class).getValue().limit);
+        assertTrue(Files.readString(file).contains("# A Java bean field\nlimit: 6"), Files.readString(file));
+        assertEquals(1, changes.size());
+        assertEquals(ConfigFileFormat.TOML, ConfigFileFormat.fromFileName("x.toml"));
+        assertEquals(java.util.Set.of(), config.getUnknownKeys());
+
+        Files.writeString(file, Files.readString(file).replace("limit: 6", "limit: 7"));
+        Files.setLastModifiedTime(file, java.nio.file.attribute.FileTime.from(java.time.Instant.now().plusSeconds(5)));
+        assertThrows(de.quadrixyt.qavlen.serialization.ConfigConflictException.class, () -> config.save(false));
+        assertEquals(7, config.reload().limit);
+
+        TypedConfig<ShopConfig> validated = Configs.parse(
+            Configs.encode(ShopConfig.defaults()),
+            ShopConfig.class,
+            ConfigFileFormat.YAML,
+            TypedConfigOptions.<ShopConfig>builder()
+                .validator(value -> value.categories().isEmpty()
+                    ? List.of(new de.quadrixyt.qavlen.config.ConfigViolation("categories", "must not be empty"))
+                    : List.of())
+                .unknownKeys(de.quadrixyt.qavlen.serialization.UnknownKeys.WARN)
+                .build());
+        assertThrows(ConfigValidationException.class,
+            () -> validated.update(current -> new ShopConfig(current.pageSize(), current.discount(), List.of())));
+        String preserved = de.quadrixyt.qavlen.config.YamlComments.preserveYamlComments("# hi\na: 1\n", "a: 2\n");
+        assertEquals("# hi\na: 2\n", preserved);
+    }
 }
