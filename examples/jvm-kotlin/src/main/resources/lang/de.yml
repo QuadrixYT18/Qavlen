@@ -1,0 +1,8 @@
+bank:
+  description: "Verwalte dein Bankkonto"
+  note: "Eine Notiz für den Empfänger"
+  balance: "Dein Kontostand beträgt {amount} Münzen."
+  deposited: "{amount} Münzen eingezahlt. Neuer Kontostand: {balance}."
+  transferred: "{amount:choice:1#Eine Münze|1<{amount} Münzen} an {target} gesendet (Notiz: {note})."
+  insufficient: "Du kannst keine {amount} Münzen senden."
+  reset: "Das Konto von {target} wurde zurückgesetzt."

@@ -1,0 +1,8 @@
+bank:
+  description: "Manage your bank account"
+  note: "A note for the recipient"
+  balance: "Your balance is {amount} coins."
+  deposited: "Deposited {amount} coins. New balance: {balance}."
+  transferred: "Sent {amount:choice:1#one coin|1<{amount} coins} to {target} (note: {note})."
+  insufficient: "You cannot send {amount} coins."
+  reset: "The account of {target} was reset."
