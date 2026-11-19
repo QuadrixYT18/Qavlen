@@ -2,6 +2,13 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Changed
+
+- `brigadier`: incomplete commands on Paper and Velocity reply with the translated usage line instead of the platform's generic error.
+- `commands`: `CommandDispatcher.usage(path)` is public.
+
 ## 0.1.0 - 2026-11-19
 
 ### Added

@@ -71,11 +71,16 @@ class PaperCommandsTest {
         assertEquals(1, brigadier.execute("coins give 5", admin))
         assertEquals(1, brigadier.execute("coins give 7 safe", admin))
         assertEquals(0, brigadier.execute("coins give 7 slow", admin))
+        assertEquals(0, brigadier.execute("coins give", admin))
+        assertEquals(0, brigadier.execute("coins", admin))
         assertFailsWith<CommandSyntaxException> { brigadier.execute("coins give 500", admin) }
         assertFailsWith<CommandSyntaxException> { brigadier.execute("coins give 5", source(emptySet())) }
 
         assertEquals(listOf("5:null", "7:SAFE"), log)
-        assertEquals(listOf("'slow' is not valid. Choose one of: fast, safe."), received)
+        assertEquals(
+            listOf("'slow' is not valid. Choose one of: fast, safe.", "Usage: /coins give <amount> [mode]", "Usage: /coins <give>"),
+            received,
+        )
         val suggestions = brigadier.getCompletionSuggestions(brigadier.parse("coins give 5 s", admin)).get()
         assertEquals(listOf("safe"), suggestions.list.map { it.text })
     }

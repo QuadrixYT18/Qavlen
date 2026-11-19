@@ -199,7 +199,8 @@ public class CommandDispatcher @JvmOverloads constructor(
     private fun labelsFor(source: CommandSource): String =
         roots.values.filter { canUse(source, listOf(it)) }.map { it.name }.sorted().joinToString(", ")
 
-    private fun usage(path: List<CommandDefinition>): String =
+    /** Usage line for the command at the end of [path], for example `/coins give <target> <amount>`. */
+    public fun usage(path: List<CommandDefinition>): String =
         "/" + (path.dropLast(1).map { it.name } + path.last().usage()).joinToString(" ")
 
     private fun filter(candidates: List<String>, partial: String): List<String> =

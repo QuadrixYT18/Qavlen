@@ -7,6 +7,7 @@ The module compiles against `com.mojang:brigadier` but does not bundle it. Paper
 - Every command, subcommand and alias becomes a literal node. Aliases of subcommands are separate literals with the same children.
 - Arguments become a chain of argument nodes. An `executes` handler is attached wherever the remaining arguments are optional, so `/coins give 5` and `/coins give 5 reason` both work.
 - Permission checks are Brigadier requirements: clients do not see commands they cannot use.
+- Incomplete input, such as `/coins give` without its required arguments or a command group without a subcommand, is answered with the translated usage line (`qavlen:command.usage`) instead of the platform's generic "unknown or incomplete command" error.
 - Integer, long, decimal, boolean and string arguments become native Brigadier types with their ranges. Other types are sent as strings, offer suggestions from `ArgumentType.suggest` and are parsed with `ArgumentType.parse` during execution.
 - Execution calls `CommandDispatcher.invoke`, so permissions, cooldowns, translated errors and error handling are the same as on every other platform.
 

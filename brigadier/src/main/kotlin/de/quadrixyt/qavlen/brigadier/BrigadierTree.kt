@@ -50,6 +50,7 @@ public interface BrigadierPlatform<S> {
  * string with Qavlen suggestions and parsed by its [ArgumentType]. Execution goes through
  * [CommandDispatcher.invoke], so permissions, cooldowns and translated errors match all other platforms.
  * Permission checks are also attached as Brigadier requirements, which hides commands from clients that cannot use them.
+ * Incomplete input, such as a missing required argument, is answered with the translated usage line.
  */
 public class BrigadierTree<S>(private val dispatcher: CommandDispatcher, private val platform: BrigadierPlatform<S>) {
     /** Builds the node for [command] under its own name. Aliases are registered by the platform. */
@@ -61,10 +62,12 @@ public class BrigadierTree<S>(private val dispatcher: CommandDispatcher, private
         for (child in node.subcommands) {
             (listOf(child.name) + child.aliases).forEach { builder.then(literal(it, path + child)) }
         }
-        if (node.executor != null) {
-            if (node.arguments.firstOrNull()?.optional != false) builder.executes { execute(it, path, 0) }
-            arguments(node.arguments, 0, path)?.let(builder::then)
+        if (node.executor != null && node.arguments.firstOrNull()?.optional != false) {
+            builder.executes { execute(it, path, 0) }
+        } else {
+            builder.executes { usage(it, path) }
         }
+        if (node.executor != null) arguments(node.arguments, 0, path)?.let(builder::then)
         return builder
     }
 
@@ -74,9 +77,19 @@ public class BrigadierTree<S>(private val dispatcher: CommandDispatcher, private
         val builder = RequiredArgumentBuilder.argument<S, Any>(argument.name, (native ?: fallback(argument.type)).erased())
         if (native == null) builder.suggests(suggestions(argument.type))
         val provided = index + 1
-        if (arguments.getOrNull(provided)?.optional != false) builder.executes { execute(it, path, provided) }
+        if (arguments.getOrNull(provided)?.optional != false) {
+            builder.executes { execute(it, path, provided) }
+        } else {
+            builder.executes { usage(it, path) }
+        }
         arguments(arguments, provided, path)?.let(builder::then)
         return builder
+    }
+
+    /** Answers incomplete input, such as a missing required argument, with the translated usage line. */
+    private fun usage(context: CommandContext<S>, path: List<CommandDefinition>): Int {
+        dispatcher.messages.send(platform.source(context.source), CommandException.USAGE, mapOf("usage" to dispatcher.usage(path)))
+        return 0
     }
 
     private fun execute(context: CommandContext<S>, path: List<CommandDefinition>, provided: Int): Int {
