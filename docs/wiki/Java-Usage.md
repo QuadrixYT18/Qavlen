@@ -26,3 +26,5 @@ public final class GreetCommand {
 ```
 
 Command classes and methods must be `public`; nested command classes must be `static`. Optional arguments use wrapper types such as `Integer`. The processor registers itself as an isolating processor, so Gradle keeps incremental compilation.
+
+Java use is tested continuously: the `tests/java-api` project calls the configuration, language, command, storage, cache, scheduler, serialization and network APIs from plain Java, and the Java examples build Paper, Velocity and JDA integrations. Binary compatibility of all modules is checked against the recorded API dumps on every build.

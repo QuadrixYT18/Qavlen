@@ -15,6 +15,11 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - `commands`: `CommandDispatcher.translationIssues()` reports command texts a language in use cannot show.
 - `config`: change listeners with `ConfigFile.addListener` and `reloadIfModified()` for cheap hot reloading.
 
+### Build
+
+- Binary compatibility of every published module is checked against recorded API dumps (`api/*.api`).
+- Java consumer tests in `tests/java-api` exercise the public API from plain Java.
+
 ### Fixed
 
 - `commands-processor`: `@Permission` on an `@Execute` method was ignored. It now applies, and combinations that would silently restrict subcommands are reported at compile time.
