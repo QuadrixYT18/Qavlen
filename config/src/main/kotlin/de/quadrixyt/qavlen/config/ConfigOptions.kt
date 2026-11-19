@@ -31,6 +31,7 @@ public class ConfigOptions private constructor(
     public class Builder internal constructor() {
         internal val defaults = linkedMapOf<String, Any?>()
         internal val validators = mutableListOf<ConfigValidator>()
+        internal val schemas = mutableListOf<ConfigSchema>()
         internal val migrations = mutableListOf<ConfigMigration>()
         internal var version: Int? = null
         internal var versionKey = "config-version"
@@ -44,6 +45,9 @@ public class ConfigOptions private constructor(
         public fun defaults(section: ConfigSection): Builder = defaults(section.toMap())
 
         public fun validator(validator: ConfigValidator): Builder = apply { validators += validator }
+
+        /** Validates against [schema]. The version key of migrations is accepted even when the schema rejects unknown keys. */
+        public fun schema(schema: ConfigSchema): Builder = apply { schemas += schema }
 
         /** Enables versioned migrations. Documents without a version key are treated as version 1. */
         @JvmOverloads
@@ -73,9 +77,10 @@ public class ConfigOptions private constructor(
                 for (from in 1 until current) require(from in steps) { "Missing migration from version $from to ${from + 1}" }
                 require(steps.keys.all { it in 1 until current }) { "Migrations must start between 1 and ${current - 1}" }
             }
+            val schemaValidators = schemas.map { schema -> if (current == null) schema else schema.allowing(versionKey) }
             return ConfigOptions(
                 deepCopy(defaults),
-                validators.toList(),
+                validators + schemaValidators,
                 migrations.sortedBy { it.fromVersion },
                 current,
                 versionKey,

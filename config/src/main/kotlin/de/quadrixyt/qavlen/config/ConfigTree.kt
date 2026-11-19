@@ -31,7 +31,7 @@ internal fun segments(path: String): List<String> {
 
 internal fun join(prefix: String, key: String): String = if (prefix.isEmpty()) key else "$prefix.$key"
 
-internal fun lookup(root: Node, path: List<String>): Any? {
+internal fun lookup(root: Map<String, Any?>, path: List<String>): Any? {
     var current: Any? = root
     for (segment in path) {
         val section = current as? Map<*, *> ?: return Missing
@@ -104,6 +104,15 @@ internal fun leafPaths(node: Map<String, Any?>, prefix: String = ""): Set<String
         }
     }
 }
+
+/** Leaf paths whose value differs between [before] and [after], including paths that exist on one side only. */
+internal fun changedPaths(before: Map<String, Any?>, after: Map<String, Any?>): Set<String> {
+    val old = leafValues(before)
+    val new = leafValues(after)
+    return (old.keys + new.keys).filterTo(sortedSetOf()) { path -> old[path] != new[path] || (path in old) != (path in new) }
+}
+
+private fun leafValues(node: Map<String, Any?>): Map<String, Any?> = leafPaths(node).associateWith { lookup(node, segments(it)) }
 
 /**
  * Adds every default that is missing from [target] and returns the added paths. Existing values are never

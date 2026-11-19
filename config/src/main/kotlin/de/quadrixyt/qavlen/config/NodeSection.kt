@@ -8,6 +8,7 @@ import kotlin.concurrent.write
 internal class NodeSection(
     private val lock: ReentrantReadWriteLock,
     override val path: String,
+    private val changed: ((String) -> Unit)? = null,
     private val root: () -> Node,
 ) : ConfigSection {
     private val prefix = if (path.isEmpty()) emptyList() else segments(path)
@@ -20,10 +21,22 @@ internal class NodeSection(
 
     override fun set(path: String, value: Any?) {
         val copy = normalize(value)
-        lock.write { put(root(), absolute(path), copy) }
+        val absolute = absolute(path)
+        val modified = lock.write {
+            val previous = lookup(root(), absolute)
+            put(root(), absolute, copy)
+            previous != copy
+        }
+        // Listeners run after the lock is released, so they may read or write the configuration themselves.
+        if (modified) changed?.invoke(absolute.joinToString("."))
     }
 
-    override fun remove(path: String): Boolean = lock.write { delete(root(), absolute(path)) }
+    override fun remove(path: String): Boolean {
+        val absolute = absolute(path)
+        val removed = lock.write { delete(root(), absolute) }
+        if (removed) changed?.invoke(absolute.joinToString("."))
+        return removed
+    }
 
     override fun keys(deep: Boolean): Set<String> = lock.read {
         val node = own() ?: return@read emptySet()
@@ -34,7 +47,7 @@ internal class NodeSection(
 
     override fun getSection(path: String): ConfigSection? = lock.read {
         val absolute = absolute(path)
-        if (lookup(root(), absolute) is Map<*, *>) NodeSection(lock, absolute.joinToString("."), root) else null
+        if (lookup(root(), absolute) is Map<*, *>) NodeSection(lock, absolute.joinToString("."), changed, root) else null
     }
 
     @Suppress("UNCHECKED_CAST")

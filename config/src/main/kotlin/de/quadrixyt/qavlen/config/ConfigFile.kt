@@ -10,8 +10,10 @@ import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.file.attribute.FileTime
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -36,7 +38,9 @@ public sealed class ConfigFile(
     private val lock = ReentrantReadWriteLock()
     private var root: Node = linkedMapOf()
     private var persisted: String? = null
-    private val view = NodeSection(lock, "") { root }
+    private var fileStamp: FileStamp? = null
+    private val listeners = CopyOnWriteArrayList<ConfigListener>()
+    private val view = NodeSection(lock, "", { path -> notify(setOf(path), reload = false) }) { root }
 
     override val path: String get() = ""
 
@@ -64,13 +68,51 @@ public sealed class ConfigFile(
      */
     public fun reload(): List<String> {
         val target = file ?: throw ConfigException("Cannot reload a configuration that was not loaded from a file")
-        return lock.write {
+        val (added, changed) = lock.write {
+            val stamp = FileStamp.of(target)
             val text = try {
                 if (Files.exists(target)) Files.readString(target) else null
             } catch (exception: IOException) {
                 throw ConfigException("Could not read $target", exception)
             }
-            apply(text, target.toString())
+            val before = root
+            val added = apply(text, target.toString())
+            fileStamp = if (Files.exists(target)) FileStamp.of(target) else stamp
+            added to changedPaths(before, root)
+        }
+        if (changed.isNotEmpty()) notify(changed, reload = true)
+        return added
+    }
+
+    /**
+     * Reloads only when the file's modification time or size changed since it was last read or written, for
+     * example from a repeating task. Returns `true` when a reload happened.
+     *
+     * @throws ConfigException like [reload]; the previous values stay active
+     */
+    public fun reloadIfModified(): Boolean {
+        val target = file ?: throw ConfigException("Cannot reload a configuration that was not loaded from a file")
+        if (lock.read { FileStamp.of(target) == fileStamp }) return false
+        reload()
+        return true
+    }
+
+    /** Registers [listener]; closing the returned handle removes it. */
+    public fun addListener(listener: ConfigListener): AutoCloseable {
+        listeners += listener
+        return AutoCloseable { listeners -= listener }
+    }
+
+    private fun notify(paths: Set<String>, reload: Boolean) {
+        if (listeners.isEmpty()) return
+        val change = ConfigChange(this, paths, reload)
+        for (listener in listeners) {
+            try {
+                listener.onChange(change)
+            } catch (exception: RuntimeException) {
+                System.getLogger(ConfigFile::class.java.name)
+                    .log(System.Logger.Level.ERROR, "A configuration listener failed for $this", exception)
+            }
         }
     }
 
@@ -87,6 +129,7 @@ public sealed class ConfigFile(
             if (text == persisted && Files.exists(target)) return@write false
             write(target, text)
             persisted = text
+            fileStamp = FileStamp.of(target)
             true
         }
     }
@@ -191,6 +234,17 @@ public sealed class ConfigFile(
             writeAtomically(target, text)
         } catch (exception: IOException) {
             throw ConfigException("Could not write $target", exception)
+        }
+    }
+
+    /** Modification time and size, to notice edits without reading the file. */
+    private data class FileStamp(val modified: FileTime, val size: Long) {
+        companion object {
+            fun of(path: Path): FileStamp? = try {
+                FileStamp(Files.getLastModifiedTime(path), Files.size(path))
+            } catch (_: IOException) {
+                null
+            }
         }
     }
 
