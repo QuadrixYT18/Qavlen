@@ -43,7 +43,7 @@ Placeholder values are inserted literally; a value containing `{other}` is not e
 
 ## Rich text
 
-`qavlen-adventure` renders translations as Adventure components with MiniMessage. Translation files are trusted markup; placeholder values are always inserted as plain text, so a player name like `<click:run_command:/op me>` cannot inject tags. `Component` values keep their style. Every message can use `<prefix>`, which renders the `prefix` key.
+[`qavlen-adventure`](Adventure) renders translations as Adventure components with MiniMessage. Translation files are trusted markup; placeholder values are always inserted as plain text, so a player name like `<click:run_command:/op me>` cannot inject tags. `Component` values keep their style. Every message can use `<prefix>`, which renders the `prefix` key.
 
 ```kotlin
 val messages = AdventureMessages(translations)

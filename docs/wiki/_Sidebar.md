@@ -13,6 +13,8 @@
 - [Language & Localization](Language-and-Localization)
 - [Commands](Commands)
 - [Annotations](Annotations)
+- [Adventure](Adventure)
+- [Brigadier](Brigadier)
 - [Paper](Paper)
 - [Velocity](Velocity)
 - [JDA](JDA)

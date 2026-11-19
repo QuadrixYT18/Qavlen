@@ -7,8 +7,8 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Language](Language-and-Localization) | `qavlen-language` | Translations with locale fallbacks, namespaces and typed placeholders |
 | [Commands](Commands) | `qavlen-commands` | Command trees, typed arguments, permissions, cooldowns, localized errors |
 | [Annotations](Annotations) | `qavlen-commands-processor` | KSP and javac processor for `@Command` classes |
-| Adventure | `qavlen-adventure` | MiniMessage rendering of translations with injection-safe placeholders |
-| Brigadier | `qavlen-brigadier` | Shared Brigadier tree builder used by Paper and Velocity |
+| [Adventure](Adventure) | `qavlen-adventure` | MiniMessage rendering of translations with injection-safe placeholders |
+| [Brigadier](Brigadier) | `qavlen-brigadier` | Shared Brigadier tree builder used by Paper and Velocity |
 | [Paper](Paper) | `qavlen-paper` | Brigadier commands, menus, Folia-aware scheduling, events, persistent data, safe teleports |
 | [Velocity](Velocity) | `qavlen-velocity` | Proxy commands and plugin messaging |
 | [JDA](JDA) | `qavlen-jda` | Localized slash commands with autocomplete and change-aware registration |
