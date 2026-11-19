@@ -84,6 +84,47 @@ Defaults only add missing keys; existing values are never replaced. Missing keys
 
 `ConfigValidator` returns a list of `ConfigViolation(path, message)`. All violations are reported together in a `ConfigValidationException`. `ConfigValidator.required(...)` and `ConfigValidator.range(...)` cover common cases.
 
+## Schemas
+
+A `ConfigSchema` declares the expected structure and reports every deviation at once, including keys nobody reads, which are usually typos:
+
+```kotlin
+val schema = ConfigSchema.builder()
+    .required("database.host", ConfigType.STRING)
+    .optional("database.port", ConfigType.INTEGER).range("database.port", 1, 65535)
+    .optional("mode", ConfigType.STRING).oneOf("mode", "fast", "safe")
+    .optional("rewards", ConfigType.SECTION)
+    .rejectUnknownKeys()
+    .build()
+
+val config = YamlConfig.load(path, ConfigOptions { schema(schema) })
+```
+
+```text
+Configuration validation failed:
+  database.host: is required
+  database.port: must be between 1 and 65535
+  database.hots: is not a known setting
+```
+
+Keys inside declared sections and lists are always accepted, and the migration version key is accepted automatically.
+
+## Change listeners and hot reload
+
+```kotlin
+val subscription = config.addListener { change ->
+    if (change.affects("database")) reconnect()
+}
+```
+
+Listeners are called after `set` and `remove` (also through section views) with the changed path, and after a successful `reload()` with every path whose value differs. A failed reload changes nothing and calls no listener. Listeners run outside the configuration's lock, may read and write the configuration, and a failing listener is logged without affecting the others. `subscription.close()` removes the listener.
+
+`reloadIfModified()` reloads only when the file's modification time or size changed since it was last read or written, which makes polling from a repeating task cheap:
+
+```kotlin
+scheduler.asyncTimer(Duration.ofSeconds(5), Duration.ofSeconds(5)) { config.reloadIfModified() }
+```
+
 ## Migrations
 
 ```kotlin

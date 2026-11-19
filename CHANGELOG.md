@@ -10,6 +10,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - `commands`: generated help with `CommandDispatcher.help`, `sendHelp` and `CommandContext.sendHelp`, translated per source.
 - `commands`: length limits for text arguments with `ArgumentTypes.word(min, max)`, `greedyString(min, max)` and `@Length`; enforced on Paper, Velocity and Discord.
 - `commands`: `CommandDispatcher.reportError` and `describe` for platform adapters.
+- `config`: `ConfigSchema` with required and optional typed values, ranges, choices and detection of unknown keys; `ConfigOptions.Builder.schema`.
+- `config`: change listeners with `ConfigFile.addListener` and `reloadIfModified()` for cheap hot reloading.
 
 ### Fixed
 
