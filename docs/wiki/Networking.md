@@ -15,4 +15,6 @@ api.post("events").json(Event("join", uuid)).send().thenAccept { result -> resul
 - `send()` completes with an `HttpResult` for any status; `sendJson` fails with `HttpStatusException` for non-2xx responses.
 - `RetryPolicy` retries only idempotent methods (`GET`, `HEAD`, `PUT`, `DELETE`, `OPTIONS`) after connection errors, timeouts and 429/502/503/504 responses, with exponential backoff, `Retry-After` support and an upper bound. `RetryPolicy.NONE` disables retries.
 
-Responses are buffered in memory; use `java.net.http` directly for large downloads or streaming.
+Responses are buffered in memory up to `maxResponseSize` (16 MiB by default); larger bodies fail with `HttpResponseTooLargeException` and are not retried. Use `java.net.http` directly for large downloads or streaming.
+
+`RestClient` is `AutoCloseable`. Close it when it is no longer needed, for example in a plugin's `onDisable`, to release its threads.

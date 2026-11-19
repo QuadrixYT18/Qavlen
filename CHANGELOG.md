@@ -7,6 +7,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ### Added
 
 - `commands`: `Cooldowns.tryStart` starts a cooldown atomically.
+- `network`: `RestClient` is `AutoCloseable` and limits response bodies with `Builder.maxResponseSize` (16 MiB by default); larger responses fail with `HttpResponseTooLargeException`.
 - `storage`: `Database.Builder.queryTimeout` cancels statements that run too long.
 - `commands`: `CommandDispatcher.suggestions` filters argument suggestions by prefix; Paper, Velocity and Discord now share it.
 

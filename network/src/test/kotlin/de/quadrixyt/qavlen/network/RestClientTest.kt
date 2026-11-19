@@ -28,6 +28,18 @@ class RestClientTest {
             exchange.sendResponseHeaders(status, -1)
             exchange.close()
         }
+        createContext("/large") { exchange ->
+            calls.incrementAndGet()
+            val body = ByteArray(64 * 1024) { 'x'.code.toByte() }
+            exchange.sendResponseHeaders(200, 0)
+            exchange.responseBody.use { it.write(body) }
+        }
+        createContext("/latin") { exchange ->
+            val body = "Grüße".toByteArray(Charsets.ISO_8859_1)
+            exchange.responseHeaders.add("Content-Type", "text/plain; charset=ISO-8859-1")
+            exchange.sendResponseHeaders(200, body.size.toLong())
+            exchange.responseBody.use { it.write(body) }
+        }
         createContext("/echo") { exchange ->
             val body = exchange.requestBody.readAllBytes()
             calls.incrementAndGet()
@@ -41,7 +53,10 @@ class RestClientTest {
         .build()
 
     @AfterTest
-    fun stop() = server.stop(0)
+    fun stop() {
+        client.close()
+        server.stop(0)
+    }
 
     @Test
     fun `decodes json with encoded query parameters`() {
@@ -66,5 +81,20 @@ class RestClientTest {
         assertEquals(1, calls.get())
         val failure = assertFailsWith<CompletionException> { client.post("echo").json(1).sendJson(Int::class.java).join() }
         assertIs<HttpStatusException>(failure.cause)
+    }
+
+    @Test
+    fun `oversized responses fail without retries`() {
+        RestClient.builder("http://127.0.0.1:${server.address.port}/").maxResponseSize(1024).build().use { limited ->
+            val failure = assertFailsWith<CompletionException> { limited.get("large").send().join() }
+
+            assertIs<HttpResponseTooLargeException>(failure.cause)
+            assertEquals(1, calls.get())
+        }
+    }
+
+    @Test
+    fun `decodes the declared charset`() {
+        assertEquals("Grüße", client.get("latin").send().join().body)
     }
 }

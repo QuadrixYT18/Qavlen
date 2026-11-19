@@ -1,6 +1,7 @@
 package de.quadrixyt.qavlen.network
 
 import de.quadrixyt.qavlen.serialization.JsonCodec
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.URI
 import java.net.URLEncoder
@@ -9,9 +10,13 @@ import java.net.http.HttpHeaders
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.net.http.HttpTimeoutException
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.CompletionStage
+import java.util.concurrent.Flow
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
@@ -69,14 +74,18 @@ public class RetryPolicy @JvmOverloads constructor(
  * val user = api.get("users/42").query("fields", "name").sendJson(User::class.java).join()
  * ```
  *
- * All requests are asynchronous. Every request has a timeout; responses are buffered as text.
+ * All requests are asynchronous. Every request has a timeout. Responses are buffered as text up to
+ * [Builder.maxResponseSize]; larger responses fail with [HttpResponseTooLargeException].
+ *
+ * Close the client when it is no longer needed, for example when a plugin is disabled, to release its threads.
  */
-public class RestClient private constructor(builder: Builder) {
+public class RestClient private constructor(builder: Builder) : AutoCloseable {
     private val baseUri: URI = builder.baseUri
     private val headers: Map<String, String> = builder.headers.toMap()
     private val requestTimeout: Duration = builder.requestTimeout
     private val retry: RetryPolicy = builder.retry
     public val codec: JsonCodec = builder.codec
+    private val maxResponseSize: Long = builder.maxResponseSize
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(builder.connectTimeout)
         .followRedirects(HttpClient.Redirect.NORMAL)
@@ -93,6 +102,11 @@ public class RestClient private constructor(builder: Builder) {
     public fun patch(path: String): Request = Request("PATCH", path)
 
     public fun request(method: String, path: String): Request = Request(method.uppercase(), path)
+
+    /** Waits for running requests and releases the client's threads. */
+    override fun close() {
+        client.close()
+    }
 
     /** A request being built. Instances are not thread-safe; [send] may be called more than once. */
     public inner class Request internal constructor(private val method: String, private val path: String) {
@@ -142,7 +156,7 @@ public class RestClient private constructor(builder: Builder) {
 
         private fun attempt(request: HttpRequest, attempt: Int): CompletableFuture<HttpResult> {
             val retryable = method in idempotent && attempt < retry.maxAttempts
-            return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            return client.sendAsync(request) { info -> LimitedText(maxResponseSize, charset(info.headers())) }
                 .handle { response, failure ->
                     val cause = (failure as? CompletionException)?.cause ?: failure
                     when {
@@ -170,6 +184,7 @@ public class RestClient private constructor(builder: Builder) {
         internal var requestTimeout: Duration = Duration.ofSeconds(15)
         internal var retry: RetryPolicy = RetryPolicy()
         internal var codec: JsonCodec = JsonCodec.default
+        internal var maxResponseSize: Long = 16L * 1024 * 1024
 
         /** Adds a header to every request, for example authorization. */
         public fun header(name: String, value: String): Builder = apply { headers[name] = value }
@@ -181,6 +196,12 @@ public class RestClient private constructor(builder: Builder) {
         public fun retry(policy: RetryPolicy): Builder = apply { retry = policy }
 
         public fun codec(codec: JsonCodec): Builder = apply { this.codec = codec }
+
+        /** Largest response body that is read, in bytes. Defaults to 16 MiB. */
+        public fun maxResponseSize(bytes: Long): Builder = apply {
+            require(bytes > 0) { "maxResponseSize must be positive" }
+            maxResponseSize = bytes
+        }
 
         public fun build(): RestClient = RestClient(this)
     }
@@ -198,8 +219,53 @@ public class RestClient private constructor(builder: Builder) {
 
         private fun encode(value: String): String = URLEncoder.encode(value, Charsets.UTF_8).replace("+", "%20")
 
+        private fun charset(headers: HttpHeaders): Charset = headers.firstValue("Content-Type")
+            .map { type -> type.split(';').map(String::trim).firstOrNull { it.startsWith("charset=", ignoreCase = true) } }
+            .map { it?.substringAfter('=')?.trim('"') }
+            .map { name -> runCatching { name?.let(Charset::forName) }.getOrNull() }
+            .orElse(null) ?: Charsets.UTF_8
+
         private fun retryAfter(response: HttpResponse<*>): Duration? =
             response.headers().firstValue("Retry-After").map { it.trim().toLongOrNull() }.orElse(null)
                 ?.takeIf { it >= 0 }?.let(Duration::ofSeconds)
+    }
+}
+
+/** A response body exceeded [RestClient.Builder.maxResponseSize]. */
+public class HttpResponseTooLargeException(public val limit: Long) : RuntimeException("Response body exceeds $limit bytes")
+
+/** Collects the body as text and cancels the download once it exceeds [limit]. */
+private class LimitedText(private val limit: Long, private val charset: Charset) : HttpResponse.BodySubscriber<String> {
+    private val result = CompletableFuture<String>()
+    private val bytes = ByteArrayOutputStream()
+    private lateinit var subscription: Flow.Subscription
+
+    override fun getBody(): CompletionStage<String> = result
+
+    override fun onSubscribe(subscription: Flow.Subscription) {
+        this.subscription = subscription
+        subscription.request(Long.MAX_VALUE)
+    }
+
+    override fun onNext(item: List<ByteBuffer>) {
+        if (result.isDone) return
+        for (buffer in item) {
+            if (bytes.size() + buffer.remaining() > limit) {
+                subscription.cancel()
+                result.completeExceptionally(HttpResponseTooLargeException(limit))
+                return
+            }
+            val chunk = ByteArray(buffer.remaining())
+            buffer.get(chunk)
+            bytes.write(chunk)
+        }
+    }
+
+    override fun onError(throwable: Throwable) {
+        result.completeExceptionally(throwable)
+    }
+
+    override fun onComplete() {
+        result.complete(bytes.toString(charset))
     }
 }
