@@ -65,6 +65,18 @@ public class AdventureMessages @JvmOverloads constructor(
         return miniMessage.deserialize(markup.toString(), TagResolver.resolver(resolvers))
     }
 
+    /**
+     * Renders a multi-line translation as one component per line, for item lore, books or scoreboards.
+     * Lines are split before MiniMessage parsing, so tags must be closed on the line that opens them.
+     */
+    public fun renderLines(locale: Locale, key: String, placeholders: Map<String, Any?>): List<Component> {
+        val template = translations.template(locale, key) ?: return listOf(Component.text(key))
+        return template.source.split('\n').map { line -> render(MessageTemplate.parse(line), locale, placeholders) }
+    }
+
+    public fun renderLines(locale: Locale, key: String, vararg placeholders: Placeholder): List<Component> =
+        renderLines(locale, key, placeholders.toMap())
+
     /** The locale an audience reports through [Identity.LOCALE], or the default locale. */
     public fun locale(audience: Audience): Locale = audience.get(Identity.LOCALE).orElse(translations.defaultLocale)
 

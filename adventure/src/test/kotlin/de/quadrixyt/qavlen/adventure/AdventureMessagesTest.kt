@@ -19,6 +19,7 @@ class AdventureMessagesTest {
                     "prefix" to "<gray>[Shop]</gray>",
                     "welcome" to "<prefix> <green>Welcome, {player}!</green> You have {coins} coins.",
                     "item" to "Bought {item}",
+                    "lore" to "<gray>Price: {price}\n<prefix> <yellow>Click to buy",
                 ),
             )
             .build(),
@@ -51,5 +52,12 @@ class AdventureMessagesTest {
         val component = messages.render(Locale.ENGLISH, "item", placeholder("item", item))
 
         assertEquals(MiniMessage.miniMessage().deserialize("Bought <aqua>Diamond</aqua>"), component.compact())
+    }
+
+    @Test
+    fun `renders multi-line translations line by line`() {
+        val lines = messages.renderLines(Locale.ENGLISH, "lore", placeholder("price", 1200))
+
+        assertEquals(listOf("Price: 1,200", "[Shop] Click to buy"), lines.map(plain::serialize))
     }
 }
