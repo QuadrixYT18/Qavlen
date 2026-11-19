@@ -34,7 +34,7 @@ public class SerializationException(message: String, public val path: String?, c
  *
  * Instances are immutable and thread-safe.
  */
-public class JsonCodec private constructor(private val mapper: JsonMapper) {
+public class JsonCodec private constructor(internal val mapper: JsonMapper) {
     public fun encode(value: Any?): String = wrap { mapper.writeValueAsString(value) }
 
     public fun encodeToBytes(value: Any?): ByteArray = wrap { mapper.writeValueAsBytes(value) }
@@ -58,6 +58,12 @@ public class JsonCodec private constructor(private val mapper: JsonMapper) {
     public fun <T> convert(value: Any?, type: Class<T>): T = wrap { mapper.convertValue(value, type) }
 
     public fun toBuilder(): Builder = Builder(mapper.rebuild())
+
+    /** The name under which a property called [name] in code is written, after the configured naming strategy. */
+    internal fun propertyName(name: String): String {
+        val strategy = mapper.serializationConfig().propertyNamingStrategy ?: return name
+        return strategy.nameForField(mapper.serializationConfig(), null, name) ?: name
+    }
 
     private fun listType(elementType: Class<*>): JavaType = mapper.typeFactory.constructCollectionType(List::class.java, elementType)
 
