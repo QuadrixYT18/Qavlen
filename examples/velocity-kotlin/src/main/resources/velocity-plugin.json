@@ -1,0 +1,7 @@
+{
+  "id": "qavlen-example",
+  "name": "QavlenExample",
+  "version": "1.0.0",
+  "main": "com.example.qavlen.velocity.ExamplePlugin",
+  "dependencies": []
+}

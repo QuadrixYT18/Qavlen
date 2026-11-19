@@ -35,4 +35,10 @@ include(
     "platform:jda",
     "examples:jvm-kotlin",
     "examples:jvm-java",
+    "examples:paper-kotlin",
+    "examples:paper-java",
+    "examples:velocity-kotlin",
+    "examples:velocity-java",
+    "examples:jda-kotlin",
+    "examples:jda-java",
 )

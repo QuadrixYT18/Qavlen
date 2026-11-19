@@ -1,0 +1,12 @@
+prefix: "<gradient:#5e9cff:#9b6bff>Qavlen</gradient> <dark_gray>»</dark_gray>"
+coins:
+  description: "Münzen anzeigen oder vergeben"
+  balance: "<prefix> <gray>Du hast <gold>{amount}</gold> Münzen."
+  given: "<prefix> <green><gold>{amount}</gold> Münzen an <white>{player}</white> vergeben."
+  received: "<prefix> <green>Du hast <gold>{amount}</gold> Münzen erhalten."
+players:
+  title: "Spieler online"
+  entry: "<yellow>{player}"
+spawn:
+  teleported: "<prefix> <green>Zum Spawn teleportiert."
+  failed: "<prefix> <red>Kein sicherer Ort gefunden."

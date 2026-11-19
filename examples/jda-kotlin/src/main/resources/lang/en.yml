@@ -1,0 +1,12 @@
+poll:
+  description: "Create and close polls"
+  create:
+    description: "Start a poll"
+  question: "The question to ask"
+  created: "**{question}** — poll by {author}"
+  close:
+    description: "Close a poll"
+  closed: "Closed {count:choice:0#no polls|1#one poll|1<{count} polls}."
+roles:
+  description: "Show information about a role"
+  info: "{role} has {members} members."

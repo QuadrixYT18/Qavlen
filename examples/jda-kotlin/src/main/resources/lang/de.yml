@@ -1,0 +1,12 @@
+poll:
+  description: "Umfragen erstellen und schließen"
+  create:
+    description: "Eine Umfrage starten"
+  question: "Die Frage"
+  created: "**{question}** — Umfrage von {author}"
+  close:
+    description: "Eine Umfrage schließen"
+  closed: "{count:choice:0#Keine Umfrage|1#Eine Umfrage|1<{count} Umfragen} geschlossen."
+roles:
+  description: "Informationen zu einer Rolle anzeigen"
+  info: "{role} hat {members} Mitglieder."
