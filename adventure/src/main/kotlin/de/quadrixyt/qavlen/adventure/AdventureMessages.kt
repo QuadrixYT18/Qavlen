@@ -66,6 +66,23 @@ public class AdventureMessages @JvmOverloads constructor(
     }
 
     /**
+     * Renders [text], MiniMessage with `{placeholders}` taken from a configuration value instead of a translation
+     * file. Placeholder values are inserted as plain text, exactly as for translations.
+     *
+     * @throws IllegalArgumentException when [text] has malformed placeholders
+     */
+    public fun renderText(text: String, locale: Locale, placeholders: Map<String, Any?>): Component =
+        render(MessageTemplate.parse(text), locale, placeholders)
+
+    public fun renderText(text: String, locale: Locale, vararg placeholders: Placeholder): Component =
+        renderText(text, locale, placeholders.toMap())
+
+    /** Sends [text] rendered with [renderText] in the audience's locale. */
+    public fun sendText(audience: Audience, text: String, vararg placeholders: Placeholder) {
+        audience.sendMessage(renderText(text, locale(audience), placeholders.toMap()))
+    }
+
+    /**
      * Renders a multi-line translation as one component per line, for item lore, books or scoreboards.
      * Lines are split before MiniMessage parsing, so tags must be closed on the line that opens them.
      */

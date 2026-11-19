@@ -60,4 +60,18 @@ class AdventureMessagesTest {
 
         assertEquals(listOf("Price: 1,200", "[Shop] Click to buy"), lines.map(plain::serialize))
     }
+
+    @Test
+    fun `renders configuration texts with safe placeholders and the prefix`() {
+        val welcome = "<prefix> <green>Welcome, {player}! Online since {since:date:short}"
+
+        val component = messages.renderText(
+            welcome,
+            Locale.ENGLISH,
+            placeholder("player", "<bold>Alex"),
+            placeholder("since", java.time.LocalDate.of(2025, 1, 2)),
+        )
+
+        assertEquals("[Shop] Welcome, <bold>Alex! Online since 1/2/25", plain.serialize(component))
+    }
 }

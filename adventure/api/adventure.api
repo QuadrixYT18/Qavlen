@@ -11,8 +11,11 @@ public final class de/quadrixyt/qavlen/adventure/AdventureMessages {
 	public final fun render (Ljava/util/Locale;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)Lnet/kyori/adventure/text/Component;
 	public final fun renderLines (Ljava/util/Locale;Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
 	public final fun renderLines (Ljava/util/Locale;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)Ljava/util/List;
+	public final fun renderText (Ljava/lang/String;Ljava/util/Locale;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public final fun renderText (Ljava/lang/String;Ljava/util/Locale;[Lde/quadrixyt/qavlen/language/Placeholder;)Lnet/kyori/adventure/text/Component;
 	public final fun send (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/util/Map;)V
 	public final fun send (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)V
+	public final fun sendText (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)V
 	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
 	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/title/Title$Times;)V
