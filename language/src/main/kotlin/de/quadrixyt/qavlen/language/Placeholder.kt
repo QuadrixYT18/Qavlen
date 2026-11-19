@@ -72,7 +72,11 @@ public object ValueFormatter {
             "number" -> option?.let { DecimalFormat(it) }
             "integer", "percent", "currency", "duration" -> require(option == null) { "Style '$kind' takes no option" }
             "date", "time", "datetime" -> option?.let(::formatStyle)
-            "choice" -> ChoiceFormat(requireNotNull(option) { "Style 'choice' requires a pattern" })
+            "choice" -> {
+                val choices = ChoiceFormat(requireNotNull(option) { "Style 'choice' requires a pattern" })
+                // Each choice is itself a template, so its placeholders are checked when the file is loaded.
+                choices.formats.forEach { MessageTemplate.parse(it.toString()) }
+            }
             else -> throw IllegalArgumentException("Unknown placeholder style '$style'")
         }
     }

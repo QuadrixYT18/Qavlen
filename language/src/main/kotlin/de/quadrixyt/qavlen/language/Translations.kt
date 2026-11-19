@@ -98,19 +98,40 @@ public class Translations private constructor(
         return keys(defaultLocale).filterTo(sortedSetOf()) { key -> own.none { key in it } }
     }
 
-    /** Reports missing translations and placeholder mismatches compared to the default locale. */
+    /** `true` when [locale] or its language defines [key] itself, without falling back to another language. */
+    public fun isTranslated(locale: Locale, key: String): Boolean {
+        val current = catalogs
+        val qualified = qualify(key)
+        return ownCandidates(locale).any { current[it]?.containsKey(qualified) == true }
+    }
+
+    /**
+     * Reports, for every locale other than the default: missing translations, keys the default locale does not
+     * define (usually typos or leftovers), and placeholders the default text does not use.
+     */
     public fun validate(): List<TranslationIssue> {
         val current = catalogs
         val reference = current[defaultLocale].orEmpty()
         return current.keys.filter { it != defaultLocale }.sortedBy(Locale::toLanguageTag).flatMap { locale ->
             val missing = missingKeys(locale).map { TranslationIssue(locale, it, "missing translation") }
-            val mismatched = current.getValue(locale).mapNotNull { (key, template) ->
+            val messages = current.getValue(locale)
+            val extra = messages.keys.filter { it !in reference }.sorted()
+                .map { TranslationIssue(locale, it, "not defined in the default locale") }
+            val mismatched = messages.mapNotNull { (key, template) ->
                 val expected = reference[key]?.placeholderNames ?: return@mapNotNull null
                 val unknown = template.placeholderNames - expected
                 if (unknown.isEmpty()) null else TranslationIssue(locale, key, "unknown placeholders $unknown")
             }
-            missing + mismatched
+            missing + extra + mismatched
         }
+    }
+
+    /** Like [validate], and additionally reports [requiredKeys] that the default locale does not define. */
+    public fun validate(requiredKeys: Collection<String>): List<TranslationIssue> {
+        val defined = catalogs[defaultLocale].orEmpty()
+        val missing = requiredKeys.map(::qualify).filter { it !in defined }.distinct()
+            .map { TranslationIssue(defaultLocale, it, "required key is missing") }
+        return missing + validate()
     }
 
     private fun candidates(locale: Locale): List<Locale> =

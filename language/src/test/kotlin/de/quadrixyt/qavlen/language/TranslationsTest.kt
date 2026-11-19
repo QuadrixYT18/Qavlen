@@ -134,4 +134,26 @@ class TranslationsTest {
         assertEquals("Hallo", translations.format(german, "test:hello"))
         assertEquals(mapOf(Locale.ENGLISH to "Hello", german to "Hallo"), translations.localizations("test:hello"))
     }
+
+    @Test
+    fun `validation reports extra and required keys`() {
+        val translations = Translations.builder()
+            .messages(Locale.ENGLISH, mapOf("shop.title" to "Shop"))
+            .messages(german, mapOf("shop.title" to "Laden", "shop.titel" to "Tippfehler"))
+            .build()
+
+        assertEquals(
+            listOf("[en] shop.footer: required key is missing", "[de] shop.titel: not defined in the default locale"),
+            translations.validate(listOf("shop.title", "shop.footer")).map { it.toString() },
+        )
+        assertTrue(translations.isTranslated(Locale.GERMANY, "shop.title"))
+        assertEquals(false, translations.isTranslated(Locale.FRENCH, "shop.title"))
+    }
+
+    @Test
+    fun `broken templates inside choices fail when loading`() {
+        assertFailsWith<TranslationException> {
+            Translations.builder().messages(Locale.ENGLISH, mapOf("items" to "{count:choice:0#none|1<{count items}")).build()
+        }
+    }
 }
