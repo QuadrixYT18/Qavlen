@@ -7,6 +7,13 @@ val jda = JDABuilder.createLight(token).addEventListeners(commands).build().awai
 commands.syncGlobal(jda).join()          // or syncGuild(guild) while developing
 ```
 
+```java
+JdaCommands commands = new JdaCommands(new CommandDispatcher(translations));
+commands.register(new PollCommand());
+JDA jda = JDABuilder.createLight(token).addEventListeners(commands).build().awaitReady();
+commands.syncGlobal(jda).join();
+```
+
 ## Structure
 
 A root command either has options or subcommands. Subcommands may contain one further level, which becomes a Discord subcommand group. A node with subcommands cannot be executable itself, and Discord has no aliases; `register` rejects structures Discord cannot express.

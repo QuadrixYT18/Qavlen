@@ -19,4 +19,4 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Networking](Networking) | `qavlen-network` | JSON REST client with timeouts and retries |
 | [Scheduler](Scheduler) | `qavlen-scheduler` | Delayed and repeating tasks for plain JVM applications |
 
-Start with [Getting Started](Getting-Started). Complete projects are in the [`examples`](https://github.com/QuadrixYT18/Qavlen/tree/master/examples) directory.
+Start with [Getting Started](Getting-Started). [Compatibility](Compatibility) lists the supported versions and how they were tested. Complete projects are in the [`examples`](https://github.com/QuadrixYT18/Qavlen/tree/master/examples) directory.

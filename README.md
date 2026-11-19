@@ -72,6 +72,19 @@ dependencies {
 
 Platform APIs (Paper, Velocity, JDA, JDBC drivers) are not bundled; declare them yourself. Plugins should shade and relocate Qavlen — see [Installation](docs/wiki/Installation.md).
 
+## Compatibility
+
+| | Version | Verified |
+| --- | --- | --- |
+| Java | 25 | CI |
+| Kotlin / KSP | 2.4.21 / 2.3.14 | CI, binary compatibility checks |
+| Paper | 26.3 | live server and CI |
+| Velocity | 4.3.1 | live proxy and CI |
+| JDA | 6.7.0 | CI (not yet against Discord) |
+| Redis | 8 | CI |
+
+See [Compatibility](docs/wiki/Compatibility.md) for every dependency and what exactly was tested.
+
 ## Documentation
 
 - [Wiki](https://github.com/QuadrixYT18/Qavlen/wiki), maintained in [`docs/wiki`](docs/wiki)

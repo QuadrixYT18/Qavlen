@@ -13,6 +13,18 @@ override fun onEnable() {
 }
 ```
 
+```java
+@Override
+public void onEnable() {
+    Translations translations = Translations.builder()
+        .resources(getClass().getClassLoader(), "lang", List.of(Locale.ENGLISH, Locale.GERMAN))
+        .directory(getDataPath().resolve("lang"))
+        .build();
+    PaperCommands commands = new PaperCommands(this, new CommandDispatcher(translations));
+    commands.register(new CoinsCommand());
+}
+```
+
 `PaperCommands` registers commands through Paper's lifecycle API (`LifecycleEvents.COMMANDS`) as native Brigadier trees, so clients get syntax highlighting, inline validation and suggestions. Permissions are Brigadier requirements, which hides commands from players who cannot use them. `Player` arguments use Paper's player selector (`@p` works), `World` arguments the world argument; numbers, booleans and strings map to Brigadier types with their ranges.
 
 `@Sender player: Player` receives the executing player (respecting `/execute as`), `@Sender sender: CommandSender` any sender. Messages render as MiniMessage in the player's client locale.
@@ -43,6 +55,13 @@ menu.set(13, ItemStack(Material.DIAMOND)) { click -> buy(click.player) }
 menu.open(player)
 ```
 
+```java
+Menus.install(plugin);
+Menu menu = new Menu(Component.text("Shop"), 3);
+menu.set(13, new ItemStack(Material.DIAMOND), click -> buy(click.getPlayer()));
+menu.open(player);
+```
+
 Items cannot be moved in or out of menus unless `allowItemMovement` is enabled; shift-clicks and drags into the menu are cancelled as well. `PaginatedMenu` lays out a list across pages with navigation buttons that only appear when another page exists. `closeHandler` runs when a player closes the menu.
 
 ## Events
@@ -50,6 +69,10 @@ Items cannot be moved in or out of menus unless `allowItemMovement` is enabled; 
 ```kotlin
 val subscription = Events.listen(plugin, PlayerJoinEvent::class.java) { event -> ... }
 subscription.close() // unregisters
+```
+
+```java
+EventSubscription subscription = Events.listen(plugin, PlayerJoinEvent.class, event -> ...);
 ```
 
 `plugin.listen<PlayerJoinEvent> { ... }` is the Kotlin shorthand. Priority and `ignoreCancelled` are optional parameters.
@@ -70,6 +93,14 @@ val icon = ItemBuilder.of(Material.DIAMOND)
 
 val head = ItemBuilder.of(Material.PLAYER_HEAD).profile(target.playerProfile).build()
 val filler = ItemBuilder.of(Material.GRAY_STAINED_GLASS_PANE).hideTooltip().build()
+```
+
+```java
+ItemStack icon = ItemBuilder.of(Material.DIAMOND)
+    .name(messages, locale, "shop.diamond.name")
+    .lore(messages, locale, "shop.diamond.lore", Placeholder.of("price", 250))
+    .glint(true)
+    .build();
 ```
 
 Further methods: `amount`, `unbreakable`, `enchant` (also above the normal maximum level), `model` (item model from a resource pack) and `customModelData`. `ItemBuilder.from(item)` starts from a copy; `build()` returns a new stack each time.

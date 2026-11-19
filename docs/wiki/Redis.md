@@ -7,6 +7,14 @@ val sessions = RedisCache.builder<UUID, Session>(redis, "sessions", Session::cla
     .build()
 ```
 
+```java
+RedisClient redis = RedisClient.create("redis://localhost:6379");
+RedisCache<UUID, Session> sessions = RedisCache.<UUID, Session>builder(redis, "sessions", Session.class)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build();
+```
+
+- Entries that no longer match the value class, for example after an update, are deleted and count as misses.
 - Values are stored as JSON with `JsonCodec` under `<namespace>:<key>`. Use a namespace per cache.
 - TTLs are set atomically with the value and rounded up to whole seconds.
 - `getAsync` runs Redis calls on virtual threads and shares concurrent loads of the same key within the process.

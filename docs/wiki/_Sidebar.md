@@ -5,6 +5,7 @@
 - [Installation](Installation)
 - [Kotlin Usage](Kotlin-Usage)
 - [Java Usage](Java-Usage)
+- [Compatibility](Compatibility)
 
 **Modules**
 

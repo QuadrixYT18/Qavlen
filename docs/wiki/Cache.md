@@ -10,6 +10,14 @@ val profile = profiles.get(uuid) { loadProfile(it) }
 profiles.getAsync(uuid) { database.queryFirstAsync(...) }
 ```
 
+```java
+LocalCache<UUID, Profile> profiles = LocalCache.builder()
+    .maximumSize(10_000)
+    .expireAfterWrite(Duration.ofMinutes(10))
+    .build();
+Profile profile = profiles.get(uuid, this::loadProfile);
+```
+
 - `get(key, loader)` computes missing values once; concurrent callers wait for the same computation. `null` results are not cached.
 - `getAsync` shares one load per key between concurrent callers. Failed loads are not cached.
 - `expireAfterWrite`, `expireAfterAccess` and `maximumSize` control eviction; Caffeine evicts by a frequency-aware policy.

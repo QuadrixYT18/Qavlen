@@ -12,6 +12,13 @@ val scheduler = scope.own(TaskScheduler())
 scope.close()
 ```
 
+```java
+ResourceScope scope = new ResourceScope();
+Database database = scope.own(Database.postgresql("localhost", 5432, "app").connect());
+Duration wait = Durations.parse("1h30m");
+QavlenFiles.writeAtomically(Path.of("state.json"), json);
+```
+
 Resources registered after `close()` are closed immediately.
 
 ## writeAtomically

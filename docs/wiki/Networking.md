@@ -10,6 +10,12 @@ val user = api.get("users/42").query("fields", "name,avatar").sendJson(User::cla
 api.post("events").json(Event("join", uuid)).send().thenAccept { result -> result.requireSuccess() }
 ```
 
+```java
+try (RestClient api = RestClient.builder("https://api.example.com/v1/").header("Authorization", "Bearer " + token).build()) {
+    User user = api.get("users/42").query("fields", "name").sendJson(User.class).join();
+}
+```
+
 - Every request has a connect and request timeout.
 - Query parameters are URL-encoded; JSON bodies use `JsonCodec`.
 - `send()` completes with an `HttpResult` for any status; `sendJson` fails with `HttpStatusException` for non-2xx responses.

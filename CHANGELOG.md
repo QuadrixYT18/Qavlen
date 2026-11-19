@@ -17,6 +17,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Build
 
+- Tags run release checks: version and changelog match the tag, the full build and API checks pass, and JitPack publishes all modules.
 - Binary compatibility of every published module is checked against recorded API dumps (`api/*.api`).
 - Java consumer tests in `tests/java-api` exercise the public API from plain Java.
 

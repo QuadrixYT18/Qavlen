@@ -10,6 +10,14 @@ class MyPlugin @Inject constructor(private val server: ProxyServer) {
 }
 ```
 
+```java
+@Subscribe
+public void onInitialize(ProxyInitializeEvent event) {
+    VelocityCommands commands = new VelocityCommands(server, this, new CommandDispatcher(translations));
+    commands.register(new HubCommand(commands.getMessages()));
+}
+```
+
 Commands are registered as Brigadier commands with their aliases. Arguments of type `Player` (connected players) and `RegisteredServer` (backend servers) are available. Velocity runs commands on its own thread pool, so executors must be thread-safe; blocking briefly is acceptable, long-running work should use Velocity's scheduler or asynchronous APIs. Messages render as MiniMessage in the player's locale.
 
 Server switching uses Velocity's API directly:
@@ -27,6 +35,11 @@ val channel = PluginChannel(server, this, MinecraftChannelIdentifier.create("myp
 channel.send(player, bytes)   // to the server the player is on
 channel.send(registeredServer, bytes)
 channel.close()
+```
+
+```java
+PluginChannel channel = new PluginChannel(server, this, MinecraftChannelIdentifier.create("myplugin", "main"),
+    (connection, data) -> { /* message from connection.getServerInfo() */ });
 ```
 
 Messages on the channel are always marked as handled and never forwarded. On the backend, use the [Paper](Paper) `PluginChannel` with the same channel name. Only messages from backend servers reach the handler; messages sent by clients are dropped, because any client can send arbitrary data on any channel.
