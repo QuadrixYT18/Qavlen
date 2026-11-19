@@ -269,6 +269,10 @@ public final class de/quadrixyt/qavlen/config/JsonConfig$Companion {
 	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
 }
 
+public final class de/quadrixyt/qavlen/config/YamlComments {
+	public static final fun preserveYamlComments (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
 public final class de/quadrixyt/qavlen/config/YamlConfig : de/quadrixyt/qavlen/config/ConfigFile {
 	public static final field Companion Lde/quadrixyt/qavlen/config/YamlConfig$Companion;
 	public static final fun load (Ljava/io/File;)Lde/quadrixyt/qavlen/config/YamlConfig;

@@ -124,7 +124,7 @@ public sealed class ConfigFile(
             validate(root)
             val text = format.encode(root)
             if (text == persisted && Files.exists(target)) return@write false
-            write(target, text)
+            write(target, withComments(readOrNull(target), text))
             persisted = text
             fileStamp = FileStamp.of(target)
             true
@@ -159,7 +159,7 @@ public sealed class ConfigFile(
         val write = target != null && content != loadedText && (options.writeDefaults || migratedFrom != null)
         if (write) {
             if (migratedFrom != null && options.backups && text != null) backup(target, migratedFrom)
-            write(target, content)
+            write(target, withComments(text, content))
         }
         persisted = when {
             write -> content
@@ -213,6 +213,16 @@ public sealed class ConfigFile(
         } catch (exception: IOException) {
             throw ConfigException("Could not back up $target before migrating it", exception)
         }
+    }
+
+    /** Carries comments a person wrote in [previous] over to [content]; only YAML has comments. */
+    private fun withComments(previous: String?, content: String): String =
+        if (format == ConfigFormat.YAML && previous != null) preserveYamlComments(previous, content) else content
+
+    private fun readOrNull(target: Path): String? = try {
+        if (Files.exists(target)) Files.readString(target) else null
+    } catch (_: IOException) {
+        null
     }
 
     private fun write(target: Path, text: String) {

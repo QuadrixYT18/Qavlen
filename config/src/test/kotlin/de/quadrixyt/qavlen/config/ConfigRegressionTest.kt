@@ -10,6 +10,7 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -137,5 +138,45 @@ class ConfigRegressionTest {
         assertEquals(1.5e300, config.get("large"))
         assertEquals(Double.POSITIVE_INFINITY, config.get("infinite"))
         assertTrue("precise: 1.23456789012345678901" in config.saveToString(), config.saveToString())
+    }
+
+    @Test
+    fun `saving keeps manual yaml comments`() {
+        val path = directory.resolve("config.yml")
+        val original = """
+            # Server settings, edited by hand
+            # Second header line
+
+            server:
+              # The name shown in the list
+              name: Lobby # do not rename during events
+
+              port: 25565
+            # Players allowed
+            worlds:
+              - world # main
+              - nether
+            removed: value
+            # end of file
+        """.trimIndent() + "\n"
+        path.writeText(original)
+        val config = YamlConfig.load(path, ConfigOptions { defaults(mapOf("server" to mapOf("motd" to "Welcome"))) })
+
+        config.set("server.port", 25566)
+        config.remove("removed")
+        config.save()
+
+        val text = path.readText()
+        listOf(
+            "# Server settings, edited by hand\n# Second header line\n\nserver:",
+            "  # The name shown in the list\n  name: Lobby # do not rename during events",
+            "do not rename during events\n\n  port: 25566",
+            "motd: Welcome",
+            "# Players allowed\nworlds:",
+            "- world # main",
+            "# end of file",
+        ).forEach { assertTrue(it in text, "Missing '$it' in:\n$text") }
+        assertFalse("removed" in text, text)
+        assertEquals(25566, YamlConfig.load(path).getInt("server.port"))
     }
 }
