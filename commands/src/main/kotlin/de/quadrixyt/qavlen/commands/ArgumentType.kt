@@ -25,11 +25,20 @@ public interface ArgumentType<T : Any> {
     public fun suggest(input: String, source: CommandSource): List<String> = emptyList()
 }
 
-/** A single word or, when [greedy], the remaining input. */
-public class StringArgument internal constructor(override val greedy: Boolean) : ArgumentType<String> {
+/** A single word or, when [greedy], the remaining input, with a length between [minLength] and [maxLength]. */
+public class StringArgument internal constructor(
+    override val greedy: Boolean,
+    public val minLength: Int = 0,
+    public val maxLength: Int = Int.MAX_VALUE,
+) : ArgumentType<String> {
     override val valueType: Class<String> get() = String::class.java
 
-    override fun parse(input: String, source: CommandSource): String = input
+    override fun parse(input: String, source: CommandSource): String {
+        if (input.length !in minLength..maxLength) {
+            throw CommandException(CommandException.STRING_LENGTH, mapOf("input" to input, "min" to minLength, "max" to maxLength))
+        }
+        return input
+    }
 }
 
 /** A whole number within [min]..[max]. */
@@ -106,8 +115,25 @@ public object ArgumentTypes {
     @JvmStatic
     public fun word(): ArgumentType<String> = word
 
+    /** A single word with [minLength] to [maxLength] characters. */
+    @JvmStatic
+    public fun word(
+        minLength: Int,
+        maxLength: Int,
+    ): ArgumentType<String> = StringArgument(false, checkLength(minLength, maxLength), maxLength)
+
     @JvmStatic
     public fun greedyString(): ArgumentType<String> = greedyString
+
+    /** The remaining input with [minLength] to [maxLength] characters. */
+    @JvmStatic
+    public fun greedyString(minLength: Int, maxLength: Int): ArgumentType<String> =
+        StringArgument(true, checkLength(minLength, maxLength), maxLength)
+
+    private fun checkLength(minLength: Int, maxLength: Int): Int {
+        require(minLength in 0..maxLength) { "Length bounds must satisfy 0 <= min <= max" }
+        return minLength
+    }
 
     @JvmStatic
     @JvmOverloads

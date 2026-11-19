@@ -67,14 +67,9 @@ public class PaperCommands internal constructor(
     /** Builds the Brigadier node of [command], for plugins that register nodes themselves. */
     public fun node(command: CommandDefinition): LiteralCommandNode<CommandSourceStack> = tree.build(command)
 
-    private fun describe(command: CommandDefinition): String? = command.description.takeIf(String::isNotEmpty)?.let { description ->
-        val translations = dispatcher.messages.translations
-        if (translations.contains(translations.defaultLocale, description)) {
-            translations.format(translations.defaultLocale, description)
-        } else {
-            description
-        }
-    }
+    /** Paper registers one description per command, so it uses the default locale. */
+    private fun describe(command: CommandDefinition): String? =
+        dispatcher.describe(command.description, dispatcher.messages.translations.defaultLocale).takeIf(String::isNotEmpty)
 
     private inner class Platform : BrigadierPlatform<CommandSourceStack> {
         override fun source(source: CommandSourceStack): CommandSource = this@PaperCommands.source(source)

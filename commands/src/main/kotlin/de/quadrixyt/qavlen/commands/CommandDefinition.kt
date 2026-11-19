@@ -10,6 +10,15 @@ public fun interface CommandExecutor {
 }
 
 /**
+ * A requirement beyond permissions, for example "only in a guild" or "not during a match". Conditions of a command
+ * also apply to its subcommands and are checked before the cooldown, every time the command runs.
+ */
+public fun interface CommandCondition {
+    /** @throws CommandException with a translated reason when [source] may not run the command right now */
+    public fun check(source: CommandSource)
+}
+
+/**
  * A typed command argument.
  *
  * @property optional optional arguments must follow all required ones
@@ -46,6 +55,7 @@ public class CommandDefinition private constructor(builder: Builder) {
     public val arguments: List<CommandArgument<*>> = builder.arguments.toList()
     public val subcommands: List<CommandDefinition> = builder.subcommands.toList()
     public val executor: CommandExecutor? = builder.executor
+    public val conditions: List<CommandCondition> = builder.conditions.toList()
 
     init {
         require(subcommands.isEmpty() || arguments.isEmpty()) {
@@ -87,6 +97,7 @@ public class CommandDefinition private constructor(builder: Builder) {
         internal val arguments = mutableListOf<CommandArgument<*>>()
         internal val subcommands = mutableListOf<CommandDefinition>()
         internal var executor: CommandExecutor? = null
+        internal val conditions = mutableListOf<CommandCondition>()
 
         init {
             require(LABEL.matches(name)) { "Invalid command name '$name': use 1-32 lowercase letters, digits, '-' or '_'" }
@@ -121,6 +132,9 @@ public class CommandDefinition private constructor(builder: Builder) {
             subcommand(Builder(name).also(configure::accept).build())
 
         public fun executes(executor: CommandExecutor): Builder = apply { this.executor = executor }
+
+        /** Adds a condition that is checked for this command and all its subcommands. */
+        public fun condition(condition: CommandCondition): Builder = apply { conditions += condition }
 
         public fun build(): CommandDefinition = CommandDefinition(this)
     }

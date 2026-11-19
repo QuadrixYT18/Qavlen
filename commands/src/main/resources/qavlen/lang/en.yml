@@ -6,6 +6,7 @@ command:
   invalid-argument: "Invalid value '{input}' for {argument}."
   invalid-number: "'{input}' is not a valid number."
   number-range: "The number must be between {min} and {max}."
+  string-length: "'{input}' must be {min} to {max} characters long."
   invalid-boolean: "'{input}' must be true or false."
   invalid-choice: "'{input}' is not valid. Choose one of: {choices}."
   invalid-uuid: "'{input}' is not a valid UUID."
@@ -13,3 +14,7 @@ command:
   sender-type: "This command can only be used by a {type}."
   cooldown: "Please wait {remaining} before using this command again."
   failed: "An internal error occurred while executing this command."
+  help:
+    header: "Commands:"
+    entry: "{usage} - {description}"
+    entry-plain: "{usage}"

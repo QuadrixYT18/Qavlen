@@ -137,8 +137,7 @@ public class JdaCommands @JvmOverloads constructor(
         } catch (exception: CommandException) {
             dispatcher.messages.send(source, exception.key, exception.placeholders)
         } catch (exception: Exception) {
-            dispatcher.errorHandler.handle(source, path, exception)
-            dispatcher.messages.send(source, CommandException.FAILED, emptyMap())
+            dispatcher.reportError(source, path, exception)
         } finally {
             deferral.cancel(false)
             source.finish()
@@ -240,7 +239,10 @@ public class JdaCommands @JvmOverloads constructor(
                 } else {
                     option.setAutoComplete(true)
                 }
-                is StringArgument, is BooleanArgument, is DiscordArgument<*> -> Unit
+                is StringArgument -> if (type.minLength > 0 || type.maxLength < OptionData.MAX_STRING_OPTION_LENGTH) {
+                    option.setRequiredLength(type.minLength, type.maxLength.coerceAtMost(OptionData.MAX_STRING_OPTION_LENGTH))
+                }
+                is BooleanArgument, is DiscordArgument<*> -> Unit
                 else -> option.setAutoComplete(true)
             }
             option

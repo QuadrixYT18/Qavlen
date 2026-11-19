@@ -141,6 +141,12 @@ public class CommandDispatcher @JvmOverloads constructor(
         if (!canUse(source, path)) return deny(source)
         val node = path.last()
         val executor = node.executor ?: throw IllegalArgumentException("Command '${node.name}' has no executor")
+        try {
+            path.forEach { node -> node.conditions.forEach { it.check(source) } }
+        } catch (exception: CommandException) {
+            messages.send(source, exception.key, exception.placeholders)
+            return CommandResult.REJECTED
+        }
         val bypass = cooldownBypassPermission?.let(source::hasPermission) == true
         val cooldown = node.cooldown?.takeUnless { bypass }
         val cooldownKey = cooldown?.let { "${source.id}:${path.joinToString(" ") { it.name }}" }
@@ -151,19 +157,68 @@ public class CommandDispatcher @JvmOverloads constructor(
             null
         }
         val result = try {
-            executor.execute(CommandContext(source, path.toList(), arguments, messages))
+            executor.execute(CommandContext(source, path.toList(), arguments, messages, this))
             CommandResult.SUCCESS
         } catch (exception: CommandException) {
             messages.send(source, exception.key, exception.placeholders)
             CommandResult.REJECTED
         } catch (exception: Exception) {
-            errorHandler.handle(source, path, exception)
-            messages.send(source, CommandException.FAILED, emptyMap())
+            reportError(source, path, exception)
             CommandResult.ERROR
         }
         // Failed executions do not consume the cooldown.
         if (result != CommandResult.SUCCESS && cooldownKey != null && reservation != null) cooldowns.release(cooldownKey, reservation)
         return result
+    }
+
+    /**
+     * Passes an unexpected exception to [errorHandler] and answers with [CommandException.FAILED]. A failing error
+     * handler is logged instead of hiding the original problem. Platform adapters use this for failures outside
+     * [invoke], such as reading platform options.
+     */
+    public fun reportError(source: CommandSource, path: List<CommandDefinition>, error: Throwable) {
+        try {
+            errorHandler.handle(source, path, error)
+        } catch (handlerFailure: Exception) {
+            handlerFailure.addSuppressed(error)
+            System.getLogger(CommandDispatcher::class.java.name)
+                .log(System.Logger.Level.ERROR, "The command error handler failed", handlerFailure)
+        }
+        messages.send(source, CommandException.FAILED, emptyMap())
+    }
+
+    /**
+     * Help entries for the commands [source] may use: every executable node below [command], or below all root
+     * commands when [command] is `null`. Descriptions are translated for the source's locale.
+     */
+    @JvmOverloads
+    public fun help(source: CommandSource, command: CommandDefinition? = null): List<CommandHelp> {
+        val roots = command?.let(::listOf) ?: commands.sortedBy { it.name }
+        return roots.flatMap { root -> helpEntries(source, listOf(root)) }
+    }
+
+    /** Sends [help] to [source] as a header followed by one line per command. */
+    @JvmOverloads
+    public fun sendHelp(source: CommandSource, command: CommandDefinition? = null) {
+        messages.send(source, CommandException.HELP_HEADER, emptyMap())
+        for (entry in help(source, command)) {
+            val key = if (entry.description.isEmpty()) CommandException.HELP_ENTRY_PLAIN else CommandException.HELP_ENTRY
+            messages.send(source, key, mapOf("usage" to entry.usage, "description" to entry.description))
+        }
+    }
+
+    private fun helpEntries(source: CommandSource, path: List<CommandDefinition>): List<CommandHelp> {
+        if (!canUse(source, path)) return emptyList()
+        val node = path.last()
+        val own = if (node.executor != null) listOf(CommandHelp(usage(path), describe(node.description, source.locale))) else emptyList()
+        return own + node.subcommands.flatMap { helpEntries(source, path + it) }
+    }
+
+    /** A translation of [description] when it is a known key, otherwise the literal text. */
+    public fun describe(description: String, locale: Locale): String {
+        if (description.isEmpty()) return description
+        val translations = messages.source(locale, description)
+        return if (translations.contains(locale, description)) translations.format(locale, description) else description
     }
 
     private fun cooldownActive(source: CommandSource, key: String): CommandResult {

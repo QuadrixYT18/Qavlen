@@ -9,12 +9,16 @@ import java.util.Locale
  *
  * @property path command nodes from the root to the executed node
  */
-public class CommandContext(
+public class CommandContext internal constructor(
     public val source: CommandSource,
     public val path: List<CommandDefinition>,
     private val arguments: Map<String, Any>,
     private val messages: CommandMessages,
+    private val dispatcher: CommandDispatcher?,
 ) {
+    public constructor(source: CommandSource, path: List<CommandDefinition>, arguments: Map<String, Any>, messages: CommandMessages) :
+        this(source, path, arguments, messages, null)
+
     public val command: CommandDefinition get() = path.last()
 
     public val locale: Locale get() = source.locale
@@ -56,6 +60,11 @@ public class CommandContext(
 
     public fun replyTranslated(key: String, placeholders: Map<String, Any?>) {
         messages.send(source, key, placeholders)
+    }
+
+    /** Sends the help of the root command this context belongs to, listing only subcommands the source may use. */
+    public fun sendHelp() {
+        dispatcher?.sendHelp(source, path.first()) ?: throw IllegalStateException("Help needs a context created by a CommandDispatcher")
     }
 
     /** Formats a translated message for this source without sending it. */

@@ -1,5 +1,8 @@
 package de.quadrixyt.qavlen.commands.annotations
 
+import de.quadrixyt.qavlen.commands.CommandCondition
+import kotlin.reflect.KClass
+
 /**
  * Declares a root command. The annotation processor generates a `<Class>_QavlenCommand` descriptor, which
  * `CommandDispatcher.register(instance)` loads.
@@ -33,6 +36,14 @@ public annotation class Execute
 @Retention(AnnotationRetention.BINARY)
 public annotation class Permission(val value: String)
 
+/**
+ * Requires [CommandCondition]s, which are created once when the command is registered: classes need a public
+ * no-argument constructor, Kotlin objects are used as they are. On a class the conditions apply to every subcommand.
+ */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.BINARY)
+public annotation class Require(vararg val value: KClass<out CommandCondition>)
+
 /** Minimum number of seconds between two executions by the same source. */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
@@ -55,6 +66,11 @@ public annotation class Optional
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.BINARY)
 public annotation class Greedy
+
+/** Restricts the length of a `String` argument to [min]..[max] characters. */
+@Target(AnnotationTarget.VALUE_PARAMETER)
+@Retention(AnnotationRetention.BINARY)
+public annotation class Length(val min: Int = 0, val max: Int = Int.MAX_VALUE)
 
 /** Restricts an `Int`, `Long` or `Double` argument to an inclusive range. */
 @Target(AnnotationTarget.VALUE_PARAMETER)

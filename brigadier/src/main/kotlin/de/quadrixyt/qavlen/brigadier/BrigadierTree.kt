@@ -109,7 +109,10 @@ public class BrigadierTree<S>(private val dispatcher: CommandDispatcher, private
     private fun value(context: CommandContext<S>, argument: CommandArgument<*>, source: CommandSource): Any {
         platform.convert(context, argument)?.let { return it }
         val type = argument.type
-        return if (nativeType(type) != null) {
+        return if (type is StringArgument) {
+            // Brigadier only reads the text; the Qavlen type still enforces its length limits.
+            type.parse(context.getArgument(argument.name, String::class.java), source)
+        } else if (nativeType(type) != null) {
             context.getArgument(argument.name, type.valueType)
         } else {
             type.parse(context.getArgument(argument.name, String::class.java), source)
