@@ -51,7 +51,8 @@ public class CommandAnnotationProcessor : AbstractProcessor() {
     private fun model(type: TypeElement): CommandModel {
         val packageName = processingEnv.elementUtils.getPackageOf(type).qualifiedName.toString()
         val command = type.annotation("Command")!!
-        val methods = ElementFilter.methodsIn(type.enclosedElements)
+        // Inherited methods count too, matching the KSP processor, so shared subcommands can live in a base class.
+        val methods = ElementFilter.methodsIn(processingEnv.elementUtils.getAllMembers(type))
             .filter { it.annotation("Subcommand") != null || it.annotation("Execute") != null }
             .map(::method)
         val problem = when {

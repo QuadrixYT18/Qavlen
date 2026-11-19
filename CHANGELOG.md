@@ -11,6 +11,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Fixed
 
+- `commands-processor`: the javac processor now picks up `@Subcommand` and `@Execute` methods inherited from base classes, as the KSP processor already did.
 - `commands`, `brigadier`, `jda`: an exception in a custom `ArgumentType.suggest` is logged and yields no suggestions instead of breaking tab completion or Discord autocomplete.
 - `jda`: interactions that arrive after `close()` are ignored instead of throwing on JDA's event thread, unexpected exceptions while reading options are reported, and `close()` waits for running executors before stopping the deferral timer.
 - `commands`: cooldowns are reserved atomically before a command runs, so concurrent executions on Velocity or Discord can no longer bypass them; failed executions still do not consume the cooldown. Expired cooldowns are purged automatically.

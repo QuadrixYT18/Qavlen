@@ -208,4 +208,67 @@ class CommandProcessorTest {
             "Command method 'take' must not return a value",
         ).forEach { expected -> assertTrue(expected in messages, "Missing '$expected' in:\n$messages") }
     }
+
+    @Test
+    fun `java commands inherit subcommands from base classes`() {
+        val base = JavaFileObjects.forSourceString(
+            "test.BaseCommand",
+            """
+            package test;
+
+            import de.quadrixyt.qavlen.commands.CommandContext;
+            import de.quadrixyt.qavlen.commands.annotations.Subcommand;
+
+            public abstract class BaseCommand {
+                @Subcommand(path = "info")
+                public void info(CommandContext context) {
+                }
+            }
+            """.trimIndent(),
+        )
+        val command = JavaFileObjects.forSourceString(
+            "test.ShopCommand",
+            """
+            package test;
+
+            import de.quadrixyt.qavlen.commands.annotations.Command;
+            import de.quadrixyt.qavlen.commands.annotations.Subcommand;
+
+            @Command(name = "shop")
+            public class ShopCommand extends BaseCommand {
+                @Subcommand(path = "buy")
+                public void buy(String item) {
+                }
+            }
+            """.trimIndent(),
+        )
+
+        val compilation = javac().withProcessors(CommandAnnotationProcessor()).compile(base, command)
+
+        assertEquals(Compilation.Status.SUCCESS, compilation.status(), compilation.diagnostics().joinToString("\n"))
+        val generated = compilation.generatedSourceFile("test.ShopCommand_QavlenCommand").get().getCharContent(true).toString()
+        assertTrue("builder(\"info\")" in generated && "builder(\"buy\")" in generated, generated)
+    }
+
+    @Test
+    fun `generated java source is deterministic`() {
+        val source = """
+            package test;
+
+            import de.quadrixyt.qavlen.commands.annotations.*;
+
+            @Command(name = "coins")
+            public class CoinsCommand {
+                @Subcommand(path = "b") public void b() {}
+                @Subcommand(path = "a") public void a() {}
+                @Subcommand(path = "c x") public void c(@Optional Integer amount) {}
+            }
+        """.trimIndent()
+
+        val outputs = (1..3).map {
+            compileJava(source).generatedSourceFile("test.CoinsCommand_QavlenCommand").get().getCharContent(true).toString()
+        }
+
+        assertEquals(1, outputs.toSet().size)
+    }
 }
