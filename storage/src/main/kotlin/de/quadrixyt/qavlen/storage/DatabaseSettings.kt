@@ -37,9 +37,9 @@ public data class DatabaseSettings @JvmOverloads constructor(
     val properties: Map<String, String> = emptyMap(),
     val url: String? = null,
 ) {
-    /** The JDBC URL these settings connect to. */
-    public val jdbcUrl: String get() = url ?: "jdbc:${type.scheme}://$host:$port/$database"
+    /** The JDBC URL these settings connect to. A function, so serializers do not write it into configuration files. */
+    public fun jdbcUrl(): String = url ?: "jdbc:${type.scheme}://$host:$port/$database"
 
     override fun toString(): String =
-        "DatabaseSettings(url=$jdbcUrl, username=$username, password=${if (password.isEmpty()) "" else "***"}, poolSize=$poolSize)"
+        "DatabaseSettings(url=${jdbcUrl()}, username=$username, password=${if (password.isEmpty()) "" else "***"}, poolSize=$poolSize)"
 }

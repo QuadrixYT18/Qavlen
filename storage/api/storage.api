@@ -77,7 +77,6 @@ public final class de/quadrixyt/qavlen/storage/DatabaseSettings {
 	public final fun getConnectionTimeout ()Ljava/time/Duration;
 	public final fun getDatabase ()Ljava/lang/String;
 	public final fun getHost ()Ljava/lang/String;
-	public final fun getJdbcUrl ()Ljava/lang/String;
 	public final fun getPassword ()Ljava/lang/String;
 	public final fun getPoolSize ()I
 	public final fun getPort ()I
@@ -87,6 +86,7 @@ public final class de/quadrixyt/qavlen/storage/DatabaseSettings {
 	public final fun getUrl ()Ljava/lang/String;
 	public final fun getUsername ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun jdbcUrl ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
 

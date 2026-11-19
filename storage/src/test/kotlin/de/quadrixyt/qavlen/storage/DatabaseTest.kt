@@ -108,7 +108,7 @@ class DatabaseTest {
         Database.connect(settings).use { database -> assertEquals(1, database.queryFirst("SELECT 1", { it.getInt(1) })) }
 
         assertTrue("secret" !in settings.toString())
-        assertEquals("jdbc:postgresql://db:5432/game", DatabaseSettings(DatabaseType.POSTGRESQL, "db", database = "game").jdbcUrl)
+        assertEquals("jdbc:postgresql://db:5432/game", DatabaseSettings(DatabaseType.POSTGRESQL, "db", database = "game").jdbcUrl())
         assertFailsWith<IllegalArgumentException> { Database.builder(settings.copy(poolSize = 0)) }
     }
 }

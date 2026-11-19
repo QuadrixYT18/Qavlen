@@ -221,7 +221,7 @@ public class Database private constructor(
         public fun builder(settings: DatabaseSettings): Builder {
             require(settings.poolSize in 1..100) { "poolSize must be between 1 and 100" }
             require(settings.port in 1..65535) { "port must be between 1 and 65535" }
-            val builder = builder(settings.jdbcUrl)
+            val builder = builder(settings.jdbcUrl())
                 .credentials(settings.username, settings.password)
                 .poolSize(settings.poolSize)
                 .connectionTimeout(settings.connectionTimeout)

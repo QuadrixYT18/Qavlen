@@ -55,6 +55,7 @@ class TypedConfigJavaTest {
         assertEquals(4, config.getValue().database().getPoolSize());
         assertTrue(!Files.readString(file).contains("from-env"), Files.readString(file));
         assertTrue(Files.readString(file).contains("pool-size: 4"), Files.readString(file));
+        assertTrue(!Files.readString(file).contains("jdbc-url"), Files.readString(file));
         try (Database database = Database.connect(config.getValue().database())) {
             Integer one = database.queryFirst("SELECT 1", row -> row.getInt(1));
             assertEquals(1, one);
