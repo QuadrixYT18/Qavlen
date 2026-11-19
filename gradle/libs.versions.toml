@@ -10,6 +10,8 @@ shadow = "9.6.1"
 ktlint = "14.2.0"
 
 [libraries]
+jackson-databind = "tools.jackson.core:jackson-databind:3.3.0"
+jackson-kotlin = "tools.jackson.module:jackson-module-kotlin:3.3.0"
 snakeyaml = "org.yaml:snakeyaml:2.7"
 gson = "com.google.code.gson:gson:2.15.0"
 hikari = "com.zaxxer:HikariCP:7.1.0"
