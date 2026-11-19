@@ -129,10 +129,7 @@ public class BrigadierTree<S>(private val dispatcher: CommandDispatcher, private
         if (type.greedy) StringArgumentType.greedyString() else StringArgumentType.string()
 
     private fun suggestions(type: ArgumentType<*>): SuggestionProvider<S> = SuggestionProvider { context, builder ->
-        val remaining = builder.remaining
-        type.suggest(remaining, platform.source(context.source))
-            .filter { it.startsWith(remaining, ignoreCase = true) }
-            .forEach(builder::suggest)
+        dispatcher.suggestions(type, builder.remaining, platform.source(context.source)).forEach(builder::suggest)
         builder.buildFuture()
     }
 

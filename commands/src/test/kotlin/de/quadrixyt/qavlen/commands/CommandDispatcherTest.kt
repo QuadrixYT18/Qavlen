@@ -239,4 +239,27 @@ class CommandDispatcherTest {
         now = now.plusSeconds(11)
         assertTrue(cooldowns.tryStart("a", Duration.ofSeconds(10)))
     }
+
+    @Test
+    fun `failing suggestions yield no completions`() {
+        val broken = object : ArgumentType<String> {
+            override val valueType: Class<String> get() = String::class.java
+
+            override fun parse(input: String, source: CommandSource): String = input
+
+            override fun suggest(input: String, source: CommandSource): List<String> = error("lookup failed")
+        }
+        val dispatcher = CommandDispatcher().apply { register(command("find") { it.argument("name", broken).executes {} }) }
+
+        assertEquals(emptyList(), dispatcher.suggest(TestSource(), "find a"))
+        assertEquals(listOf("alpha", "Alpha"), dispatcher.suggestions(StringChoices, "a", TestSource()))
+    }
+
+    private object StringChoices : ArgumentType<String> {
+        override val valueType: Class<String> get() = String::class.java
+
+        override fun parse(input: String, source: CommandSource): String = input
+
+        override fun suggest(input: String, source: CommandSource): List<String> = listOf("alpha", "Alpha", "alpha", "beta")
+    }
 }

@@ -35,6 +35,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
@@ -66,6 +68,9 @@ public class JdaCommands @JvmOverloads constructor(
     /** Replies are ephemeral unless set to `false`. Error messages are always ephemeral. */
     @Volatile
     public var ephemeralReplies: Boolean = true
+
+    @Volatile
+    private var closed = false
 
     @Volatile
     public var deferAfter: Duration = Duration.ofMillis(2_000)
@@ -111,22 +116,32 @@ public class JdaCommands @JvmOverloads constructor(
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val path = path(event.name, event.subcommandGroup, event.subcommandName) ?: return
+        if (closed) return
         val source = JdaCommandSource(event, permissions, ephemeralReplies, dispatcher.messages.translations.defaultLocale)
-        val deferral = timer.schedule({ source.defer() }, deferAfter.toMillis(), TimeUnit.MILLISECONDS)
-        executor.execute {
-            try {
-                val values = linkedMapOf<String, Any>()
-                for (argument in path.last().arguments) {
-                    val option = event.getOption(argument.name) ?: continue
-                    values[argument.name] = read(argument, option, source)
-                }
-                dispatcher.invoke(source, path, values)
-            } catch (exception: CommandException) {
-                dispatcher.messages.send(source, exception.key, exception.placeholders)
-            } finally {
-                deferral.cancel(false)
-                source.finish()
+        try {
+            val deferral = timer.schedule({ source.defer() }, deferAfter.toMillis(), TimeUnit.MILLISECONDS)
+            executor.execute { run(source, path, event, deferral) }
+        } catch (_: RejectedExecutionException) {
+            // Closed while the event was dispatched; the interaction is left to time out like any unhandled one.
+        }
+    }
+
+    private fun run(source: JdaCommandSource, path: List<CommandDefinition>, event: SlashCommandInteractionEvent, deferral: Future<*>) {
+        try {
+            val values = linkedMapOf<String, Any>()
+            for (argument in path.last().arguments) {
+                val option = event.getOption(argument.name) ?: continue
+                values[argument.name] = read(argument, option, source)
             }
+            dispatcher.invoke(source, path, values)
+        } catch (exception: CommandException) {
+            dispatcher.messages.send(source, exception.key, exception.placeholders)
+        } catch (exception: Exception) {
+            dispatcher.errorHandler.handle(source, path, exception)
+            dispatcher.messages.send(source, CommandException.FAILED, emptyMap())
+        } finally {
+            deferral.cancel(false)
+            source.finish()
         }
     }
 
@@ -136,16 +151,15 @@ public class JdaCommands @JvmOverloads constructor(
         val argument = path.last().arguments.firstOrNull { it.name == focused.name } ?: return
         val source = JdaCommandSource(event, permissions, true, dispatcher.messages.translations.defaultLocale)
         if (!dispatcher.canUse(source, path)) return event.replyChoiceStrings(emptyList()).queue()
-        val choices = argument.type.suggest(focused.value, source)
-            .filter { it.startsWith(focused.value, ignoreCase = true) }
-            .distinct()
-            .take(OptionData.MAX_CHOICES)
+        val choices = dispatcher.suggestions(argument.type, focused.value, source).take(OptionData.MAX_CHOICES)
         event.replyChoiceStrings(choices).queue()
     }
 
+    /** Stops accepting interactions, waits for running executors and stops the deferral timer. */
     override fun close() {
-        timer.shutdownNow()
+        closed = true
         executor.close()
+        timer.shutdownNow()
     }
 
     private fun path(name: String, group: String?, subcommand: String?): List<CommandDefinition>? {

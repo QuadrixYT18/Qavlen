@@ -7,9 +7,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ### Added
 
 - `commands`: `Cooldowns.tryStart` starts a cooldown atomically.
+- `commands`: `CommandDispatcher.suggestions` filters argument suggestions by prefix; Paper, Velocity and Discord now share it.
 
 ### Fixed
 
+- `commands`, `brigadier`, `jda`: an exception in a custom `ArgumentType.suggest` is logged and yields no suggestions instead of breaking tab completion or Discord autocomplete.
+- `jda`: interactions that arrive after `close()` are ignored instead of throwing on JDA's event thread, unexpected exceptions while reading options are reported, and `close()` waits for running executors before stopping the deferral timer.
 - `commands`: cooldowns are reserved atomically before a command runs, so concurrent executions on Velocity or Discord can no longer bypass them; failed executions still do not consume the cooldown. Expired cooldowns are purged automatically.
 - `core`: `writeAtomically` flushes the file to disk before replacing the target, keeps the target's POSIX permissions and writes through symbolic links instead of replacing them.
 - `config`: migrations are saved even when `writeDefaults(false)` is set; previously they ran again on every load.

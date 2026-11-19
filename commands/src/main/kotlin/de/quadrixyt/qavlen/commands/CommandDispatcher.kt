@@ -197,7 +197,7 @@ public class CommandDispatcher @JvmOverloads constructor(
         }
         val argument = node.arguments.getOrNull(complete.size - path.size) ?: node.arguments.lastOrNull()?.takeIf { it.type.greedy }
             ?: return emptyList()
-        return filter(argument.type.suggest(partial, source), partial)
+        return suggestions(argument.type, partial, source)
     }
 
     private fun deny(source: CommandSource): CommandResult {
@@ -211,6 +211,19 @@ public class CommandDispatcher @JvmOverloads constructor(
     /** Usage line for the command at the end of [path], for example `/coins give <target> <amount>`. */
     public fun usage(path: List<CommandDefinition>): String =
         "/" + (path.dropLast(1).map { it.name } + path.last().usage()).joinToString(" ")
+
+    /**
+     * Suggestions of [type] for the partially typed [input], filtered by prefix and without duplicates. Platform
+     * adapters use this for tab completion and autocomplete; an exception from a custom type is logged and yields
+     * no suggestions instead of breaking completion.
+     */
+    public fun suggestions(type: ArgumentType<*>, input: String, source: CommandSource): List<String> = try {
+        filter(type.suggest(input, source), input)
+    } catch (exception: Exception) {
+        System.getLogger(CommandDispatcher::class.java.name)
+            .log(System.Logger.Level.WARNING, "Suggestions of ${type.javaClass.name} failed", exception)
+        emptyList()
+    }
 
     private fun filter(candidates: List<String>, partial: String): List<String> =
         candidates.filter { it.startsWith(partial, ignoreCase = true) }.distinct()
