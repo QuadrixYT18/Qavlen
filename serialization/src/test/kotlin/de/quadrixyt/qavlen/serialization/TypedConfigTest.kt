@@ -276,4 +276,22 @@ class TypedConfigTest {
 
         assertEquals(listOf("port: must not be a privileged port"), error.violations.map(ConfigViolation::toString))
     }
+
+    @Test
+    fun `manual comments survive defaults and saves`() {
+        val path = directory.resolve("config.yml")
+        path.writeText("# My server\n\n# Keep this low on weekends\nmax-players: 30 # raised in May\ndatabase:\n  # production database\n  host: db.internal\n")
+
+        val config = Configs.open<PluginConfig>(path)
+        config.update { copy(maxPlayers = 31) }
+        config.save()
+
+        val text = path.readText()
+        listOf(
+            "# My server\n\n# Keep this low on weekends\nmax-players: 31 # raised in May",
+            "  # production database\n  host: db.internal",
+            "  # Database port\n  port: 3306",
+        ).forEach { assertTrue(it in text, "Missing '$it' in:\n$text") }
+        assertFalse("# Example plugin configuration" in text, text)
+    }
 }

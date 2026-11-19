@@ -4,6 +4,7 @@ import de.quadrixyt.qavlen.config.ConfigException
 import de.quadrixyt.qavlen.config.ConfigSection
 import de.quadrixyt.qavlen.config.ConfigValidationException
 import de.quadrixyt.qavlen.config.ConfigViolation
+import de.quadrixyt.qavlen.config.preserveYamlComments
 import de.quadrixyt.qavlen.core.backupFile
 import de.quadrixyt.qavlen.core.writeAtomically
 import java.io.IOException
@@ -283,7 +284,10 @@ public class TypedConfig<T : Any> internal constructor(
 
     private fun write(target: Path, root: Map<String, Any?>) {
         try {
-            writeAtomically(target, format.write(root, model.takeIf { options.prefix == null }))
+            val content = format.write(root, model.takeIf { options.prefix == null })
+            val previous = if (format == ConfigFileFormat.YAML && Files.exists(target)) Files.readString(target) else null
+            // Comments people wrote stay; @Comment texts are only used for keys the file did not have yet.
+            writeAtomically(target, previous?.let { preserveYamlComments(it, content) } ?: content)
         } catch (exception: IOException) {
             throw ConfigException("Could not write $target", exception)
         }
