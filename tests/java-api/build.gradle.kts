@@ -1,0 +1,16 @@
+plugins {
+    id("qavlen.example")
+}
+
+// Compiles and runs the public API from plain Java, as a Java consumer of the published artifacts would.
+dependencies {
+    testImplementation(project(":config"))
+    testImplementation(project(":language"))
+    testImplementation(project(":commands"))
+    testImplementation(project(":serialization"))
+    testImplementation(project(":storage"))
+    testImplementation(project(":cache"))
+    testImplementation(project(":network"))
+    testImplementation(project(":scheduler"))
+    testRuntimeOnly(libs.h2)
+}

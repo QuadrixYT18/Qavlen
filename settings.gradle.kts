@@ -33,6 +33,7 @@ include(
     "platform:paper",
     "platform:velocity",
     "platform:jda",
+    "tests:java-api",
     "examples:jvm-kotlin",
     "examples:jvm-java",
     "examples:paper-kotlin",
