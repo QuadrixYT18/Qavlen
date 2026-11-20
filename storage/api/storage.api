@@ -163,3 +163,93 @@ public final class de/quadrixyt/qavlen/storage/dialect/SQLiteDialect : de/quadri
 	public fun targetType (III)Ljava/lang/String;
 }
 
+public final class de/quadrixyt/qavlen/storage/migration/ColumnInfo {
+	public fun <init> (Ljava/lang/String;IIIZZ)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun copy (Ljava/lang/String;IIIZZ)Lde/quadrixyt/qavlen/storage/migration/ColumnInfo;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/storage/migration/ColumnInfo;Ljava/lang/String;IIIZZILjava/lang/Object;)Lde/quadrixyt/qavlen/storage/migration/ColumnInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAutoIncrement ()Z
+	public final fun getDigits ()I
+	public final fun getJdbcType ()I
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNullable ()Z
+	public final fun getSize ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/DatabaseMigrationManager {
+	public fun <init> (Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationStateStore;Lde/quadrixyt/qavlen/storage/migration/DatabaseTransfer;)V
+	public synthetic fun <init> (Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationStateStore;Lde/quadrixyt/qavlen/storage/migration/DatabaseTransfer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun initializeActive (Lde/quadrixyt/qavlen/storage/DatabaseSettings;)V
+	public final fun prepare (Lde/quadrixyt/qavlen/storage/DatabaseSettings;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lde/quadrixyt/qavlen/storage/DatabaseSettings;I)V
+	public static synthetic fun prepare$default (Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationManager;Lde/quadrixyt/qavlen/storage/DatabaseSettings;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lde/quadrixyt/qavlen/storage/DatabaseSettings;IILjava/lang/Object;)V
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/DatabaseMigrationState {
+	public fun <init> (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;)V
+	public synthetic fun <init> (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+	public final fun copy (Ljava/lang/String;Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;)Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState;Ljava/lang/String;Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;ILjava/lang/Object;)Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActiveIdentity ()Ljava/lang/String;
+	public final fun getStatus ()Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status : java/lang/Enum {
+	public static final field ACTIVE Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+	public static final field IN_PROGRESS Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+	public static fun values ()[Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState$Status;
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/DatabaseMigrationStateStore {
+	public fun <init> (Ljava/nio/file/Path;)V
+	public final fun read ()Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState;
+	public final fun write (Lde/quadrixyt/qavlen/storage/migration/DatabaseMigrationState;)V
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/DatabaseTransfer {
+	public fun <init> ()V
+	public fun <init> (Lde/quadrixyt/qavlen/storage/migration/SchemaInspector;Lde/quadrixyt/qavlen/storage/migration/MigrationValidator;)V
+	public synthetic fun <init> (Lde/quadrixyt/qavlen/storage/migration/SchemaInspector;Lde/quadrixyt/qavlen/storage/migration/MigrationValidator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun transfer (Ljava/sql/Connection;Ljava/sql/Connection;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;I)V
+	public static synthetic fun transfer$default (Lde/quadrixyt/qavlen/storage/migration/DatabaseTransfer;Ljava/sql/Connection;Ljava/sql/Connection;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;IILjava/lang/Object;)V
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/MigrationValidator {
+	public fun <init> ()V
+	public final fun checkCounts (Ljava/sql/Connection;Ljava/sql/Connection;Ljava/util/List;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;)V
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/SchemaInspector {
+	public fun <init> ()V
+	public final fun tables (Ljava/sql/Connection;)Ljava/util/List;
+}
+
+public final class de/quadrixyt/qavlen/storage/migration/TableInfo {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lde/quadrixyt/qavlen/storage/migration/TableInfo;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/storage/migration/TableInfo;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lde/quadrixyt/qavlen/storage/migration/TableInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColumns ()Ljava/util/List;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPrimaryKey ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
