@@ -18,5 +18,6 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | [Serialization](Serialization) | `qavlen-serialization` | Jackson-based JSON codec and [typed configurations](Typed-Configuration) for data classes and records (YAML, JSON, TOML) |
 | [Networking](Networking) | `qavlen-network` | JSON REST client with timeouts and retries |
 | [Scheduler](Scheduler) | `qavlen-scheduler` | Delayed and repeating tasks for plain JVM applications |
+| [Update Checker](Update-Checker) | `qavlen-updater` | Update checks for your plugin on Modrinth, GitHub Releases and Hangar |
 
 Start with [Getting Started](Getting-Started). [Compatibility](Compatibility) lists the supported versions and how they were tested. Complete projects are in the [`examples`](https://github.com/QuadrixYT18/Qavlen/tree/master/examples) directory.

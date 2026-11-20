@@ -2,6 +2,18 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `updater`: new module `qavlen-updater`. `UpdateChecker.modrinth`, `github` and `hangar` check whether a newer version of your plugin or application is published, with release channels, platform and Minecraft version filters, release and download links and release notes. Checks are asynchronous, share one request when concurrent, cache successful results, revalidate with `ETag`, respect rate limits (`429`, `Retry-After`, `X-RateLimit-Reset`) and report every problem as `UpdateResult.Failed`; versions that cannot be compared are never reported as up to date. Nothing is downloaded or installed.
+- `updater`: `SemanticVersion` compares version numbers, orders pre-release markers and ignores platform labels such as `-velocity`.
+- `network`: `RestClient.Builder.followRedirects(false)` returns redirects to the caller.
+
+### Build
+
+- Releases publish 16 modules.
+
 ## 0.5.2 - 2026-11-20
 
 ### Added

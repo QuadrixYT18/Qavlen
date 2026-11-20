@@ -64,6 +64,14 @@ val messages = YamlConfig.load(dataPath.resolve("messages.yml"))
 player.sendMessage(messages.getComponent("welcome", "player" to player.name))
 ```
 
+An update check for your own plugin needs one call; it runs asynchronously and never installs anything:
+
+```kotlin
+UpdateChecker.modrinth("my-plugin", pluginMeta.version) { platform("paper") }.checkAsync().thenAccept { result ->
+    if (result is UpdateResult.Available) logger.info("Update ${result.latestVersion}: ${result.releaseUrl}")
+}
+```
+
 ## Modules
 
 | Artifact | Purpose |
@@ -82,6 +90,7 @@ player.sendMessage(messages.getComponent("welcome", "player" to player.name))
 | `qavlen-serialization` | Jackson-based JSON codec and typed configurations for data classes and records (YAML with comments, JSON, TOML) |
 | `qavlen-network` | JSON REST client with timeouts and bounded retries |
 | `qavlen-scheduler` | Error-tolerant delayed and repeating tasks |
+| `qavlen-updater` | Update checks for your plugin on Modrinth, GitHub Releases and Hangar, with channels and compatibility filters |
 
 ## Installation
 

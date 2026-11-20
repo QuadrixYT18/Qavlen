@@ -26,6 +26,7 @@
 - [Serialization](Serialization)
 - [Networking](Networking)
 - [Scheduler](Scheduler)
+- [Update Checker](Update-Checker)
 
 **Help**
 
