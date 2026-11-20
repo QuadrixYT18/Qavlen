@@ -19,7 +19,8 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * Checks run asynchronously on the HTTP client's threads and never block the caller; callbacks run on those threads,
  * so switch to the server thread before touching game objects. A successful result is reused for
- * [UpdateOptions.cacheDuration], and concurrent checks share one request. Failures are not cached.
+ * [UpdateOptions.cacheDuration], and concurrent checks share one request. Failures are not cached, except that no
+ * request is sent while a rate limit the provider reported lasts. Unchanged responses are revalidated with `ETag`.
  *
  * Nothing is downloaded or installed: results only contain links. Close the checker when it is no longer needed,
  * for example when the plugin is disabled.
@@ -36,6 +37,7 @@ public class UpdateChecker internal constructor(
         endpoint,
         options.userAgent ?: "Qavlen-Updater (+https://github.com/QuadrixYT18/Qavlen) ${source.description}",
         options.timeout,
+        clock,
     )
     private val running = AtomicReference<CompletableFuture<UpdateResult>?>()
 
@@ -43,6 +45,10 @@ public class UpdateChecker internal constructor(
 
     @Volatile
     private var cached: Cached? = null
+
+    /** A rate limit the provider reported; no request is sent before it ends. */
+    @Volatile
+    private var limited: UpdateResult.Failed? = null
 
     /** The result of the last completed check, or `null` before the first one. */
     @Volatile
@@ -55,7 +61,9 @@ public class UpdateChecker internal constructor(
      * [UpdateResult.Failed]. Cancelling it only stops waiting for this caller.
      */
     public fun checkAsync(): CompletableFuture<UpdateResult> {
-        cached?.takeIf { clock.instant().isBefore(it.until) }?.let { return CompletableFuture.completedFuture(it.result) }
+        val now = clock.instant()
+        cached?.takeIf { now.isBefore(it.until) }?.let { return CompletableFuture.completedFuture(it.result) }
+        limited?.takeIf { now.isBefore(it.retryAfter) }?.let { return CompletableFuture.completedFuture(it) }
         while (true) {
             running.get()?.let { return it.copy() }
             val check = CompletableFuture<UpdateResult>()
@@ -69,9 +77,13 @@ public class UpdateChecker internal constructor(
     /** Like [checkAsync], but waits for the result. Never call it on a server's main thread. */
     public fun check(): UpdateResult = checkAsync().join()
 
-    /** Forgets the cached result, so the next check asks the provider again. */
+    /**
+     * Forgets the cached result and remembered responses, so the next check asks the provider for everything again.
+     * A rate limit the provider reported still applies.
+     */
     public fun invalidate() {
         cached = null
+        http.forget()
     }
 
     private fun start(check: CompletableFuture<UpdateResult>) {
@@ -82,7 +94,11 @@ public class UpdateChecker internal constructor(
         }
         result.handle { releases, failure -> if (failure == null) evaluate(releases) else failed(failure) }
             .whenComplete { outcome, _ ->
-                if (outcome !is UpdateResult.Failed) cached = Cached(outcome, clock.instant().plus(options.cacheDuration))
+                if (outcome is UpdateResult.Failed) {
+                    if (outcome.retryAfter != null) limited = outcome
+                } else {
+                    cached = Cached(outcome, clock.instant().plus(options.cacheDuration))
+                }
                 lastResult = outcome
                 running.set(null)
                 check.complete(outcome)
