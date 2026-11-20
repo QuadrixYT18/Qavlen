@@ -26,3 +26,110 @@ public final class de/quadrixyt/qavlen/updater/UpdateChannel : java/lang/Enum {
 	public static fun values ()[Lde/quadrixyt/qavlen/updater/UpdateChannel;
 }
 
+public final class de/quadrixyt/qavlen/updater/UpdateChecker : java/lang/AutoCloseable {
+	public static final field Companion Lde/quadrixyt/qavlen/updater/UpdateChecker$Companion;
+	public final fun check ()Lde/quadrixyt/qavlen/updater/UpdateResult;
+	public final fun checkAsync ()Ljava/util/concurrent/CompletableFuture;
+	public fun close ()V
+	public final fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getLastResult ()Lde/quadrixyt/qavlen/updater/UpdateResult;
+	public final fun getOptions ()Lde/quadrixyt/qavlen/updater/UpdateOptions;
+	public final fun invalidate ()V
+	public static final fun modrinth (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public static final fun modrinth (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateChecker$Companion {
+	public final fun modrinth (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public final fun modrinth (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public final synthetic fun modrinth (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public static synthetic fun modrinth$default (Lde/quadrixyt/qavlen/updater/UpdateChecker$Companion;Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateOptions {
+	public static final field Companion Lde/quadrixyt/qavlen/updater/UpdateOptions$Companion;
+	public static final fun builder ()Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public static final fun defaults ()Lde/quadrixyt/qavlen/updater/UpdateOptions;
+	public final fun getCacheDuration ()Ljava/time/Duration;
+	public final fun getChannel ()Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public final fun getMinecraftVersion ()Ljava/lang/String;
+	public final fun getPlatform ()Ljava/lang/String;
+	public final fun getTimeout ()Ljava/time/Duration;
+	public final fun getUserAgent ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateOptions$Builder {
+	public final fun build ()Lde/quadrixyt/qavlen/updater/UpdateOptions;
+	public final fun cacheDuration (Ljava/time/Duration;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun channel (Lde/quadrixyt/qavlen/updater/UpdateChannel;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun githubToken (Ljava/util/function/Supplier;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun minecraftVersion (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun platform (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun timeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun userAgent (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateOptions$Companion {
+	public final fun builder ()Lde/quadrixyt/qavlen/updater/UpdateOptions$Builder;
+	public final fun defaults ()Lde/quadrixyt/qavlen/updater/UpdateOptions;
+}
+
+public abstract interface class de/quadrixyt/qavlen/updater/UpdateResult {
+	public abstract fun getCurrentVersion ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateResult$Available : de/quadrixyt/qavlen/updater/UpdateResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateChannel;Ljava/net/URI;Ljava/net/URI;Ljava/lang/String;Ljava/time/Instant;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public final fun component4 ()Ljava/net/URI;
+	public final fun component5 ()Ljava/net/URI;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/time/Instant;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateChannel;Ljava/net/URI;Ljava/net/URI;Ljava/lang/String;Ljava/time/Instant;)Lde/quadrixyt/qavlen/updater/UpdateResult$Available;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/updater/UpdateResult$Available;Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateChannel;Ljava/net/URI;Ljava/net/URI;Ljava/lang/String;Ljava/time/Instant;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateResult$Available;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChannel ()Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getDownloadUrl ()Ljava/net/URI;
+	public final fun getLatestVersion ()Ljava/lang/String;
+	public final fun getPublishedAt ()Ljava/time/Instant;
+	public final fun getReleaseNotes ()Ljava/lang/String;
+	public final fun getReleaseUrl ()Ljava/net/URI;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateResult$Failed : de/quadrixyt/qavlen/updater/UpdateResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun component4 ()Ljava/time/Instant;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;)Lde/quadrixyt/qavlen/updater/UpdateResult$Failed;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/updater/UpdateResult$Failed;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateResult$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Ljava/lang/Throwable;
+	public fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getReason ()Ljava/lang/String;
+	public final fun getRetryAfter ()Ljava/time/Instant;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateResult$UpToDate : de/quadrixyt/qavlen/updater/UpdateResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateResult$UpToDate;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/updater/UpdateResult$UpToDate;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateResult$UpToDate;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getLatestVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
