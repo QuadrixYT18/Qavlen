@@ -35,6 +35,9 @@ public class TypedConfigOptions<T : Any> private constructor(builder: Builder<T>
     public val migrations: List<ConfigMigration> = builder.migrations.sortedBy { it.fromVersion }
     public val validators: List<TypedValidator<in T>> = builder.validators.toList()
     public val codec: JsonCodec = builder.codec
+
+    /** Class loader whose resource named like the file is the default file, or `null`; see [Builder.bundled]. */
+    public val bundled: ClassLoader? = builder.bundled
     internal val sources: List<OverrideSource> = builder.sources.toList()
 
     public class Builder<T : Any> internal constructor() {
@@ -49,6 +52,7 @@ public class TypedConfigOptions<T : Any> private constructor(builder: Builder<T>
         internal val validators = mutableListOf<TypedValidator<in T>>()
         internal val sources = mutableListOf<OverrideSource>()
         internal var codec: JsonCodec = ConfigBinding.codec
+        internal var bundled: ClassLoader? = null
 
         /** Uses [format] instead of guessing it from the file extension. */
         public fun format(format: ConfigFileFormat): Builder<T> = apply { this.format = format }
@@ -98,6 +102,18 @@ public class TypedConfigOptions<T : Any> private constructor(builder: Builder<T>
 
         /** Overrides values by path, for example from command-line arguments. Never written to the file. */
         public fun overrides(values: Map<String, Any?>): Builder<T> = apply { sources += OverrideSource.Values(values.toMap()) }
+
+        /**
+         * Uses the resource with the file's name in [classLoader], for example `config.yml` from `src/main/resources`,
+         * as the default file. A missing file is created as an unchanged copy of it, comments included. An existing
+         * file gains the keys only the resource has, with its comments; values in the file are never replaced.
+         * Keys missing from both come from the defaults of the class. A missing or broken resource fails loading.
+         */
+        public fun bundled(classLoader: ClassLoader): Builder<T> = apply { bundled = classLoader }
+
+        /** Like [bundled] with the class loader of [resourceOwner], typically the plugin's main class. */
+        public fun bundled(resourceOwner: Class<*>): Builder<T> =
+            bundled(resourceOwner.classLoader ?: ClassLoader.getSystemClassLoader())
 
         /** Uses a codec with custom serializers; it should keep kebab-case names to match existing files. */
         public fun codec(codec: JsonCodec): Builder<T> = apply { this.codec = codec }

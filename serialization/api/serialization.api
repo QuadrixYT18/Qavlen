@@ -19,7 +19,7 @@ public final class de/quadrixyt/qavlen/serialization/ConfigBinding {
 	public static synthetic fun write$default (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/Object;Lde/quadrixyt/qavlen/serialization/JsonCodec;ILjava/lang/Object;)V
 }
 
-public final class de/quadrixyt/qavlen/serialization/ConfigConflictException : de/quadrixyt/qavlen/config/ConfigException {
+public final class de/quadrixyt/qavlen/serialization/ConfigConflictException : de/quadrixyt/qavlen/config/ConfigConflictException {
 	public fun <init> (Ljava/lang/String;)V
 }
 
@@ -140,6 +140,7 @@ public final class de/quadrixyt/qavlen/serialization/TypedConfigOptions {
 	public static final fun builder ()Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
 	public static final fun defaults ()Lde/quadrixyt/qavlen/serialization/TypedConfigOptions;
 	public final fun getBackups ()Z
+	public final fun getBundled ()Ljava/lang/ClassLoader;
 	public final fun getCodec ()Lde/quadrixyt/qavlen/serialization/JsonCodec;
 	public final fun getFormat ()Lde/quadrixyt/qavlen/serialization/ConfigFileFormat;
 	public final fun getMigrations ()Ljava/util/List;
@@ -154,6 +155,8 @@ public final class de/quadrixyt/qavlen/serialization/TypedConfigOptions {
 public final class de/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder {
 	public final fun backups (Z)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
 	public final fun build ()Lde/quadrixyt/qavlen/serialization/TypedConfigOptions;
+	public final fun bundled (Ljava/lang/Class;)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
+	public final fun bundled (Ljava/lang/ClassLoader;)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
 	public final fun codec (Lde/quadrixyt/qavlen/serialization/JsonCodec;)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
 	public final fun environment (Ljava/lang/String;)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;
 	public final fun environment (Ljava/lang/String;Ljava/util/Map;)Lde/quadrixyt/qavlen/serialization/TypedConfigOptions$Builder;

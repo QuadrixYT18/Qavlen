@@ -6,6 +6,8 @@ import de.quadrixyt.qavlen.config.ConfigValidationException
 import de.quadrixyt.qavlen.config.ConfigViolation
 import de.quadrixyt.qavlen.config.preserveYamlComments
 import de.quadrixyt.qavlen.core.backupFile
+import de.quadrixyt.qavlen.core.createIfMissing
+import de.quadrixyt.qavlen.core.readBundledResource
 import de.quadrixyt.qavlen.core.writeAtomically
 import java.io.IOException
 import java.nio.file.Files
@@ -17,8 +19,11 @@ import java.util.function.Consumer
 import java.util.function.UnaryOperator
 import kotlin.concurrent.withLock
 
-/** The file was changed by someone else since it was loaded, so saving would overwrite those changes. */
-public class ConfigConflictException(message: String) : ConfigException(message)
+/**
+ * The file was changed by someone else since it was loaded, so saving would overwrite those changes. It is a
+ * [de.quadrixyt.qavlen.config.ConfigConflictException], which `YamlConfig` and `JsonConfig` throw in the same case.
+ */
+public class ConfigConflictException(message: String) : de.quadrixyt.qavlen.config.ConfigConflictException(message)
 
 /**
  * A configuration bound to a class, typically a Kotlin data class with default values, a record or a Java bean.
@@ -47,6 +52,20 @@ public class TypedConfig<T : Any> internal constructor(
     private var persisted: Map<String, Any?>? = null
     private var stamp: FileStamp? = null
 
+    /** The default file bundled as a resource, see [TypedConfigOptions.Builder.bundled]. */
+    private val bundled: String? = options.bundled?.let { loader ->
+        val target = file ?: throw ConfigException("A bundled default file needs a configuration file; use Configs.open")
+        val resource = try {
+            readBundledResource(target, loader)
+        } catch (exception: IOException) {
+            throw ConfigException("Could not read the bundled resource '${target.fileName}'", exception)
+        }
+        resource ?: throw ConfigException(
+            "No bundled resource '${target.fileName}' for $target; add src/main/resources/${target.fileName} or remove bundled(...)",
+        )
+    }
+    private val bundledTree: Map<String, Any?>? = bundled?.let { format.read(it, "bundled resource ${file?.fileName}") }
+
     @Volatile
     private var state: State<T>
 
@@ -61,7 +80,7 @@ public class TypedConfig<T : Any> internal constructor(
 
     init {
         state = if (file != null) {
-            lock.withLock { load(file) }
+            lock.withLock { load(file, created = bundled != null && createFromBundled(file, bundled)) }
         } else {
             resolve(text?.let { format.read(it, "input") } ?: emptyMap(), "input", isNew = text == null)
         }
@@ -163,7 +182,8 @@ public class TypedConfig<T : Any> internal constructor(
         return AutoCloseable { listeners -= listener }
     }
 
-    private fun load(target: Path): State<T> {
+    /** [created] is `true` right after the file was copied from the bundled resource, so it counts as new. */
+    private fun load(target: Path, created: Boolean = false): State<T> {
         val before = FileStamp.of(target)
         val text = try {
             if (Files.exists(target)) Files.readString(target) else null
@@ -171,7 +191,11 @@ public class TypedConfig<T : Any> internal constructor(
             throw ConfigException("Could not read $target", exception)
         }
         val parsed = text?.let { format.read(it, target.toString()) } ?: emptyMap()
-        val resolved = resolve(parsed, target.toString(), isNew = text == null)
+        // Keys only the bundled file has are added first, so they carry its values rather than the class defaults.
+        val withBundled = bundledTree?.let { tree ->
+            ConfigSection.of(parsed).also { addMissing(it, tree, "", skipNulls = format == ConfigFileFormat.TOML) }.toMap()
+        } ?: parsed
+        val resolved = resolve(withBundled, target.toString(), isNew = text == null || created)
         val changed = text == null || resolved.root != parsed
         val wanted = options.writeDefaults ||
             resolved.migratedFrom != null ||
@@ -292,8 +316,12 @@ public class TypedConfig<T : Any> internal constructor(
         try {
             val content = format.write(root, model.takeIf { options.prefix == null })
             val previous = if (format == ConfigFileFormat.YAML && Files.exists(target)) Files.readString(target) else null
-            // Comments people wrote stay; @Comment texts are only used for keys the file did not have yet.
-            writeAtomically(target, previous?.let { preserveYamlComments(it, content) } ?: content)
+            // Comments people wrote stay; new keys get the bundled file's comments, or else their @Comment texts.
+            val commented = previous?.let {
+                bundled?.let { resource -> preserveYamlComments(it, content, resource) }
+                    ?: preserveYamlComments(it, content)
+            }
+            writeAtomically(target, commented ?: content)
         } catch (exception: IOException) {
             throw ConfigException("Could not write $target", exception)
         }
@@ -326,6 +354,12 @@ public class TypedConfig<T : Any> internal constructor(
                 System.getLogger(TypedConfig::class.java.name).log(System.Logger.Level.ERROR, "A configuration listener failed", exception)
             }
         }
+    }
+
+    private fun createFromBundled(target: Path, resource: String): Boolean = try {
+        createIfMissing(target, resource)
+    } catch (exception: IOException) {
+        throw ConfigException("Could not create $target from its bundled resource", exception)
     }
 
     private fun qualify(path: String) = options.prefix?.let { if (path.isEmpty()) it else "$it.$path" } ?: path
