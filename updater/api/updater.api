@@ -115,6 +115,8 @@ public final class de/quadrixyt/qavlen/updater/UpdateResult$Available : de/quadr
 }
 
 public final class de/quadrixyt/qavlen/updater/UpdateResult$Failed : de/quadrixyt/qavlen/updater/UpdateResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/time/Instant;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;

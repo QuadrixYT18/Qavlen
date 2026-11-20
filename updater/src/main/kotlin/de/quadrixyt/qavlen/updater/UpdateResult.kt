@@ -41,7 +41,7 @@ public sealed interface UpdateResult {
      *
      * @property retryAfter when the provider asked to wait before the next request, or `null`
      */
-    public data class Failed(
+    public data class Failed @JvmOverloads constructor(
         override val currentVersion: String,
         val reason: String,
         val cause: Throwable? = null,
