@@ -10,13 +10,27 @@ import de.quadrixyt.qavlen.paper.PaperCommands
 import de.quadrixyt.qavlen.paper.PaperScheduler
 import de.quadrixyt.qavlen.paper.PersistentKey
 import de.quadrixyt.qavlen.paper.listen
+import de.quadrixyt.qavlen.updater.UpdateChecker
+import de.quadrixyt.qavlen.updater.UpdateResult
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.Locale
 
 class ExamplePlugin : JavaPlugin() {
+    private lateinit var updates: UpdateChecker
+
     override fun onEnable() {
+        // Runs on an HTTP thread; logging is thread-safe, game objects would need the scheduler.
+        updates = UpdateChecker.modrinth("example-plugin", pluginMeta.version) { platform("paper") }
+        updates.checkAsync().thenAccept { result ->
+            when (result) {
+                is UpdateResult.Available -> logger.info("Version ${result.latestVersion} is available: ${result.releaseUrl}")
+                is UpdateResult.UpToDate -> logger.info("Running the latest version")
+                is UpdateResult.Failed -> logger.warning("Update check failed: ${result.reason}")
+            }
+        }
+
         val config = YamlConfig.load(
             dataPath.resolve("config.yml"),
             ConfigOptions {
@@ -47,5 +61,9 @@ class ExamplePlugin : JavaPlugin() {
         listen<PlayerJoinEvent> { event ->
             event.joinMessage(config.getComponent("join-message", "player" to event.player.name))
         }
+    }
+
+    override fun onDisable() {
+        if (::updates.isInitialized) updates.close()
     }
 }

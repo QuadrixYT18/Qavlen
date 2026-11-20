@@ -6,6 +6,7 @@ dependencies {
     compileOnly(libs.paper.api)
     implementation(project(":platform:paper"))
     implementation(project(":config"))
+    implementation(project(":updater"))
     ksp(project(":commands-processor"))
 }
 
