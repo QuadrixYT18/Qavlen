@@ -2,7 +2,7 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
-## Unreleased
+## 0.5.1 - 2026-11-20
 
 ### Changed
 
