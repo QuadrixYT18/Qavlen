@@ -7,6 +7,7 @@ import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.YAMLException
 import org.yaml.snakeyaml.nodes.MappingNode
+import org.yaml.snakeyaml.nodes.NodeTuple
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import java.io.StringReader
@@ -26,12 +27,48 @@ public fun preserveYamlComments(previous: String, updated: String): String {
     val old = compose(previous) ?: return updated
     val new = compose(updated) ?: return updated
     transfer(old, new)
-    return try {
-        // Blank lines inside sections would otherwise keep the indentation of their section.
-        StringWriter().also { yaml.serialize(new, it) }.toString().replace(blankIndentation, "")
-    } catch (_: YAMLException) {
-        updated
+    return serialize(new) ?: updated
+}
+
+/**
+ * Like [preserveYamlComments], and additionally gives keys that only [bundled] defines, such as settings a new plugin
+ * version added, the comments they have in [bundled]. Keys that already exist in [previous] keep exactly the comments
+ * written there, so comments a person removed do not come back.
+ */
+internal fun preserveYamlComments(previous: String, updated: String, bundled: String): String {
+    val kept = preserveYamlComments(previous, updated)
+    if ('#' !in bundled) return kept
+    val user = compose(previous) ?: return kept
+    val defaults = compose(bundled) ?: return kept
+    val new = compose(kept) ?: return kept
+    addNewKeyComments(defaults, new, user)
+    return serialize(new) ?: kept
+}
+
+private fun addNewKeyComments(bundled: YamlNode, new: YamlNode, user: YamlNode?) {
+    if (bundled !is MappingNode || new !is MappingNode) return
+    val existing = (user as? MappingNode)?.value?.associateBy { key(it) }.orEmpty()
+    val defaults = bundled.value.associateBy { key(it) }
+    for (tuple in new.value) {
+        val source = defaults[key(tuple)] ?: continue
+        val match = existing[key(tuple)]
+        if (match != null) {
+            addNewKeyComments(source.valueNode, tuple.valueNode, match.valueNode)
+            continue
+        }
+        tuple.keyNode.blockComments = source.keyNode.blockComments
+        tuple.keyNode.inLineComments = source.keyNode.inLineComments
+        transfer(source.valueNode, tuple.valueNode)
     }
+}
+
+private fun key(tuple: NodeTuple): String? = (tuple.keyNode as? ScalarNode)?.value
+
+private fun serialize(node: YamlNode): String? = try {
+    // Blank lines inside sections would otherwise keep the indentation of their section.
+    StringWriter().also { yaml.serialize(node, it) }.toString().replace(blankIndentation, "")
+} catch (_: YAMLException) {
+    null
 }
 
 private val blankIndentation = Regex("(?m)^[ \\t]+$")
@@ -64,9 +101,9 @@ private fun transfer(old: YamlNode, new: YamlNode) {
     new.endComments = old.endComments ?: new.endComments
     when {
         old is MappingNode && new is MappingNode -> {
-            val oldTuples = old.value.associateBy { (it.keyNode as? ScalarNode)?.value }
+            val oldTuples = old.value.associateBy(::key)
             for (tuple in new.value) {
-                val match = oldTuples[(tuple.keyNode as? ScalarNode)?.value] ?: continue
+                val match = oldTuples[key(tuple)] ?: continue
                 tuple.keyNode.blockComments = match.keyNode.blockComments
                 tuple.keyNode.inLineComments = match.keyNode.inLineComments
                 transfer(match.valueNode, tuple.valueNode)
