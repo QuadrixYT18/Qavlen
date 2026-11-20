@@ -55,6 +55,17 @@ class AdventureMessagesTest {
     }
 
     @Test
+    fun `translations accept tag placeholders and the brace prefix`() {
+        val translations = Translations.builder()
+            .messages(Locale.GERMAN, mapOf("prefix" to "[Shop]", "coins" to "{prefix} <player>: <coins:number>"))
+            .build()
+
+        val component = AdventureMessages(translations).render(Locale.GERMAN, "coins", placeholder("player", "<b>Alex"), placeholder("coins", 1500))
+
+        assertEquals("[Shop] <b>Alex: 1.500", plain.serialize(component))
+    }
+
+    @Test
     fun `renders multi-line translations line by line`() {
         val lines = messages.renderLines(Locale.ENGLISH, "lore", placeholder("price", 1200))
 

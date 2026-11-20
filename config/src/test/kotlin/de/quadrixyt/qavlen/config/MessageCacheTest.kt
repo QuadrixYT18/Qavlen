@@ -41,6 +41,16 @@ class MessageCacheTest {
     }
 
     @Test
+    fun `messages with tag placeholders get their values despite the cache`() {
+        val (_, config) = load("join: \"<green><player> joined\"\n")
+
+        assertEquals("<player> joined", plain.serialize(config.getComponent("join")))
+        assertEquals("A joined", plain.serialize(config.getComponent("join", "player" to "A")))
+        assertEquals("B joined", plain.serialize(config.getComponent("join", "player" to "B")))
+        assertSame(config.getComponent("join"), config.getComponent("join"))
+    }
+
+    @Test
     fun `changes in memory invalidate cached messages`() {
         val (_, config) = load("prefix: \"[P]\"\nmsg: \"<prefix> one\"\n")
         val first = config.getComponent("msg")

@@ -148,10 +148,58 @@ class ConfigComponentTest {
     }
 
     @Test
+    fun `placeholders can be written as tags`() {
+        val config = YamlConfig.parse(
+            """
+            prefix: "<gray>[P]</gray>"
+            join: "<prefix> <green><player> has <coins:number> coins"
+            item: "Bought <item>"
+            braces: "{prefix} {player}"
+            """.trimIndent(),
+        )
+
+        assertEquals("[P] Alex has 1,500 coins", plain.serialize(config.getComponent("join", "player" to "Alex", "coins" to 1500)))
+        assertEquals("[P] Alex", plain.serialize(config.getComponent("braces", "player" to "Alex")))
+        val item = config.getComponent("item", "item" to Component.text("Diamond", NamedTextColor.AQUA))
+        assertEquals(NamedTextColor.AQUA, item.parts().first { plain.serialize(it) == "Diamond" }.color())
+    }
+
+    @Test
+    fun `tag placeholders cannot inject tags`() {
+        val config = YamlConfig.parse("join: \"<green><player> joined\"")
+
+        val component = config.getComponent("join", "player" to "<click:run_command:/op me><red>x")
+
+        assertEquals("<click:run_command:/op me><red>x joined", plain.serialize(component))
+        assertTrue(component.parts().none { it.clickEvent() != null })
+    }
+
+    @Test
+    fun `MiniMessage tags win over placeholders of the same name`() {
+        val config = YamlConfig.parse("msg: \"<red>Hi {red}</red> <Player> <first.name>\"")
+
+        val component = config.getComponent("msg", "red" to "R", "Player" to "P", "first.name" to "F")
+
+        assertEquals("Hi R <Player> <first.name>", plain.serialize(component))
+        assertTrue(component.parts().any { it.color() == NamedTextColor.RED && plain.serialize(it) == "Hi R" })
+    }
+
+    @Test
+    fun `a placeholder named prefix replaces the configured prefix`() {
+        val config = YamlConfig.parse("prefix: \"[Config]\"\na: \"<prefix> x\"\nb: \"{prefix} y\"")
+
+        assertEquals("[Config] x", plain.serialize(config.getComponent("a")))
+        assertEquals("[Config] y", plain.serialize(config.getComponent("b")))
+        assertEquals("[Own] x", plain.serialize(config.getComponent("a", "prefix" to "[Own]")))
+        assertEquals("[Own] y", plain.serialize(config.getComponent("b", "prefix" to "[Own]")))
+    }
+
+    @Test
     fun `a missing prefix renders as nothing`() {
-        val config = YamlConfig.parse("join: \"<prefix>{player} joined\"")
+        val config = YamlConfig.parse("join: \"<prefix>{player} joined\"\nleave: \"{prefix}{player} left\"")
 
         assertEquals("Alex joined", plain.serialize(config.getComponent("join", "player" to "Alex")))
+        assertEquals("Alex left", plain.serialize(config.getComponent("leave", "player" to "Alex")))
     }
 
     @Test

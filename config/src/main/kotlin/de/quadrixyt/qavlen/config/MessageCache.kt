@@ -8,14 +8,14 @@ import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Parsed messages of one [ConfigFile], so frequently sent messages are not parsed again on every call. A message
- * without placeholders is kept as its finished component.
+ * requested without placeholder values is kept as its finished component.
  *
  * Every change of the configuration, through `set`, `remove` or a reload, starts a new revision and makes all entries
  * stale. Before a lookup, the file is checked for edits at most once per [WATCH_INTERVAL_MILLIS]; an edited file is
  * reloaded, unless the configuration has unsaved changes, which must not be lost.
  */
 internal class MessageCache(private val owner: ConfigFile) {
-    private class Entry(val revision: Long, val template: MessageTemplate, val prefix: Component?, val fixed: Component?)
+    private class Entry(val revision: Long, val template: MessageTemplate, val prefix: Component?, val fixed: Component)
 
     private val entries = ConcurrentHashMap<String, Entry>()
     private val revision = AtomicLong()
@@ -37,7 +37,9 @@ internal class MessageCache(private val owner: ConfigFile) {
         val entry = entries[key]?.takeIf { it.revision == current }
             ?: create(section, path, current)?.also { entries[key] = it }
             ?: return null
-        return entry.fixed ?: invalidMessage(section, path) { MessageComponents.render(entry.template, placeholders, entry.prefix) }
+        // Without values, every message renders the same, also one that uses <name> placeholders.
+        if (placeholders.isEmpty()) return entry.fixed
+        return invalidMessage(section, path) { MessageComponents.render(entry.template, placeholders, entry.prefix) }
     }
 
     private fun create(section: ConfigSection, path: String, revision: Long): Entry? {
@@ -45,12 +47,7 @@ internal class MessageCache(private val owner: ConfigFile) {
         return invalidMessage(section, path) {
             val template = MessageTemplate.parse(text)
             val prefix = messagePrefix(section, path, text)
-            val fixed = if (template.segments.any { it is MessageTemplate.Segment.Placeholder }) {
-                null
-            } else {
-                MessageComponents.render(template, emptyMap(), prefix)
-            }
-            Entry(revision, template, prefix, fixed)
+            Entry(revision, template, prefix, MessageComponents.render(template, emptyMap(), prefix))
         }
     }
 
@@ -85,7 +82,7 @@ internal fun renderMessage(section: ConfigSection, path: String, placeholders: M
  * [text] uses `<prefix>`. A missing prefix renders as nothing.
  */
 internal fun messagePrefix(section: ConfigSection, path: String, text: String): Component? {
-    if ("<prefix>" !in text) return null
+    if ("<prefix>" !in text && "{prefix}" !in text) return null
     val parent = path.substringBeforeLast('.', "")
     val candidates = generateSequence(parent) { if (it.isEmpty()) null else it.substringBeforeLast('.', "") }
         .map { if (it.isEmpty()) MESSAGE_PREFIX_KEY else "$it.$MESSAGE_PREFIX_KEY" }

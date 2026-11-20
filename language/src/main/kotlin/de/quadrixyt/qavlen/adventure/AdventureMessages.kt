@@ -17,7 +17,8 @@ import java.util.Locale
  * Translation values are trusted MiniMessage markup written by the server owner. Placeholder values are not:
  * strings, numbers and dates are formatted for the locale and inserted as literal text, so they can never inject
  * tags such as `<click>`. [ComponentLike][net.kyori.adventure.text.ComponentLike] values are inserted as components.
- * Every message may use `<prefix>`, which renders the translation key [prefixKey] when it exists.
+ * Placeholders can be written as `{player}` or `<player>`, see [MessageComponents]. Every message may use `<prefix>`
+ * or `{prefix}`, which renders the translation key [prefixKey] when it exists.
  *
  * For texts stored in a configuration, [de.quadrixyt.qavlen.config.ConfigSection.getComponent] needs no translations.
  */
@@ -40,7 +41,7 @@ public class AdventureMessages @JvmOverloads constructor(
         render(template, locale, placeholders, prefix = true)
 
     private fun render(template: MessageTemplate, locale: Locale, placeholders: Map<String, Any?>, prefix: Boolean): Component {
-        val prefixComponent = if (prefix && "<prefix>" in template.source) {
+        val prefixComponent = if (prefix && ("<prefix>" in template.source || "{prefix}" in template.source)) {
             translations.template(locale, prefixKey)?.let { render(it, locale, emptyMap(), prefix = false) } ?: Component.empty()
         } else {
             null

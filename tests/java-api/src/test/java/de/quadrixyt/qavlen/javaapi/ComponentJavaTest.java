@@ -69,6 +69,7 @@ class ComponentJavaTest {
 
         assertEquals("Bought Diamond", plain.serialize(MessageComponents.render("<green>Bought {item}", Map.of("item", item))));
         assertEquals("<b>", plain.serialize(MessageComponents.render("{value}", Map.of("value", "<b>"))));
+        assertEquals("Hi <i>Bob", plain.serialize(MessageComponents.render("<green>Hi <player>", Map.of("player", "<i>Bob"))));
     }
 
     @Test
