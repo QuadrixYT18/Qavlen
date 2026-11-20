@@ -49,12 +49,12 @@ Updating an existing file follows these rules:
 - **Unknown keys:** keys the resource no longer has stay in the file.
 - **Nested sections:** missing keys inside sections are added in the right place.
 - **Type conflicts:** if the file has a value where the resource has a section, or the other way round, loading fails with a `ConfigException` naming the key. Nothing is written.
-- **Comments:** comments in the file stay. New keys receive the comments the resource has for them, while comments you deleted from existing keys do not come back.
+- **Comments and quotes:** comments in the file stay, and so do quotes. New keys receive the comments and quotes the resource has for them, while comments you deleted from existing keys do not come back.
 - **Writes:** the file is written atomically, and only when keys were added. It is not written if it cannot be parsed, or if it changes on disk while it is being loaded.
 
 `ConfigOptions` still apply. Validators, migrations and additional defaults work together with the resource; with `writeDefaults(false)`, added keys stay in memory only.
 
-TOML is not a format of `qavlen-config`; [typed configurations](Typed-Configuration) support it.
+TOML is not a format of `qavlen-config`; [typed configurations](Typed-Configuration#bundled-default-files) support it, including bundled default files.
 
 ## Reading values
 
@@ -124,9 +124,11 @@ Defaults only add missing keys; existing values are never replaced. Missing keys
 - A file that cannot be parsed is never overwritten.
 - Loading and `reload()` parse, migrate, merge and validate a copy first. If any step fails, a `ConfigException` is thrown and the previous values stay in place.
 - `save()` validates, writes atomically and skips the write when the content did not change. `isDirty` tells whether there are unsaved changes.
+- `save()` does not overwrite edits made to the file on disk since it was loaded, reloaded or saved. It throws `ConfigConflictException` instead; call `reload()` to take over the edit, or `save(true)` to replace it. Any change to the text counts, even one that only removes quotes.
 - Duplicate keys are rejected in YAML and JSON.
 - Values are kept as written: unquoted YAML dates stay text, and numbers that do not fit `Long` or `Double` exactly are kept as `BigInteger` or `BigDecimal`.
 - An explicit `null` is a stored value: `contains` returns `true`, getters return `null`, and defaults do not replace it. JSON parsing is strict (no comments or trailing commas). YAML alias expansion is limited.
+- **Quotes are kept:** a value or key written as `"text"`, `'text'` or a `|` block keeps that style when the file is rewritten, also after its value changed. New keys from a [bundled default file](#bundled-default-files) take the quotes they have there.
 - **YAML comments are kept** when Qavlen rewrites a file, see [Format limits](Typed-Configuration#format-limits). Files are only rewritten when defaults or migrations changed them or when you call `save()` after changes.
 
 ## Validation

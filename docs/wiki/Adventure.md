@@ -62,6 +62,8 @@ Values are formatted with `Locale.ROOT`, so `{coins:number}` gives `1,500` on ev
 
 Placeholder values can be strings, numbers, dates, durations or `ComponentLike`. Java callers pass a `Map`; Kotlin callers can also use `"name" to value` pairs.
 
+Rendered messages are cached per configuration file. Messages without placeholders are built once; others reuse the parsed text. Every `set`, `remove` or reload clears the cache. Before a lookup, the file is checked at most once per second: if it was edited, it is reloaded, so a server owner's change appears without a restart. That reload covers every value, not only messages. If the configuration has unsaved changes, the edited file is left alone (and `save()` reports the conflict). An edit that breaks the file keeps the previous messages and is logged once.
+
 `<prefix>` renders the nearest `prefix` key, searched from the section containing the message up to the root. This works the same for `config.getComponent("messages.staff.alert")` and `config.getSection("messages.staff").getComponent("alert")`. A missing prefix renders as nothing, so you can remove the prefix by deleting its key:
 
 ```yaml

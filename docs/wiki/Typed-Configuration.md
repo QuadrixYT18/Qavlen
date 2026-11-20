@@ -92,6 +92,26 @@ Nested classes and list elements are validated too (`rewards[2].amount`). Add ch
 
 The format follows the extension (`.yml`, `.yaml`, `.json`, `.toml`) or `format(...)`. The object API is the same for all three.
 
+## Bundled default files
+
+`bundled(...)` uses the file of the same name in `src/main/resources` as the default file:
+
+```kotlin
+val config = Configs.open<PluginConfig>(dataFolder.toPath().resolve("config.yml")) { bundled(MyPlugin::class.java) }
+```
+
+```java
+TypedConfig<PluginConfig> config = Configs.open(path, PluginConfig.class,
+    TypedConfigOptions.<PluginConfig>builder().bundled(MyPlugin.class).build());
+```
+
+- **First start:** the file is created as an unchanged copy of the resource, with its comments and formatting.
+- **Later versions:** keys only the resource has are added with the resource's values, comments and quotes. Keys missing from both come from the class defaults and their `@Comment`. Values in the file are never replaced.
+- **Missing or broken resource:** loading fails with a `ConfigException` before anything is written.
+- **Class loader in Kotlin:** pass the plugin class, not `javaClass`. Inside the builder lambda, `javaClass` refers to the builder.
+
+This works for YAML, JSON and TOML; the path-based API has the same behavior through [`YamlConfig.load(path, classLoader)`](Configuration#bundled-default-files).
+
 ## Format limits
 
 | | YAML | JSON | TOML |
@@ -105,7 +125,7 @@ The format follows the extension (`.yml`, `.yaml`, `.json`, `.toml`) or `format(
 
 - Comments of keys that are removed are removed with them.
 - For keys that already exist, the file's comments win: a changed `@Comment` text in a new version only appears for keys the file does not have yet.
-- Formatting is normalized: indentation becomes two spaces, list items are not indented below their key (`- item`), and quoting follows YAML's rules. Values are never changed by this.
+- Formatting is normalized: indentation becomes two spaces and list items are not indented below their key (`- item`). Quotes are kept: values and keys written as `"text"`, `'text'` or a `|` block keep that style, and others are only quoted where YAML requires it. Values are never changed by this.
 - Comments inside flow collections (`[a, b]` or `{a: 1}`) cannot be attached to individual entries.
 
 The same preservation applies to the path-based [Configuration](Configuration) API and is available as `preserveYamlComments(previous, updated)` (Java: `YamlComments.preserveYamlComments`).

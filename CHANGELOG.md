@@ -2,6 +2,20 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `serialization`: `TypedConfigOptions.Builder.bundled(classLoader)` and `bundled(resourceOwner)` use the resource with the file's name as the default file of a typed configuration. A missing file is created as an unchanged copy; later, keys only the resource has are added with its values, comments and quotes before the class defaults apply.
+- `config`: `getComponent` caches parsed messages per file, and messages without placeholders as finished components. Every change of the values clears the cache. A file edited on disk is noticed at most once per second during lookups and reloaded, unless there are unsaved changes.
+- `core`: `createIfMissing` and `readBundledResource`, used by both configuration APIs.
+- `config`: `preserveYamlComments(previous, updated, bundled)` also gives new keys the comments of a bundled file.
+
+### Changed
+
+- `config`: `ConfigFile.save()` no longer overwrites edits made to the file on disk since it was loaded. It throws the new `ConfigConflictException`; `save(true)` replaces the file anyway. The `serialization` exception of the same name now extends it.
+- `config`, `serialization`: rewriting a YAML file keeps the quotes of values and keys (`"text"`, `'text'`, `|` blocks) instead of normalizing them.
+
 ## 0.4.2 - 2026-11-20
 
 ### Added
