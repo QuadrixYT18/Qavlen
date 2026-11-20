@@ -55,7 +55,7 @@ Messages in a configuration render as MiniMessage components. Placeholder values
 
 ```kotlin
 val messages = YamlConfig.load(dataPath.resolve("messages.yml"))
-player.sendMessage(messages.requireComponent("welcome", "player" to player.name))
+player.sendMessage(messages.getComponent("welcome", "player" to player.name))
 ```
 
 ## Modules

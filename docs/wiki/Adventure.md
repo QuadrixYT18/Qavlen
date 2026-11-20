@@ -36,15 +36,15 @@ lore:
 val config = YamlConfig.load(path)
 
 config.getString("welcome")                                  // the raw text
-config.getComponent("welcome")                               // Component?, null when the key is missing
-config.getComponent("welcome", "player" to player.name, "coins" to 1500)
-config.requireComponent("welcome", "player" to player.name)  // throws ConfigException when the key is missing
+val message: Component = config.getComponent("welcome")      // ConfigException when the key is missing
+player.sendMessage(config.getComponent("welcome", "player" to player.name, "coins" to 1500))
+config.getComponentOrNull("motd")                            // null when the key is missing, for optional texts
 config.getComponentList("lore", "price" to 250)              // one component per list entry or line
 ```
 
 ```java
-Component welcome = config.requireComponent("welcome", Map.of("player", player.getName()));
-Component optional = config.getComponent("welcome");         // null when missing
+player.sendMessage(config.getComponent("welcome", Map.of("player", player.getName())));
+Component optional = config.getComponentOrNull("motd");      // null when missing
 List<Component> lore = config.getComponentList("lore", Map.of("price", 250));
 ```
 
@@ -52,7 +52,7 @@ The rules for each case:
 
 | Situation | Result |
 | --- | --- |
-| Key missing | `getComponent` returns `null`, `requireComponent` throws `ConfigException("Missing message '<path>'")`, `getComponentList` returns an empty list |
+| Key missing | `getComponent` and `getComponentList` throw `ConfigException("Missing message '<path>'")`; `getComponentOrNull` returns `null`. A missing message never turns into an empty one |
 | Value is a section or list (for `getComponent`) | `ConfigValueException` naming the path |
 | Malformed placeholder such as `{player` | `ConfigException("Invalid message at '<path>': ...")` |
 | Placeholder without a value | stays visible as `{player}` |
@@ -60,7 +60,18 @@ The rules for each case:
 
 Values are formatted with `Locale.ROOT`, so `{coins:number}` gives `1,500` on every machine. All styles from [Language & Localization](Language-and-Localization) work, including dates, durations and `choice` plurals. Use translations when the format should follow the player's language.
 
-`<prefix>` renders the `prefix` value of the section the message is read from, or nothing when it has none.
+Placeholder values can be strings, numbers, dates, durations or `ComponentLike`. Java callers pass a `Map`; Kotlin callers can also use `"name" to value` pairs.
+
+`<prefix>` renders the nearest `prefix` key, searched from the section containing the message up to the root. This works the same for `config.getComponent("messages.staff.alert")` and `config.getSection("messages.staff").getComponent("alert")`. A missing prefix renders as nothing, so you can remove the prefix by deleting its key:
+
+```yaml
+prefix: "<gray>[Shop]</gray>"
+messages:
+  join: "<prefix> {player} joined"        # [Shop] Alex joined
+  staff:
+    prefix: "<red>[Staff]</red>"
+    alert: "<prefix> {text}"              # [Staff] ...
+```
 
 ## Texts without a file
 

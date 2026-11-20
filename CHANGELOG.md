@@ -6,7 +6,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Added
 
-- `config`: `getComponent`, `requireComponent` and `getComponentList` render MiniMessage values of any `ConfigSection`, `YamlConfig` or `JsonConfig` as Adventure components. Placeholder values are inserted as plain text and cannot inject tags. Missing values return `null`, throw `ConfigException` or return an empty list. `<prefix>` renders the section's `prefix` value.
+- `config`: `getComponent` and `getComponentList` render MiniMessage values of any `ConfigSection`, `YamlConfig` or `JsonConfig` directly as Adventure components, for example `player.sendMessage(config.getComponent("welcome", "player" to name))`. Placeholder values (strings, numbers, `ComponentLike`) are inserted without being parsed and cannot inject tags. Missing keys throw `ConfigException`; `getComponentOrNull` is for optional texts. `<prefix>` renders the nearest `prefix` key from the message's section up to the root. Java callers pass placeholders as a `Map`.
 - `config`: `MessageComponents` renders any MiniMessage text with the same rules, for example fields of typed configurations; `PlaceholderFormatter` customizes value formatting.
 - `config`: `ValueFormatter.formatPlaceholder` formats a single placeholder including `choice` styles; `Translations.formatPlaceholder` delegates to it.
 

@@ -30,13 +30,13 @@ Paths are dot-separated. Typed getters (`getString`, `getInt`, `getLong`, `getDo
 Values can be rendered as MiniMessage components with injection-safe placeholders. Adventure must be on the classpath; see [Adventure & MiniMessage](Adventure) for the dependency and the exact rules.
 
 ```kotlin
-config.getComponent("messages.welcome", "player" to player.name)   // null when missing
-config.requireComponent("messages.welcome")                        // ConfigException when missing
+player.sendMessage(config.getComponent("messages.welcome", "player" to player.name))  // ConfigException when missing
+config.getComponentOrNull("messages.motd")                         // null when missing
 config.getComponentList("shop.lore", "price" to 250)
 ```
 
 ```java
-Component welcome = config.requireComponent("messages.welcome", Map.of("player", player.getName()));
+player.sendMessage(config.getComponent("messages.welcome", Map.of("player", player.getName())));
 ```
 
 ## Data classes
