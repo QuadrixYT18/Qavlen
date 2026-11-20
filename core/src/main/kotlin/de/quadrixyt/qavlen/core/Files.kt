@@ -85,3 +85,37 @@ private fun copyPermissions(source: Path, target: Path) {
 
 private const val MAX_LINKS = 40
 private const val MAX_BACKUPS_PER_SECOND = 1000
+
+/**
+ * Creates [target] with exactly [text] when it does not exist yet, for example from a bundled default file. The text
+ * is written to a temporary sibling first and then moved without replacing, so a file someone created in the
+ * meantime is kept and readers never see a partial file. Missing parent directories are created.
+ *
+ * @return `true` when the file was created, `false` when it already existed
+ */
+@JvmOverloads
+public fun createIfMissing(target: Path, text: String, charset: Charset = Charsets.UTF_8): Boolean {
+    if (Files.exists(target)) return false
+    val directory = target.toAbsolutePath().parent ?: throw IllegalArgumentException("$target has no parent directory")
+    Files.createDirectories(directory)
+    val temporary = Files.createTempFile(directory, ".${target.fileName}", ".tmp")
+    try {
+        Files.writeString(temporary, text, charset)
+        Files.move(temporary, target)
+        return true
+    } catch (_: FileAlreadyExistsException) {
+        return false
+    } finally {
+        Files.deleteIfExists(temporary)
+    }
+}
+
+/**
+ * Reads the resource named like [file]'s file name, for example `messages.yml`, from the root of [loader], or returns
+ * `null` when there is none. The stream is always closed.
+ */
+@JvmOverloads
+public fun readBundledResource(file: Path, loader: ClassLoader, charset: Charset = Charsets.UTF_8): String? {
+    val name = file.fileName?.toString() ?: throw IllegalArgumentException("$file has no file name")
+    return loader.getResourceAsStream(name)?.use { it.readBytes().toString(charset) }
+}
