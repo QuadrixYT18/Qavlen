@@ -1,5 +1,7 @@
 package de.quadrixyt.qavlen.config
 
+import net.kyori.adventure.text.Component
+
 /**
  * A view of nested configuration values addressed by dot-separated paths such as `database.port`.
  *
@@ -111,9 +113,61 @@ public interface ConfigSection {
         else -> throw ConfigValueException(qualify(path), "a section", value)
     }
 
+    /**
+     * Reads [path] as a MiniMessage text and renders it with [MessageComponents], or returns `null` when [path] is
+     * absent. Placeholder values are inserted as literal text; `<prefix>` renders the `prefix` value of this section.
+     * Needs Adventure and MiniMessage at runtime, which Paper and Velocity provide.
+     *
+     * @throws ConfigException when the value is not text or its placeholders are malformed
+     */
+    public fun getComponent(path: String, placeholders: Map<String, Any?>): Component? {
+        val text = getString(path) ?: return null
+        return message(path) { MessageComponents.render(text, placeholders, prefixFor(text)) }
+    }
+
+    public fun getComponent(path: String): Component? = getComponent(path, emptyMap())
+
+    /** Kotlin form: `config.getComponent("welcome", "player" to name)`. */
+    public fun getComponent(path: String, vararg placeholders: Pair<String, Any?>): Component? =
+        getComponent(path, placeholders.toMap())
+
+    /** Like [getComponent], but a missing value is an error instead of `null`. */
+    public fun requireComponent(path: String, placeholders: Map<String, Any?>): Component =
+        getComponent(path, placeholders) ?: throw ConfigException("Missing message '${qualify(path)}'")
+
+    public fun requireComponent(path: String): Component = requireComponent(path, emptyMap())
+
+    public fun requireComponent(path: String, vararg placeholders: Pair<String, Any?>): Component =
+        requireComponent(path, placeholders.toMap())
+
+    /**
+     * Renders a list of texts, or a multi-line text, as one component per line, for item lore or scoreboards.
+     * Returns an empty list when [path] is absent.
+     */
+    public fun getComponentList(path: String, placeholders: Map<String, Any?>): List<Component> {
+        val lines = if (get(path) is List<*>) getStringList(path) else getString(path)?.split('\n').orEmpty()
+        return lines.map { line -> message(path) { MessageComponents.render(line, placeholders, prefixFor(line)) } }
+    }
+
+    public fun getComponentList(path: String): List<Component> = getComponentList(path, emptyMap())
+
+    public fun getComponentList(path: String, vararg placeholders: Pair<String, Any?>): List<Component> =
+        getComponentList(path, placeholders.toMap())
+
+    private fun prefixFor(text: String): Component? =
+        if ("<prefix>" in text) getString(PREFIX_KEY)?.let { MessageComponents.render(it) } ?: Component.empty() else null
+
+    private fun message(path: String, render: () -> Component): Component = try {
+        render()
+    } catch (failure: IllegalArgumentException) {
+        throw ConfigException("Invalid message at '${qualify(path)}': ${failure.message}", failure)
+    }
+
     private fun qualify(relative: String): String = if (path.isEmpty()) relative else "$path.$relative"
 
     public companion object {
+        private const val PREFIX_KEY = "prefix"
+
         /**
          * A section over a copy of [values] without a file, for example to run migrations or validators on a tree
          * that comes from another source. Changes affect only the copy; read it back with [toMap].

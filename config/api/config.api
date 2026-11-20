@@ -18,6 +18,12 @@ public abstract class de/quadrixyt/qavlen/config/ConfigFile : de/quadrixyt/qavle
 	public fun get (Ljava/lang/String;)Ljava/lang/Object;
 	public fun getBoolean (Ljava/lang/String;)Ljava/lang/Boolean;
 	public fun getBoolean (Ljava/lang/String;Z)Z
+	public fun getComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun getComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun getComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentList (Ljava/lang/String;)Ljava/util/List;
+	public fun getComponentList (Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
+	public fun getComponentList (Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
 	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
 	public fun getDouble (Ljava/lang/String;D)D
 	public final fun getFile ()Ljava/nio/file/Path;
@@ -41,6 +47,9 @@ public abstract class de/quadrixyt/qavlen/config/ConfigFile : de/quadrixyt/qavle
 	public final fun reload ()Ljava/util/List;
 	public final fun reloadIfModified ()Z
 	public fun remove (Ljava/lang/String;)Z
+	public fun requireComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun requireComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun requireComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public final fun save ()Z
 	public final fun saveTo (Ljava/nio/file/Path;)V
 	public final fun saveToString ()Ljava/lang/String;
@@ -146,6 +155,12 @@ public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
 	public abstract fun get (Ljava/lang/String;)Ljava/lang/Object;
 	public fun getBoolean (Ljava/lang/String;)Ljava/lang/Boolean;
 	public fun getBoolean (Ljava/lang/String;Z)Z
+	public fun getComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun getComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun getComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentList (Ljava/lang/String;)Ljava/util/List;
+	public fun getComponentList (Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
+	public fun getComponentList (Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
 	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
 	public fun getDouble (Ljava/lang/String;D)D
 	public fun getInt (Ljava/lang/String;)Ljava/lang/Integer;
@@ -164,6 +179,9 @@ public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
 	public abstract fun keys (Z)Ljava/util/Set;
 	public static fun of (Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigSection;
 	public abstract fun remove (Ljava/lang/String;)Z
+	public fun requireComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun requireComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun requireComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public abstract fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun toMap ()Ljava/util/Map;
 }
@@ -175,6 +193,12 @@ public final class de/quadrixyt/qavlen/config/ConfigSection$Companion {
 public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
 	public static fun getBoolean (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Boolean;
 	public static fun getBoolean (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Z)Z
+	public static fun getComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public static fun getComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public static fun getComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
+	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
+	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
+	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
 	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Double;
 	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;D)D
 	public static fun getInt (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Integer;
@@ -188,6 +212,9 @@ public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
 	public static fun getString (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static fun getStringList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
 	public static fun keys (Lde/quadrixyt/qavlen/config/ConfigSection;)Ljava/util/Set;
+	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 }
 
 public final class de/quadrixyt/qavlen/config/ConfigType : java/lang/Enum {
@@ -269,6 +296,26 @@ public final class de/quadrixyt/qavlen/config/JsonConfig$Companion {
 	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/JsonConfig$Companion;Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/JsonConfig;
 }
 
+public final class de/quadrixyt/qavlen/config/MessageComponents {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/config/MessageComponents;
+	public static final fun render (Lde/quadrixyt/qavlen/language/MessageTemplate;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;)Lnet/kyori/adventure/text/Component;
+	public static final fun render (Lde/quadrixyt/qavlen/language/MessageTemplate;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;Lnet/kyori/adventure/text/minimessage/MiniMessage;)Lnet/kyori/adventure/text/Component;
+	public static final fun render (Lde/quadrixyt/qavlen/language/MessageTemplate;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;Lnet/kyori/adventure/text/minimessage/MiniMessage;Lde/quadrixyt/qavlen/config/PlaceholderFormatter;)Lnet/kyori/adventure/text/Component;
+	public static final fun render (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public static final fun render (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public static final fun render (Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;)Lnet/kyori/adventure/text/Component;
+	public static synthetic fun render$default (Lde/quadrixyt/qavlen/language/MessageTemplate;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;Lnet/kyori/adventure/text/minimessage/MiniMessage;Lde/quadrixyt/qavlen/config/PlaceholderFormatter;ILjava/lang/Object;)Lnet/kyori/adventure/text/Component;
+	public static synthetic fun render$default (Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;ILjava/lang/Object;)Lnet/kyori/adventure/text/Component;
+	public static final fun renderLines (Ljava/lang/String;)Ljava/util/List;
+	public static final fun renderLines (Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
+	public static final fun renderLines (Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;)Ljava/util/List;
+	public static synthetic fun renderLines$default (Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/text/ComponentLike;ILjava/lang/Object;)Ljava/util/List;
+}
+
+public abstract interface class de/quadrixyt/qavlen/config/PlaceholderFormatter {
+	public abstract fun format (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;)Ljava/lang/String;
+}
+
 public final class de/quadrixyt/qavlen/config/YamlComments {
 	public static final fun preserveYamlComments (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 }
@@ -303,5 +350,55 @@ public final class de/quadrixyt/qavlen/config/YamlConfig$Companion {
 	public final fun read (Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;)Lde/quadrixyt/qavlen/config/YamlConfig;
 	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/io/InputStream;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
 	public static synthetic fun read$default (Lde/quadrixyt/qavlen/config/YamlConfig$Companion;Ljava/io/Reader;Lde/quadrixyt/qavlen/config/ConfigOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/config/YamlConfig;
+}
+
+public final class de/quadrixyt/qavlen/language/MessageTemplate {
+	public static final field Companion Lde/quadrixyt/qavlen/language/MessageTemplate$Companion;
+	public final fun getPlaceholderNames ()Ljava/util/Set;
+	public final fun getSegments ()Ljava/util/List;
+	public final fun getSource ()Ljava/lang/String;
+	public static final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/language/MessageTemplate$Companion {
+	public final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate;
+}
+
+public abstract interface class de/quadrixyt/qavlen/language/MessageTemplate$Segment {
+}
+
+public final class de/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder : de/quadrixyt/qavlen/language/MessageTemplate$Segment {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getStyle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/language/MessageTemplate$Segment$Text : de/quadrixyt/qavlen/language/MessageTemplate$Segment {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;
+	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/language/ValueFormatter {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/language/ValueFormatter;
+	public static final fun format (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;)Ljava/lang/String;
+	public static final fun format (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;Ljava/time/ZoneId;)Ljava/lang/String;
+	public static synthetic fun format$default (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;Ljava/time/ZoneId;ILjava/lang/Object;)Ljava/lang/String;
+	public static final fun formatPlaceholder (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;Ljava/util/Map;Ljava/util/Locale;)Ljava/lang/String;
+	public static final fun formatPlaceholder (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;Ljava/util/Map;Ljava/util/Locale;Ljava/time/ZoneId;)Ljava/lang/String;
+	public static synthetic fun formatPlaceholder$default (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;Ljava/util/Map;Ljava/util/Locale;Ljava/time/ZoneId;ILjava/lang/Object;)Ljava/lang/String;
 }
 

@@ -12,5 +12,8 @@ dependencies {
     testImplementation(project(":cache"))
     testImplementation(project(":network"))
     testImplementation(project(":scheduler"))
+    testImplementation(libs.adventure.api)
+    testImplementation(libs.adventure.minimessage)
+    testImplementation(libs.adventure.plain)
     testRuntimeOnly(libs.h2)
 }

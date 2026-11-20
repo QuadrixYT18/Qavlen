@@ -1,25 +1,25 @@
 package de.quadrixyt.qavlen.adventure
 
+import de.quadrixyt.qavlen.config.MessageComponents
 import de.quadrixyt.qavlen.language.MessageTemplate
 import de.quadrixyt.qavlen.language.Placeholder
 import de.quadrixyt.qavlen.language.Translations
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.title.Title
 import java.util.Locale
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder as MiniPlaceholder
 
 /**
- * Renders translations as Adventure components.
+ * Renders translations as Adventure components, with the same rules as [MessageComponents] in `qavlen-config`.
  *
  * Translation values are trusted MiniMessage markup written by the server owner. Placeholder values are not:
- * strings, numbers and dates are inserted as literal text and can never inject tags such as `<click>`.
- * [ComponentLike] values are inserted as components. Every message may use `<prefix>`, which renders the
- * translation key [prefixKey] when it exists.
+ * strings, numbers and dates are formatted for the locale and inserted as literal text, so they can never inject
+ * tags such as `<click>`. [ComponentLike][net.kyori.adventure.text.ComponentLike] values are inserted as components.
+ * Every message may use `<prefix>`, which renders the translation key [prefixKey] when it exists.
+ *
+ * For texts stored in a configuration, [de.quadrixyt.qavlen.config.ConfigSection.getComponent] needs no translations.
  */
 public class AdventureMessages @JvmOverloads constructor(
     public val translations: Translations,
@@ -40,29 +40,14 @@ public class AdventureMessages @JvmOverloads constructor(
         render(template, locale, placeholders, prefix = true)
 
     private fun render(template: MessageTemplate, locale: Locale, placeholders: Map<String, Any?>, prefix: Boolean): Component {
-        val markup = StringBuilder()
-        val resolvers = mutableListOf<TagResolver>()
-        template.segments.forEach { segment ->
-            when (segment) {
-                is MessageTemplate.Segment.Text -> markup.append(segment.text)
-                is MessageTemplate.Segment.Placeholder -> {
-                    val tag = "qavlen_arg_${resolvers.size}"
-                    markup.append('<').append(tag).append('>')
-                    val value = placeholders[segment.name]
-                    resolvers += if (value is ComponentLike && placeholders.containsKey(segment.name)) {
-                        MiniPlaceholder.component(tag, value)
-                    } else {
-                        MiniPlaceholder.unparsed(tag, translations.formatPlaceholder(segment, locale, placeholders))
-                    }
-                }
-            }
+        val prefixComponent = if (prefix && "<prefix>" in template.source) {
+            translations.template(locale, prefixKey)?.let { render(it, locale, emptyMap(), prefix = false) } ?: Component.empty()
+        } else {
+            null
         }
-        if (prefix && "<prefix>" in template.source) {
-            val prefixTemplate = translations.template(locale, prefixKey)
-            val rendered = prefixTemplate?.let { render(it, locale, emptyMap(), prefix = false) } ?: Component.empty()
-            resolvers += MiniPlaceholder.component("prefix", rendered)
+        return MessageComponents.render(template, placeholders, prefixComponent, miniMessage) { segment ->
+            translations.formatPlaceholder(segment, locale, placeholders)
         }
-        return miniMessage.deserialize(markup.toString(), TagResolver.resolver(resolvers))
     }
 
     /**

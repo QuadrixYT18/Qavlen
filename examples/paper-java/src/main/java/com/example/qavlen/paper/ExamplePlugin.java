@@ -1,10 +1,13 @@
 package com.example.qavlen.paper;
 
 import de.quadrixyt.qavlen.commands.CommandDispatcher;
+import de.quadrixyt.qavlen.config.ConfigOptions;
+import de.quadrixyt.qavlen.config.YamlConfig;
 import de.quadrixyt.qavlen.language.Placeholder;
 import de.quadrixyt.qavlen.language.Translations;
 import de.quadrixyt.qavlen.paper.Events;
 import de.quadrixyt.qavlen.paper.PaperCommands;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,11 +23,19 @@ public final class ExamplePlugin extends JavaPlugin {
                 "welcome", "<gray>Welcome, <white>{player}</white>!"))
             .directory(getDataPath().resolve("lang"))
             .build();
+        // MiniMessage texts can also live in the configuration; getComponent renders them with safe placeholders.
+        YamlConfig config = YamlConfig.load(getDataPath().resolve("config.yml"), ConfigOptions.builder()
+            .defaults(Map.of("first-join", "<gold>{player} joined for the first time!"))
+            .build());
         PaperCommands commands = new PaperCommands(this, new CommandDispatcher(translations));
         commands.register(new HealCommand(commands.getMessages()));
 
-        Events.listen(this, PlayerJoinEvent.class, event ->
-            commands.getMessages().send(event.getPlayer(), "welcome",
-                Placeholder.of("player", event.getPlayer().getName())));
+        Events.listen(this, PlayerJoinEvent.class, event -> {
+            Player player = event.getPlayer();
+            commands.getMessages().send(player, "welcome", Placeholder.of("player", player.getName()));
+            if (!player.hasPlayedBefore()) {
+                getServer().broadcast(config.requireComponent("first-join", Map.of("player", player.getName())));
+            }
+        });
     }
 }

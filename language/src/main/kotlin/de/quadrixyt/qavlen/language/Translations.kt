@@ -1,7 +1,6 @@
 package de.quadrixyt.qavlen.language
 
 import java.nio.file.Path
-import java.text.ChoiceFormat
 import java.time.ZoneId
 import java.util.Locale
 import java.util.ResourceBundle
@@ -69,17 +68,7 @@ public class Translations private constructor(
         segment: MessageTemplate.Segment.Placeholder,
         locale: Locale,
         placeholders: Map<String, Any?>,
-    ): String {
-        if (!placeholders.containsKey(segment.name)) return "{${segment.name}}"
-        val value = placeholders[segment.name]
-        val style = segment.style
-        if (style != null && style.startsWith("choice:")) {
-            val number = value as? Number ?: throw IllegalArgumentException("'${segment.name}' must be a number for choice formatting")
-            val chosen = ChoiceFormat(style.removePrefix("choice:")).format(number.toDouble())
-            return render(MessageTemplate.parse(chosen), locale, placeholders)
-        }
-        return ValueFormatter.format(value, style, locale, zone)
-    }
+    ): String = ValueFormatter.formatPlaceholder(segment, placeholders, locale, zone)
 
     /** All translations of [key] that are defined directly for a locale, without fallbacks. */
     public fun localizations(key: String): Map<Locale, String> {

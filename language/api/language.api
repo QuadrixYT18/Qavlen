@@ -1,41 +1,25 @@
-public final class de/quadrixyt/qavlen/language/MessageTemplate {
-	public static final field Companion Lde/quadrixyt/qavlen/language/MessageTemplate$Companion;
-	public final fun getPlaceholderNames ()Ljava/util/Set;
-	public final fun getSegments ()Ljava/util/List;
-	public final fun getSource ()Ljava/lang/String;
-	public static final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/quadrixyt/qavlen/language/MessageTemplate$Companion {
-	public final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate;
-}
-
-public abstract interface class de/quadrixyt/qavlen/language/MessageTemplate$Segment {
-}
-
-public final class de/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder : de/quadrixyt/qavlen/language/MessageTemplate$Segment {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;
-	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Placeholder;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
-	public final fun getStyle ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/quadrixyt/qavlen/language/MessageTemplate$Segment$Text : de/quadrixyt/qavlen/language/MessageTemplate$Segment {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;
-	public static synthetic fun copy$default (Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;Ljava/lang/String;ILjava/lang/Object;)Lde/quadrixyt/qavlen/language/MessageTemplate$Segment$Text;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getText ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+public final class de/quadrixyt/qavlen/adventure/AdventureMessages {
+	public fun <init> (Lde/quadrixyt/qavlen/language/Translations;)V
+	public fun <init> (Lde/quadrixyt/qavlen/language/Translations;Lnet/kyori/adventure/text/minimessage/MiniMessage;)V
+	public fun <init> (Lde/quadrixyt/qavlen/language/Translations;Lnet/kyori/adventure/text/minimessage/MiniMessage;Ljava/lang/String;)V
+	public synthetic fun <init> (Lde/quadrixyt/qavlen/language/Translations;Lnet/kyori/adventure/text/minimessage/MiniMessage;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun actionBar (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)V
+	public final fun getTranslations ()Lde/quadrixyt/qavlen/language/Translations;
+	public final fun locale (Lnet/kyori/adventure/audience/Audience;)Ljava/util/Locale;
+	public final fun render (Lde/quadrixyt/qavlen/language/MessageTemplate;Ljava/util/Locale;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public final fun render (Ljava/util/Locale;Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public final fun render (Ljava/util/Locale;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)Lnet/kyori/adventure/text/Component;
+	public final fun renderLines (Ljava/util/Locale;Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
+	public final fun renderLines (Ljava/util/Locale;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)Ljava/util/List;
+	public final fun renderText (Ljava/lang/String;Ljava/util/Locale;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public final fun renderText (Ljava/lang/String;Ljava/util/Locale;[Lde/quadrixyt/qavlen/language/Placeholder;)Lnet/kyori/adventure/text/Component;
+	public final fun send (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/util/Map;)V
+	public final fun send (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)V
+	public final fun sendText (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;[Lde/quadrixyt/qavlen/language/Placeholder;)V
+	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
+	public final fun title (Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/title/Title$Times;)V
+	public static synthetic fun title$default (Lde/quadrixyt/qavlen/adventure/AdventureMessages;Lnet/kyori/adventure/audience/Audience;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lnet/kyori/adventure/title/Title$Times;ILjava/lang/Object;)V
 }
 
 public final class de/quadrixyt/qavlen/language/Placeholder {
@@ -117,12 +101,5 @@ public final class de/quadrixyt/qavlen/language/Translations$Builder {
 
 public final class de/quadrixyt/qavlen/language/Translations$Companion {
 	public final fun builder ()Lde/quadrixyt/qavlen/language/Translations$Builder;
-}
-
-public final class de/quadrixyt/qavlen/language/ValueFormatter {
-	public static final field INSTANCE Lde/quadrixyt/qavlen/language/ValueFormatter;
-	public static final fun format (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;)Ljava/lang/String;
-	public static final fun format (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;Ljava/time/ZoneId;)Ljava/lang/String;
-	public static synthetic fun format$default (Ljava/lang/Object;Ljava/lang/String;Ljava/util/Locale;Ljava/time/ZoneId;ILjava/lang/Object;)Ljava/lang/String;
 }
 

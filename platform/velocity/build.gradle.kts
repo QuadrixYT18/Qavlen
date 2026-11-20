@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":brigadier"))
-    api(project(":adventure"))
+    api(project(":language"))
     compileOnly(libs.velocity.api)
     testImplementation(libs.velocity.api)
     testImplementation(libs.adventure.plain)

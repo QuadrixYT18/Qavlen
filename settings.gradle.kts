@@ -28,7 +28,6 @@ include(
     "cache-redis",
     "scheduler",
     "commands-processor",
-    "adventure",
     "brigadier",
     "platform:paper",
     "platform:velocity",
