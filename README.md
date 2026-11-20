@@ -94,7 +94,7 @@ UpdateChecker.modrinth("my-plugin", pluginMeta.version) { platform("paper") }.ch
 
 ## Installation
 
-Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.5.3` or a commit hash.
+Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.5.4` or a commit hash.
 
 ```kotlin
 repositories {
