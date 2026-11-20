@@ -36,6 +36,8 @@ public final class de/quadrixyt/qavlen/updater/UpdateChecker : java/lang/AutoClo
 	public final fun getOptions ()Lde/quadrixyt/qavlen/updater/UpdateOptions;
 	public static final fun github (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public static final fun github (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public static final fun hangar (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public static final fun hangar (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public final fun invalidate ()V
 	public static final fun modrinth (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public static final fun modrinth (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
@@ -47,6 +49,10 @@ public final class de/quadrixyt/qavlen/updater/UpdateChecker$Companion {
 	public final fun github (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public final synthetic fun github (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public static synthetic fun github$default (Lde/quadrixyt/qavlen/updater/UpdateChecker$Companion;Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public final fun hangar (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public final fun hangar (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public final synthetic fun hangar (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
+	public static synthetic fun hangar$default (Lde/quadrixyt/qavlen/updater/UpdateChecker$Companion;Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;ILjava/lang/Object;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public final fun modrinth (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public final fun modrinth (Ljava/lang/String;Ljava/lang/String;Lde/quadrixyt/qavlen/updater/UpdateOptions;)Lde/quadrixyt/qavlen/updater/UpdateChecker;
 	public final synthetic fun modrinth (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lde/quadrixyt/qavlen/updater/UpdateChecker;

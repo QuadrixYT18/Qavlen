@@ -14,6 +14,10 @@ internal class Release(
     val publishedAt: Instant?,
 )
 
+/** The provider's channel, or the channel the version names when that is less stable, as in `2.0.0-beta.1`. */
+internal val Release.effectiveChannel: UpdateChannel
+    get() = maxOf(channel, SemanticVersion.parse(version)?.channel ?: UpdateChannel.STABLE)
+
 /** A provider: lists the releases of one project, newest first, without the channel filter. */
 internal interface ReleaseSource {
     /** For messages, for example `Modrinth project 'luckperms'`. */

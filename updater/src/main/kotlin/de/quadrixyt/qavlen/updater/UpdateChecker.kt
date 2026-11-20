@@ -90,7 +90,7 @@ public class UpdateChecker internal constructor(
     }
 
     private fun evaluate(releases: List<Release>): UpdateResult {
-        val suitable = releases.filter { options.channel.includes(channelOf(it)) }
+        val suitable = releases.filter { options.channel.includes(it.effectiveChannel) }
         val latest = newest(suitable) ?: return UpdateResult.UpToDate(currentVersion, null)
         if (normalize(latest.version) == normalize(currentVersion)) return UpdateResult.UpToDate(currentVersion, latest.version)
         val compared = SemanticVersion.compare(latest.version, currentVersion) ?: return UpdateResult.Failed(
@@ -102,7 +102,7 @@ public class UpdateChecker internal constructor(
             UpdateResult.Available(
                 currentVersion,
                 latest.version,
-                channelOf(latest),
+                latest.effectiveChannel,
                 latest.releaseUrl,
                 latest.downloadUrl,
                 latest.notes,
@@ -120,12 +120,6 @@ public class UpdateChecker internal constructor(
         } else {
             UpdateResult.Failed(currentVersion, "${source.description}: unexpected response (${cause.javaClass.simpleName})", cause)
         }
-    }
-
-    /** Releases a provider marks as stable but whose version names a pre-release count as that pre-release. */
-    private fun channelOf(release: Release): UpdateChannel {
-        val named = SemanticVersion.parse(release.version)?.channel ?: UpdateChannel.STABLE
-        return maxOf(release.channel, named)
     }
 
     /** The highest comparable version; when none is comparable, the most recently published one. */
@@ -177,8 +171,27 @@ public class UpdateChecker internal constructor(
         public fun github(repository: String, currentVersion: String, configure: UpdateOptions.Builder.() -> Unit): UpdateChecker =
             github(repository, currentVersion, UpdateOptions.builder().apply(configure).build())
 
+        /**
+         * Checks a Hangar project, given as `owner/slug` or as its slug. Hangar channels are named by their authors:
+         * names containing `alpha`, `snapshot`, `dev` or `nightly` count as alphas, `beta`, `rc` or `pre` and
+         * channels flagged unstable as betas, all others as stable.
+         */
+        @JvmStatic
+        @JvmOverloads
+        public fun hangar(project: String, currentVersion: String, options: UpdateOptions = UpdateOptions.defaults()): UpdateChecker {
+            require(hangarProject.matches(project)) { "Invalid Hangar project '$project'; use owner/slug or slug" }
+            return UpdateChecker(HangarSource(project), currentVersion, options, HANGAR)
+        }
+
+        /** Kotlin form of [hangar] with options. */
+        @JvmSynthetic
+        public fun hangar(project: String, currentVersion: String, configure: UpdateOptions.Builder.() -> Unit): UpdateChecker =
+            hangar(project, currentVersion, UpdateOptions.builder().apply(configure).build())
+
         private val repositoryName = Regex("[A-Za-z0-9-]+/[A-Za-z0-9_.-]+")
+        private val hangarProject = Regex("([A-Za-z0-9_.-]+/)?[A-Za-z0-9_.-]+")
         internal val MODRINTH: URI = URI.create("https://api.modrinth.com/")
         internal val GITHUB: URI = URI.create("https://api.github.com/")
+        internal val HANGAR: URI = URI.create("https://hangar.papermc.io/")
     }
 }
