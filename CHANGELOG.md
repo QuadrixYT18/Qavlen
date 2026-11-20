@@ -2,6 +2,14 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `storage`: SQLite support with `DatabaseType.SQLITE`. `database` is the path of the database file, host, port and credentials are ignored, and the pool uses a single connection. The driver is `org.xerial:sqlite-jdbc`.
+- `storage`: `DatabaseDialect` with `MySQLDialect`, `PostgreSQLDialect` and `SQLiteDialect` quotes identifiers and maps JDBC column types per database; `dialect(type)` returns the dialect of a `DatabaseType`.
+- `storage`: `DatabaseMigrationManager` moves the data to a new database when the configured database changes, for example from SQLite to MariaDB. Tables, columns, primary keys and rows are copied in batches into an empty target in one transaction, which is committed only when the row counts match. `DatabaseMigrationStateStore` records the active database without credentials and blocks further switches after an unfinished migration. Tables with auto-increment columns, foreign keys or secondary and unique indexes are rejected before anything is written.
+
 ## 0.5.3 - 2026-11-20
 
 ### Added

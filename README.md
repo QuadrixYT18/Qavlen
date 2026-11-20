@@ -85,7 +85,7 @@ UpdateChecker.modrinth("my-plugin", pluginMeta.version) { platform("paper") }.ch
 | `qavlen-paper` | Brigadier commands, menus, items, plugin messaging, Folia-aware scheduling, events, persistent data, safe teleports |
 | `qavlen-velocity` | Proxy commands and plugin messaging |
 | `qavlen-jda` | Localized slash commands, autocomplete, change-aware registration |
-| `qavlen-storage` | HikariCP, prepared statements, transactions, async queries, migrations |
+| `qavlen-storage` | HikariCP, prepared statements, transactions, async queries, migrations; MariaDB, PostgreSQL and SQLite, with data transfer between them |
 | `qavlen-cache` / `qavlen-cache-redis` | Caffeine local cache and optional Redis cache |
 | `qavlen-serialization` | Jackson-based JSON codec and typed configurations for data classes and records (YAML with comments, JSON, TOML) |
 | `qavlen-network` | JSON REST client with timeouts and bounded retries |

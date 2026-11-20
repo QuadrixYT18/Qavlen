@@ -15,6 +15,7 @@ What Qavlen is built against and how each combination was verified. "Live" means
 | Redis | 8 | CI against a Redis service |
 | HikariCP | 7.1.0 | CI with H2 in PostgreSQL mode |
 | MariaDB / PostgreSQL | drivers 3.5 / 42.7 | Connection helpers only; not tested against real servers yet |
+| SQLite | `org.xerial:sqlite-jdbc` | Connection settings and migration; not tested against a real database file in CI yet |
 | Jackson | 3.3.0 | CI |
 | Caffeine | 3.3.1 | CI |
 | SnakeYAML / Gson | 2.7 / 2.15.0 | CI |

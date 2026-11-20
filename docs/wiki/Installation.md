@@ -25,7 +25,7 @@ Platform APIs are not bundled. Declare them yourself as `compileOnly`:
 | `qavlen-velocity` | `com.velocitypowered:velocity-api` |
 | `qavlen-jda` | `net.dv8tion:JDA` (as `implementation`; bots run on their own) |
 | `qavlen-config`, `qavlen-language` (components only) | `net.kyori:adventure-api` and `adventure-text-minimessage`: provided by Paper and Velocity, otherwise `implementation` (see [Adventure & MiniMessage](Adventure)) |
-| `qavlen-storage` | the JDBC driver, for example `org.mariadb.jdbc:mariadb-java-client` or `org.postgresql:postgresql` |
+| `qavlen-storage` | the JDBC driver, for example `org.mariadb.jdbc:mariadb-java-client`, `org.postgresql:postgresql` or `org.xerial:sqlite-jdbc` |
 
 ## Shading plugins
 

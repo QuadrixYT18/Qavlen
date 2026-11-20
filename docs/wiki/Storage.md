@@ -45,6 +45,30 @@ val config = Configs.open<PluginConfig>(path) { environment("COINS") } // COINS_
 val database = Database.connect(config.value.database)
 ```
 
-`type` selects MariaDB or PostgreSQL and the default port; `url` replaces the generated JDBC URL, for example for H2. `toString()` never prints the password. `Database.builder(settings)` returns a builder for further options.
+`type` selects MariaDB, PostgreSQL or SQLite and the default port; `url` replaces the generated JDBC URL, for example for H2. `toString()` never prints the password. `Database.builder(settings)` returns a builder for further options.
+
+## SQLite
+
+With `DatabaseType.SQLITE`, `database` is the path of the database file; host, port, username and password are ignored. The pool uses a single connection, because SQLite allows only one writer at a time. Add `org.xerial:sqlite-jdbc` as driver.
+
+```kotlin
+val database = Database.connect(DatabaseSettings(type = DatabaseType.SQLITE, database = dataFolder.resolve("data.db").toString()))
+```
+
+## Switching databases
+
+`DatabaseMigrationManager` copies all data when the configured database changes, for example from SQLite to MariaDB. A `DatabaseMigrationStateStore` file records which database is active; it holds a hash of URL and user, never credentials.
+
+```kotlin
+val manager = DatabaseMigrationManager(DatabaseMigrationStateStore(dataFolder.resolve("storage-state.properties")))
+manager.initializeActive(oldSettings) // once, for the database that is in use today
+
+manager.prepare(newSettings, oldConnection = { oldDataSource.connection }, newConnection = { newDataSource.connection }, oldConfig = oldSettings)
+```
+
+- `prepare` does nothing when the new settings are the recorded database. Otherwise it creates every table with its columns and primary key in the new database and copies the rows in batches.
+- The target must be empty. The copy runs in one transaction on the target and is committed only when the row counts of all tables match.
+- While copying, the state is `IN_PROGRESS`. If anything fails, the old database stays the active one and `prepare` refuses to run again until the state file is fixed, so a half-filled target is never used by accident.
+- Tables with auto-increment columns, foreign keys or secondary and unique indexes are rejected before anything is written. Column types are mapped through `DatabaseDialect` (`MySQLDialect`, `PostgreSQLDialect`, `SQLiteDialect`).
 
 There is no ORM; map rows with `RowMapper`.
