@@ -85,7 +85,7 @@ player.sendMessage(messages.getComponent("welcome", "player" to player.name))
 
 ## Installation
 
-Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.5.1` or a commit hash.
+Qavlen requires Java 25 and is published through [JitPack](https://jitpack.io/#QuadrixYT18/Qavlen). Replace `VERSION` with a release tag such as `v0.5.2` or a commit hash.
 
 ```kotlin
 repositories {
