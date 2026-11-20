@@ -8,6 +8,8 @@ public final class de/quadrixyt/qavlen/config/ConfigChange {
 
 public class de/quadrixyt/qavlen/config/ConfigConflictException : de/quadrixyt/qavlen/config/ConfigException {
 	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public class de/quadrixyt/qavlen/config/ConfigException : java/lang/RuntimeException {
@@ -81,6 +83,16 @@ public final class de/quadrixyt/qavlen/config/ConfigFormat$Companion {
 
 public abstract interface class de/quadrixyt/qavlen/config/ConfigListener {
 	public abstract fun onChange (Lde/quadrixyt/qavlen/config/ConfigChange;)V
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigMerge {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/config/ConfigMerge;
+	public static final fun merge (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigMerge$Result;
+}
+
+public final class de/quadrixyt/qavlen/config/ConfigMerge$Result {
+	public final fun getConflicts ()Ljava/util/List;
+	public final fun getValues ()Ljava/util/Map;
 }
 
 public abstract interface class de/quadrixyt/qavlen/config/ConfigMigration {

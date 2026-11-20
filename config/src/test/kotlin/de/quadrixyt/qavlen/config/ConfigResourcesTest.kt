@@ -127,18 +127,66 @@ class ConfigResourcesTest {
     }
 
     @Test
-    fun `save refuses to overwrite edits made on disk`() {
+    fun `save keeps edits made to the file and adds the changes in memory`() {
+        val file = directory.resolve("config.yml")
+        file.writeText("a: 1\nmessages:\n  join: \"Hi\"\n")
+        val config = YamlConfig.load(file)
+        val changes = mutableListOf<ConfigChange>()
+        config.addListener { changes += it }
+        file.writeText("a: 1\n# edited by hand\nb: \"by hand\"\nmessages:\n  join: \"Welcome\"\n")
+        config.set("a", 2)
+
+        assertTrue(config.save())
+
+        val text = file.readText()
+        assertTrue("a: 2" in text, text)
+        assertTrue("# edited by hand\nb: \"by hand\"" in text, text)
+        assertTrue("join: \"Welcome\"" in text, text)
+        assertEquals("by hand", config.getString("b"))
+        assertEquals("Welcome", config.getString("messages.join"))
+        assertTrue(changes.any { it.reload && "b" in it.paths })
+    }
+
+    @Test
+    fun `the file wins when both changed the same value`() {
         val file = directory.resolve("config.yml")
         file.writeText("a: 1\n")
         val config = YamlConfig.load(file)
-        file.writeText("a: 1\nb: edited by hand\n")
+        file.writeText("a: 5\n")
+        config.set("a", 2)
+
+        assertFalse(config.save())
+
+        assertEquals("a: 5\n", file.readText())
+        assertEquals(5, config.getInt("a"))
+    }
+
+    @Test
+    fun `an edit that breaks the file is never overwritten`() {
+        val file = directory.resolve("config.yml")
+        file.writeText("a: 1\n")
+        val config = YamlConfig.load(file)
+        file.writeText("a: [broken\n")
         config.set("a", 2)
 
         assertFailsWith<ConfigConflictException> { config.save() }
-        assertEquals("a: 1\nb: edited by hand\n", file.readText())
+        assertEquals("a: [broken\n", file.readText())
 
         assertTrue(config.save(true))
         assertEquals(2, YamlConfig.load(file).getInt("a"))
+    }
+
+    @Test
+    fun `keys removed in memory or in the file stay removed`() {
+        val file = directory.resolve("config.yml")
+        file.writeText("a: 1\nb: 2\nc: 3\n")
+        val config = YamlConfig.load(file)
+        file.writeText("a: 1\nb: 2\n")
+        config.remove("a")
+
+        config.save()
+
+        assertEquals("b: 2\n", file.readText())
     }
 
     @Test

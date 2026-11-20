@@ -28,4 +28,5 @@ private fun describe(value: Any?): String = when (value) {
 }
 
 /** The file was changed by someone else since it was loaded, so saving would overwrite those changes. */
-public open class ConfigConflictException(message: String) : ConfigException(message)
+public open class ConfigConflictException @JvmOverloads constructor(message: String, cause: Throwable? = null) :
+    ConfigException(message, cause)

@@ -159,32 +159,71 @@ public sealed class ConfigFile(
     /**
      * Validates and writes the current values to the backing file.
      *
-     * Edits someone else made to the file since it was loaded, reloaded or saved are not overwritten: [save] throws
-     * [ConfigConflictException] instead. Call [reload] to take them over, or pass `true` to replace them.
+     * Edits someone made to the file since it was loaded, reloaded or saved are kept: they are merged with the changes
+     * in memory (see [ConfigMerge]), and the configuration takes them over. When both changed the same value, the
+     * file's value wins and the discarded change is logged. Pass `true` to replace the file with the values in memory.
      *
-     * @param overwriteExternalChanges write even when the file was changed on disk in the meantime
+     * @param overwriteExternalChanges write the values in memory even when the file was edited in the meantime
      * @return `false` when the file already contained the same content and nothing was written
-     * @throws ConfigConflictException when the file changed on disk and [overwriteExternalChanges] is `false`
+     * @throws ConfigConflictException when the file was edited and can no longer be read, so its edits cannot be kept
      */
     @JvmOverloads
     public fun save(overwriteExternalChanges: Boolean = false): Boolean {
         val target = file ?: throw ConfigException("This configuration has no backing file; use saveTo(path)")
-        return lock.write {
-            validate(root)
+        var adopted = emptySet<String>()
+        val written = lock.write {
             val current = readOrNull(target)
-            if (!overwriteExternalChanges && current != null && current != diskText) {
-                throw ConfigConflictException(
-                    "$target was changed on disk since it was loaded; call reload() to take over those changes " +
-                        "or save(true) to replace them",
-                )
+            val edited = !overwriteExternalChanges && current != null && current != diskText
+            val onDisk = if (edited) {
+                val disk = takeOverEdits(target, checkNotNull(current))
+                adopted = disk.second
+                disk.first
+            } else {
+                persisted
             }
+            validate(root)
             val text = format.encode(root)
-            if (text == persisted && current != null) return@write false
+            if (text == onDisk && current != null) return@write false
             write(target, withComments(current, text))
             persisted = text
             fileStamp = FileStamp.of(target)
             true
         }
+        if (adopted.isNotEmpty()) notify(adopted, reload = true)
+        return written
+    }
+
+    /**
+     * Merges the edited file [text] with the values in memory and makes the result current. Returns the file's
+     * content in this document's encoding, and the paths whose values changed in memory.
+     */
+    private fun takeOverEdits(target: Path, text: String): Pair<String, Set<String>> {
+        val disk = try {
+            format.decode(text, target.toString())
+        } catch (exception: ConfigException) {
+            throw ConfigConflictException(
+                "$target was edited and can no longer be read, so the edits cannot be kept; fix the file or call save(true)",
+                exception,
+            )
+        }
+        val base = diskText?.let { format.decode(it, "$target as last read") } ?: linkedMapOf()
+        val merge = ConfigMerge.merge(base, disk, root)
+        if (merge.conflicts.isNotEmpty()) {
+            System.getLogger(ConfigFile::class.java.name).log(
+                System.Logger.Level.WARNING,
+                "$target was edited while values in memory changed; kept the file's values for ${merge.conflicts.joinToString()}",
+            )
+        }
+        val merged = deepCopy(merge.values)
+        validate(merged)
+        val changed = changedPaths(root, merged)
+        root = merged
+        messages.invalidate()
+        diskText = text
+        val encoded = format.encode(disk)
+        persisted = encoded
+        fileStamp = FileStamp.of(target)
+        return encoded to changed
     }
 
     /** Validates and writes the current values to [target] without changing the backing file. */
