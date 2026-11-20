@@ -51,6 +51,12 @@ config.save()
 
 The file is created with comments from the defaults, missing values are added without touching existing ones, every value is validated before it becomes active, and environment overrides never end up in the file.
 
+Path-based files can start from a default file in `src/main/resources`. It is copied on the first start, and later plugin versions only add missing keys, together with their comments:
+
+```kotlin
+val config = YamlConfig.load(dataFolder.toPath().resolve("config.yml"), javaClass.classLoader)
+```
+
 Messages in a configuration render as MiniMessage components. Placeholder values are inserted as plain text, so a player named `<click:run_command:/op me>` cannot inject tags:
 
 ```kotlin

@@ -26,6 +26,17 @@ Server switching uses Velocity's API directly:
 player.createConnectionRequest(target).connect().thenAccept { result -> ... }
 ```
 
+## Configuration files
+
+Velocity uses the same call with the plugin class and its data directory (see [Configuration](Configuration#bundled-default-files)):
+
+```kotlin
+@Plugin(id = "example")
+class ExamplePlugin @Inject constructor(@DataDirectory private val dataDirectory: Path) {
+    val messages = YamlConfig.load(dataDirectory.resolve("messages.yml"), ExamplePlugin::class.java)
+}
+```
+
 ## Plugin messaging
 
 ```kotlin

@@ -21,6 +21,41 @@ YamlConfig config = YamlConfig.load(Path.of("config.yml"), ConfigOptions.builder
 int port = config.getInt("database.port", 3306);
 ```
 
+## Bundled default files
+
+Put the default file into `src/main/resources` and pass a class loader. Qavlen takes the resource with the same file name as the target, for example `messages.yml`:
+
+```kotlin
+val messages = YamlConfig.load(dataFolder.toPath().resolve("messages.yml"), javaClass.classLoader)
+val config = YamlConfig.load(path = dataFolder.toPath().resolve("config.yml"), resourceOwner = MyPlugin::class.java)
+```
+
+```java
+YamlConfig messages = YamlConfig.load(getDataFolder().toPath().resolve("messages.yml"), getClass().getClassLoader());
+YamlConfig config = YamlConfig.load(getDataFolder().toPath().resolve("config.yml"), MyPlugin.class);
+```
+
+`JsonConfig.load` works the same way. Neither variant needs `saveResource()` or `getResourceAsStream()`, and `qavlen-config` does not depend on Paper, Velocity or any other platform. Every plugin passes its own class loader.
+
+| | `load(path)` | `load(path, classLoader)` |
+| --- | --- | --- |
+| File missing | Created from `ConfigOptions` defaults, or empty | Created as an exact copy of the resource, with comments, blank lines and formatting |
+| File exists | Missing `ConfigOptions` defaults are added | Missing keys of the resource are added, with the resource's comments for them |
+| Resource missing | Not looked up | `ConfigException` naming the resource; no file is created |
+
+Updating an existing file follows these rules:
+
+- **Existing values:** values in the file are never replaced. Lists are kept as they are, and an explicit `null` counts as a value, not as a missing key.
+- **Unknown keys:** keys the resource no longer has stay in the file.
+- **Nested sections:** missing keys inside sections are added in the right place.
+- **Type conflicts:** if the file has a value where the resource has a section, or the other way round, loading fails with a `ConfigException` naming the key. Nothing is written.
+- **Comments:** comments in the file stay. New keys receive the comments the resource has for them, while comments you deleted from existing keys do not come back.
+- **Writes:** the file is written atomically, and only when keys were added. It is not written if it cannot be parsed, or if it changes on disk while it is being loaded.
+
+`ConfigOptions` still apply. Validators, migrations and additional defaults work together with the resource; with `writeDefaults(false)`, added keys stay in memory only.
+
+TOML is not a format of `qavlen-config`; [typed configurations](Typed-Configuration) support it.
+
 ## Reading values
 
 Paths are dot-separated. Typed getters (`getString`, `getInt`, `getLong`, `getDouble`, `getBoolean`, `getList`, `getStringList`, `getIntList`, `getMap`) return `null` when the value is absent, or the given default. A value of the wrong type throws `ConfigValueException` naming the path, so a typo such as `port: 33o6` is reported instead of silently replaced. `getSection` returns a live view of a nested section.
@@ -82,7 +117,7 @@ rewards:
 
 ## Defaults
 
-Defaults only add missing keys; existing values are never replaced. Missing keys are written back to the file. If the file has a value where the defaults have a section, or the other way round, loading fails with a `ConfigException` that names the key instead of discarding data. Bundled defaults can come from a resource: `defaults(YamlConfig.read(javaClass.getResourceAsStream("/config.yml")!!))`.
+Defaults only add missing keys; existing values are never replaced. Missing keys are written back to the file. If the file has a value where the defaults have a section, or the other way round, loading fails with a `ConfigException` that names the key instead of discarding data. For a default file in `src/main/resources`, see [Bundled default files](#bundled-default-files).
 
 ## Safety
 

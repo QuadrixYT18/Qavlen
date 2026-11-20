@@ -2,6 +2,13 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `config`: `YamlConfig.load(path, classLoader)` and `load(path, resourceOwner)`, and the same for `JsonConfig`, use the bundled resource with the target's file name as defaults. A missing file is created as an unchanged copy of the resource, comments and formatting included. An existing file only gains missing keys, with the resource's comments for them, and is written only when something was added. A missing or broken resource throws `ConfigException` before any file changes. `load(path)` is unchanged.
+- `config`: loading no longer writes a file that was changed on disk while it was being loaded.
+
 ## 0.4.1 - 2026-11-20
 
 > **Breaking change despite the patch version:** the `qavlen-adventure` artifact no longer exists. Replace it with `qavlen-language`, or with `qavlen-config` when you only render configuration texts. On Paper and Velocity, remove it without replacement. Class and package names are unchanged, so source code and code compiled against 0.4.0 keep working. See [Migrating from `qavlen-adventure`](https://github.com/QuadrixYT18/Qavlen/wiki/Adventure#migrating-from-qavlen-adventure).

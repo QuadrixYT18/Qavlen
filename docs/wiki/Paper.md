@@ -29,6 +29,15 @@ public void onEnable() {
 
 `@Sender player: Player` receives the executing player (respecting `/execute as`), `@Sender sender: CommandSender` any sender. Messages render as MiniMessage in the player's client locale.
 
+## Configuration files
+
+Default files in `src/main/resources` are created and updated with the plugin's class loader; no `saveDefaultConfig()` is needed (see [Configuration](Configuration#bundled-default-files)):
+
+```kotlin
+val messages = YamlConfig.load(dataPath.resolve("messages.yml"), javaClass.classLoader)
+player.sendMessage(messages.getComponent("welcome", "player" to player.name))
+```
+
 ## Messages
 
 Use `AdventureMessages` (see [Adventure](Adventure)) for translations and `config.getComponent(path)` for texts in configurations in chat, titles and action bars. Placeholder values are inserted as text and cannot inject MiniMessage tags.
