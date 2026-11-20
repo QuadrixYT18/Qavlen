@@ -7,6 +7,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.Reader
 import java.io.Writer
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
@@ -23,7 +24,8 @@ import kotlin.concurrent.write
  * [save] writes atomically and skips the write when the serialized content did not change.
  *
  * YAML comments written by people are kept when the file is rewritten (see [preserveYamlComments]); JSON has no
- * comments.
+ * comments. Files loaded with a class loader start as a copy of the bundled resource of the same name, and later
+ * versions of that resource only add missing keys (see [YamlConfig.load]).
  *
  * All operations are thread-safe.
  */
@@ -39,6 +41,9 @@ public sealed class ConfigFile(
     private var fileStamp: FileStamp? = null
     private val listeners = CopyOnWriteArrayList<ConfigListener>()
     private val view = NodeSection(lock, "", { path -> notify(setOf(path), reload = false) }) { root }
+
+    /** Text of the bundled resource this file was created from, whose comments new keys receive. */
+    private var bundled: String? = null
 
     override val path: String get() = ""
 
@@ -64,7 +69,10 @@ public sealed class ConfigFile(
      *
      * @return the paths of defaults that were added to the file
      */
-    public fun reload(): List<String> {
+    public fun reload(): List<String> = reload(created = false)
+
+    /** [created] is `true` right after the file was copied from the bundled resource, so it counts as new. */
+    private fun reload(created: Boolean): List<String> {
         val target = file ?: throw ConfigException("Cannot reload a configuration that was not loaded from a file")
         val (added, changed) = lock.write {
             val stamp = FileStamp.of(target)
@@ -74,7 +82,7 @@ public sealed class ConfigFile(
                 throw ConfigException("Could not read $target", exception)
             }
             val before = root
-            val added = apply(text, target.toString())
+            val added = apply(text, target.toString(), created, stamp)
             fileStamp = if (Files.exists(target)) FileStamp.of(target) else stamp
             added to changedPaths(before, root)
         }
@@ -146,10 +154,19 @@ public sealed class ConfigFile(
 
     internal fun initialize(text: String?, source: String) = lock.write { apply(text, source) }
 
-    private fun apply(text: String?, source: String): List<String> {
+    /**
+     * Copies [resource] to the file when it does not exist yet, keeping its comments and formatting, then loads it.
+     * A file that exists keeps every value; keys only the resource defines are added through the defaults.
+     */
+    internal fun loadBundled(resource: String) {
+        bundled = resource
+        reload(created = copyIfMissing(checkNotNull(file), resource))
+    }
+
+    private fun apply(text: String?, source: String, created: Boolean = false, stamp: FileStamp? = null): List<String> {
         val candidate = text?.let { format.decode(it, source) } ?: linkedMapOf()
         val loadedText = text?.let { format.encode(candidate) }
-        val migratedFrom = migrate(candidate, isNew = text == null, source)
+        val migratedFrom = migrate(candidate, isNew = text == null || created, source)
         // Without writeDefaults, a migration is still saved, but the defaults added below stay in memory only.
         val migrated = if (options.writeDefaults || migratedFrom == null) null else format.encode(candidate)
         val added = mergeDefaults(candidate, options.defaults)
@@ -159,6 +176,10 @@ public sealed class ConfigFile(
         val content = migrated ?: format.encode(candidate)
         val write = target != null && content != loadedText && (options.writeDefaults || migratedFrom != null)
         if (write) {
+            // Someone edited the file while it was being loaded; their edit wins and nothing is written.
+            if (stamp != null && FileStamp.of(target) != stamp) {
+                throw ConfigException("$target was changed while it was loaded; nothing was written")
+            }
             if (migratedFrom != null && options.backups && text != null) backup(target, migratedFrom)
             write(target, withComments(text, content))
         }
@@ -216,9 +237,14 @@ public sealed class ConfigFile(
         }
     }
 
-    /** Carries comments a person wrote in [previous] over to [content]; only YAML has comments. */
-    private fun withComments(previous: String?, content: String): String =
-        if (format == ConfigFormat.YAML && previous != null) preserveYamlComments(previous, content) else content
+    /**
+     * Carries comments a person wrote in [previous] over to [content], and comments of the bundled resource to keys
+     * that are new; only YAML has comments.
+     */
+    private fun withComments(previous: String?, content: String): String {
+        if (format != ConfigFormat.YAML || previous == null) return content
+        return bundled?.let { preserveYamlComments(previous, content, it) } ?: preserveYamlComments(previous, content)
+    }
 
     private fun readOrNull(target: Path): String? = try {
         if (Files.exists(target)) Files.readString(target) else null
@@ -248,6 +274,54 @@ public sealed class ConfigFile(
     override fun toString(): String = "${javaClass.simpleName}(${file ?: "detached"})"
 }
 
+/**
+ * Reads the resource named like [path]'s file, for example `messages.yml`, from the root of [loader].
+ *
+ * @throws ConfigException when the resource does not exist or cannot be read
+ */
+internal fun bundledResource(path: Path, loader: ClassLoader): String {
+    val name = path.fileName?.toString() ?: throw ConfigException("$path has no file name")
+    val stream = loader.getResourceAsStream(name) ?: throw ConfigException(
+        "No bundled resource '$name' for $path; add src/main/resources/$name or load the file without a class loader",
+    )
+    return try {
+        stream.use { it.readBytes().toString(Charsets.UTF_8) }
+    } catch (exception: IOException) {
+        throw ConfigException("Could not read the bundled resource '$name'", exception)
+    }
+}
+
+/** The class loader of [owner]; classes of the JDK itself have none, so the system class loader stands in. */
+internal fun resourceLoader(owner: Class<*>): ClassLoader = owner.classLoader ?: ClassLoader.getSystemClassLoader()
+
+/** [this] with the values of [resource] as additional defaults; a broken resource fails here, before any file changes. */
+internal fun ConfigOptions.withBundled(format: ConfigFormat, resource: String, path: Path): ConfigOptions =
+    toBuilder().defaults(format.decode(resource, "bundled resource ${path.fileName}")).build()
+
+/**
+ * Creates [target] with exactly [text] when it does not exist. The text is written to a temporary file first and
+ * moved without replacing, so a file someone created in the meantime is kept. Returns `true` when it was created.
+ */
+private fun copyIfMissing(target: Path, text: String): Boolean {
+    if (Files.exists(target)) return false
+    val directory = target.toAbsolutePath().parent ?: throw ConfigException("$target has no parent directory")
+    return try {
+        Files.createDirectories(directory)
+        val temporary = Files.createTempFile(directory, ".${target.fileName}", ".tmp")
+        try {
+            Files.writeString(temporary, text)
+            Files.move(temporary, target)
+            true
+        } catch (_: FileAlreadyExistsException) {
+            false
+        } finally {
+            Files.deleteIfExists(temporary)
+        }
+    } catch (exception: IOException) {
+        throw ConfigException("Could not create $target from its bundled resource", exception)
+    }
+}
+
 /** A YAML document. Duplicate keys, aliases bombs and non-section roots are rejected. */
 public class YamlConfig private constructor(file: Path?, options: ConfigOptions) :
     ConfigFile(file, ConfigFormat.YAML, options) {
@@ -261,6 +335,28 @@ public class YamlConfig private constructor(file: Path?, options: ConfigOptions)
         @JvmStatic
         @JvmOverloads
         public fun load(file: File, options: ConfigOptions = ConfigOptions.DEFAULT): YamlConfig = load(file.toPath(), options)
+
+        /**
+         * Loads [path] with the resource of the same file name in [classLoader] as its default, for example
+         * `messages.yml` from `src/main/resources`. When the file does not exist, the resource is copied unchanged,
+         * comments and formatting included. When it exists, only keys missing from the file are added, with the
+         * comments the resource has for them; values in the file are never replaced and nothing is written when
+         * nothing is missing. [options] can add validators, migrations and more defaults.
+         *
+         * @throws ConfigException when the resource does not exist or cannot be parsed, or the file cannot be read
+         */
+        @JvmStatic
+        @JvmOverloads
+        public fun load(path: Path, classLoader: ClassLoader, options: ConfigOptions = ConfigOptions.DEFAULT): YamlConfig {
+            val resource = bundledResource(path, classLoader)
+            return YamlConfig(path, options.withBundled(ConfigFormat.YAML, resource, path)).also { it.loadBundled(resource) }
+        }
+
+        /** Like [load] with a class loader, using the one that loaded [resourceOwner], typically the plugin's main class. */
+        @JvmStatic
+        @JvmOverloads
+        public fun load(path: Path, resourceOwner: Class<*>, options: ConfigOptions = ConfigOptions.DEFAULT): YamlConfig =
+            load(path, resourceLoader(resourceOwner), options)
 
         /** Reads a detached document, for example a bundled resource. The stream is closed. */
         @JvmStatic
@@ -295,6 +391,28 @@ public class JsonConfig private constructor(file: Path?, options: ConfigOptions)
         @JvmStatic
         @JvmOverloads
         public fun load(file: File, options: ConfigOptions = ConfigOptions.DEFAULT): JsonConfig = load(file.toPath(), options)
+
+        /**
+         * Loads [path] with the resource of the same file name in [classLoader] as its default, for example
+         * `messages.json` from `src/main/resources`. When the file does not exist, the resource is copied unchanged,
+         * comments and formatting included. When it exists, only keys missing from the file are added, with the
+         * comments the resource has for them; values in the file are never replaced and nothing is written when
+         * nothing is missing. [options] can add validators, migrations and more defaults.
+         *
+         * @throws ConfigException when the resource does not exist or cannot be parsed, or the file cannot be read
+         */
+        @JvmStatic
+        @JvmOverloads
+        public fun load(path: Path, classLoader: ClassLoader, options: ConfigOptions = ConfigOptions.DEFAULT): JsonConfig {
+            val resource = bundledResource(path, classLoader)
+            return JsonConfig(path, options.withBundled(ConfigFormat.JSON, resource, path)).also { it.loadBundled(resource) }
+        }
+
+        /** Like [load] with a class loader, using the one that loaded [resourceOwner], typically the plugin's main class. */
+        @JvmStatic
+        @JvmOverloads
+        public fun load(path: Path, resourceOwner: Class<*>, options: ConfigOptions = ConfigOptions.DEFAULT): JsonConfig =
+            load(path, resourceLoader(resourceOwner), options)
 
         /** Reads a detached document. The stream is closed. */
         @JvmStatic
