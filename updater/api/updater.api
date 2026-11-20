@@ -1,0 +1,28 @@
+public final class de/quadrixyt/qavlen/updater/SemanticVersion {
+	public static final field Companion Lde/quadrixyt/qavlen/updater/SemanticVersion$Companion;
+	public static final fun compare (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Integer;
+	public final fun compareTo (Lde/quadrixyt/qavlen/updater/SemanticVersion;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChannel ()Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isPrerelease ()Z
+	public static final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/SemanticVersion;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/updater/SemanticVersion$Companion {
+	public final fun compare (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Integer;
+	public final fun parse (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/SemanticVersion;
+}
+
+public final class de/quadrixyt/qavlen/updater/UpdateChannel : java/lang/Enum {
+	public static final field ALPHA Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public static final field BETA Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public static final field STABLE Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun includes (Lde/quadrixyt/qavlen/updater/UpdateChannel;)Z
+	public static fun valueOf (Ljava/lang/String;)Lde/quadrixyt/qavlen/updater/UpdateChannel;
+	public static fun values ()[Lde/quadrixyt/qavlen/updater/UpdateChannel;
+}
+

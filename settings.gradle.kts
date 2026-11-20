@@ -27,6 +27,7 @@ include(
     "cache",
     "cache-redis",
     "scheduler",
+    "updater",
     "commands-processor",
     "brigadier",
     "platform:paper",
