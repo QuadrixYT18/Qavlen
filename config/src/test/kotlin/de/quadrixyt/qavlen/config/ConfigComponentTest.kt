@@ -1,5 +1,6 @@
 package de.quadrixyt.qavlen.config
 
+import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentIteratorType
 import net.kyori.adventure.text.TextComponent
@@ -29,6 +30,7 @@ class ConfigComponentTest {
     private val config = YamlConfig.parse(
         """
         prefix: "<gray>[Shop]</gray>"
+        no-permission: "<red>You may not do that."
         welcome: "<prefix> <green>Welcome, {player}!</green> You have {coins:number} coins."
         title: "<gradient:#ff0000:#0000ff>Qavlen</gradient> <bold>{name}</bold>"
         braces: "Use {{player}} literally"
@@ -38,64 +40,84 @@ class ConfigComponentTest {
           - "<gray>Price: {price}"
           - "<prefix> <yellow>Click to buy"
         messages:
-          prefix: "<red>[Nested]</red>"
           join: "<prefix> {player} joined"
+          staff:
+            prefix: "<red>[Staff]</red>"
+            alert: "<prefix> {text}"
         """.trimIndent(),
     )
+
+    private fun Component.parts() = iterator(ComponentIteratorType.DEPTH_FIRST).asSequence().toList()
 
     @Test
     fun `getString keeps returning the raw text`() {
         assertEquals("<gray>[Shop]</gray>", config.getString("prefix"))
         assertEquals("fallback", config.getString("missing", "fallback"))
+        assertNull(config.getString("missing"))
     }
 
     @Test
-    fun `renders MiniMessage tags gradients and formatting`() {
-        val component = config.requireComponent("title", "name" to "Alex")
+    fun `renders simple MiniMessage messages`() {
+        val message: Component = config.getComponent("no-permission")
 
-        val parts = component.iterator(ComponentIteratorType.DEPTH_FIRST).asSequence().toList()
+        assertEquals("You may not do that.", plain.serialize(message))
+        assertEquals(NamedTextColor.RED, message.parts().first { plain.serialize(it).isNotEmpty() }.color())
+    }
+
+    @Test
+    fun `renders tags gradients and formatting`() {
+        val component = config.getComponent("title", "name" to "Alex")
+
         assertEquals("Qavlen Alex", plain.serialize(component))
-        assertEquals(TextColor.color(0xFF0000), parts.filterIsInstance<TextComponent>().first { it.content() == "Q" }.color())
-        assertTrue(parts.any { it.hasDecoration(TextDecoration.BOLD) && plain.serialize(it) == "Alex" })
+        assertEquals(TextColor.color(0xFF0000), component.parts().filterIsInstance<TextComponent>().first { it.content() == "Q" }.color())
+        assertTrue(component.parts().any { it.hasDecoration(TextDecoration.BOLD) && plain.serialize(it) == "Alex" })
     }
 
     @Test
     fun `renders the prefix and formatted placeholders`() {
         val component = config.getComponent("welcome", "player" to "Alex", "coins" to 1500)
 
-        assertEquals("[Shop] Welcome, Alex! You have 1,500 coins.", plain.serialize(component!!))
+        assertEquals("[Shop] Welcome, Alex! You have 1,500 coins.", plain.serialize(component))
     }
 
     @Test
     fun `placeholder values cannot inject tags`() {
-        val component = config.requireComponent("welcome", mapOf("player" to "<red><click:run_command:/op me>x</red>", "coins" to 0))
+        val component = config.getComponent("welcome", mapOf("player" to "<red><click:run_command:/op me>x</red>", "coins" to 0))
 
         assertEquals("[Shop] Welcome, <red><click:run_command:/op me>x</red>! You have 0 coins.", plain.serialize(component))
-        assertTrue(component.iterator(ComponentIteratorType.DEPTH_FIRST).asSequence().none { it.clickEvent() != null })
+        assertTrue(component.parts().none { it.clickEvent() != null })
     }
 
     @Test
     fun `placeholder values cannot close the generated tags`() {
-        val component = config.requireComponent("title", "name" to "</qavlen_arg_0><click:open_url:'https://x'>y")
+        val component = config.getComponent("title", "name" to "</qavlen_arg_0><click:open_url:'https://x'>y")
 
         assertEquals("Qavlen </qavlen_arg_0><click:open_url:'https://x'>y", plain.serialize(component))
+        assertTrue(component.parts().none { it.clickEvent() != null })
     }
 
     @Test
     fun `component values keep their style`() {
-        val component = config.requireComponent("title", "name" to Component.text("Diamond", NamedTextColor.AQUA))
+        val component = config.getComponent("title", "name" to Component.text("Diamond", NamedTextColor.AQUA))
 
         assertEquals("Qavlen Diamond", plain.serialize(component))
+        assertEquals(NamedTextColor.AQUA, component.parts().first { plain.serialize(it) == "Diamond" }.color())
     }
 
     @Test
-    fun `missing values and placeholders behave predictably`() {
-        assertNull(config.getComponent("missing"))
-        val failure = assertFailsWith<ConfigException> { config.requireComponent("missing") }
-        assertEquals("Missing message 'missing'", failure.message)
-        assertEquals("[Shop] Welcome, {player}! You have {coins} coins.", plain.serialize(config.requireComponent("welcome")))
-        assertEquals("Use {player} literally", plain.serialize(config.requireComponent("braces", "player" to "Alex")))
-        assertEquals("3 items", plain.serialize(config.requireComponent("count", "n" to 3)))
+    fun `missing keys fail instead of rendering nothing`() {
+        val missing = assertFailsWith<ConfigException> { config.getComponent("missing") }
+        assertEquals("Missing message 'missing'", missing.message)
+        assertFailsWith<ConfigException> { config.getComponentList("missing") }
+        assertNull(config.getComponentOrNull("missing"))
+        assertEquals("You may not do that.", plain.serialize(config.getComponentOrNull("no-permission")!!))
+    }
+
+    @Test
+    fun `unknown placeholders braces and plurals stay predictable`() {
+        assertEquals("[Shop] Welcome, {player}! You have {coins} coins.", plain.serialize(config.getComponent("welcome")))
+        assertEquals("Use {player} literally", plain.serialize(config.getComponent("braces", "player" to "Alex")))
+        assertEquals("3 items", plain.serialize(config.getComponent("count", "n" to 3)))
     }
 
     @Test
@@ -108,19 +130,28 @@ class ConfigComponentTest {
     }
 
     @Test
-    fun `sections resolve messages and the prefix relative to themselves`() {
-        val messages = config.getSection("messages")!!
+    fun `nested keys use the nearest prefix`() {
+        assertEquals("[Shop] Alex joined", plain.serialize(config.getComponent("messages.join", "player" to "Alex")))
+        assertEquals("[Staff] hi", plain.serialize(config.getComponent("messages.staff.alert", "text" to "hi")))
+    }
 
-        assertEquals("[Nested] Alex joined", plain.serialize(messages.requireComponent("join", "player" to "Alex")))
-        val failure = assertFailsWith<ConfigException> { messages.requireComponent("leave") }
+    @Test
+    fun `sections resolve keys relative to themselves and inherit the prefix`() {
+        val messages = config.getSection("messages")!!
+        val staff = messages.getSection("staff")!!
+
+        assertEquals("[Shop] Alex joined", plain.serialize(messages.getComponent("join", "player" to "Alex")))
+        assertEquals("[Staff] hi", plain.serialize(staff.getComponent("alert", "text" to "hi")))
+        assertEquals("[Staff] hi", plain.serialize(messages.getComponent("staff.alert", "text" to "hi")))
+        val failure = assertFailsWith<ConfigException> { messages.getComponent("leave") }
         assertEquals("Missing message 'messages.leave'", failure.message)
     }
 
     @Test
-    fun `prefix without a configured value renders empty`() {
+    fun `a missing prefix renders as nothing`() {
         val config = YamlConfig.parse("join: \"<prefix>{player} joined\"")
 
-        assertEquals("Alex joined", plain.serialize(config.requireComponent("join", "player" to "Alex")))
+        assertEquals("Alex joined", plain.serialize(config.getComponent("join", "player" to "Alex")))
     }
 
     @Test
@@ -129,17 +160,30 @@ class ConfigComponentTest {
 
         assertEquals(listOf("Price: 1,200", "[Shop] Click to buy"), lore.map(plain::serialize))
         assertEquals(listOf("a", "b"), YamlConfig.parse("text: \"a\\nb\"").getComponentList("text").map(plain::serialize))
-        assertEquals(emptyList(), config.getComponentList("missing"))
+    }
+
+    @Test
+    fun `components can be sent to an audience such as a player`() {
+        val received = mutableListOf<Component>()
+        val player = object : Audience {
+            override fun sendMessage(message: Component) {
+                received += message
+            }
+        }
+
+        player.sendMessage(config.getComponent("welcome", "player" to "Alex", "coins" to 5))
+
+        assertEquals(listOf("[Shop] Welcome, Alex! You have 5 coins."), received.map(plain::serialize))
     }
 
     @Test
     fun `JSON files and loaded files support components`() {
         val json = JsonConfig.parse("""{"prefix": "<gold>!</gold>", "hello": "<prefix> Hi {name}"}""")
-        assertEquals("! Hi <b>", plain.serialize(json.requireComponent("hello", "name" to "<b>")))
+        assertEquals("! Hi <b>", plain.serialize(json.getComponent("hello", "name" to "<b>")))
 
         val path = directory.resolve("messages.yml")
         path.writeText("motd: \"<rainbow>Welcome</rainbow>\"\n")
-        assertEquals("Welcome", plain.serialize(YamlConfig.load(path).requireComponent("motd")))
+        assertEquals("Welcome", plain.serialize(YamlConfig.load(path).getComponent("motd")))
     }
 
     @Test

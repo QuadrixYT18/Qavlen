@@ -50,6 +50,10 @@ internal class NodeSection(
         if (lookup(root(), absolute) is Map<*, *>) NodeSection(lock, absolute.joinToString("."), changed, root) else null
     }
 
+    fun enclosingPrefix(): String? = lock.read {
+        (prefix.size - 1 downTo 0).firstNotNullOfOrNull { size -> lookup(root(), prefix.take(size) + MESSAGE_PREFIX_KEY) as? String }
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun own(): Map<String, Any?>? = if (prefix.isEmpty()) root() else lookup(root(), prefix) as? Map<String, Any?>
 

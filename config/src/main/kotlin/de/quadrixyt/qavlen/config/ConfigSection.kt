@@ -114,39 +114,45 @@ public interface ConfigSection {
     }
 
     /**
-     * Reads [path] as a MiniMessage text and renders it with [MessageComponents], or returns `null` when [path] is
-     * absent. Placeholder values are inserted as literal text; `<prefix>` renders the `prefix` value of this section.
+     * Reads [path] as a MiniMessage text and renders it with [MessageComponents]: tags, colors and gradients apply,
+     * and placeholder values (strings, numbers or `ComponentLike`) are inserted without being parsed, so they cannot
+     * inject tags. `<prefix>` renders the nearest `prefix` value, searched from the message's section up to the root.
      * Needs Adventure and MiniMessage at runtime, which Paper and Velocity provide.
      *
-     * @throws ConfigException when the value is not text or its placeholders are malformed
+     * @throws ConfigException when [path] is missing, is not text or has malformed placeholders
      */
-    public fun getComponent(path: String, placeholders: Map<String, Any?>): Component? {
-        val text = getString(path) ?: return null
-        return message(path) { MessageComponents.render(text, placeholders, prefixFor(text)) }
-    }
+    public fun getComponent(path: String, placeholders: Map<String, Any?>): Component =
+        getComponentOrNull(path, placeholders) ?: throw ConfigException("Missing message '${qualify(path)}'")
 
-    public fun getComponent(path: String): Component? = getComponent(path, emptyMap())
+    public fun getComponent(path: String): Component = getComponent(path, emptyMap())
 
     /** Kotlin form: `config.getComponent("welcome", "player" to name)`. */
-    public fun getComponent(path: String, vararg placeholders: Pair<String, Any?>): Component? =
+    public fun getComponent(path: String, vararg placeholders: Pair<String, Any?>): Component =
         getComponent(path, placeholders.toMap())
 
-    /** Like [getComponent], but a missing value is an error instead of `null`. */
-    public fun requireComponent(path: String, placeholders: Map<String, Any?>): Component =
-        getComponent(path, placeholders) ?: throw ConfigException("Missing message '${qualify(path)}'")
+    /** Like [getComponent], but returns `null` when [path] is missing, for optional messages. */
+    public fun getComponentOrNull(path: String, placeholders: Map<String, Any?>): Component? {
+        val text = getString(path) ?: return null
+        return message(path) { MessageComponents.render(text, placeholders, prefixFor(path, text)) }
+    }
 
-    public fun requireComponent(path: String): Component = requireComponent(path, emptyMap())
+    public fun getComponentOrNull(path: String): Component? = getComponentOrNull(path, emptyMap())
 
-    public fun requireComponent(path: String, vararg placeholders: Pair<String, Any?>): Component =
-        requireComponent(path, placeholders.toMap())
+    public fun getComponentOrNull(path: String, vararg placeholders: Pair<String, Any?>): Component? =
+        getComponentOrNull(path, placeholders.toMap())
 
     /**
      * Renders a list of texts, or a multi-line text, as one component per line, for item lore or scoreboards.
-     * Returns an empty list when [path] is absent.
+     *
+     * @throws ConfigException when [path] is missing or a line has malformed placeholders
      */
     public fun getComponentList(path: String, placeholders: Map<String, Any?>): List<Component> {
-        val lines = if (get(path) is List<*>) getStringList(path) else getString(path)?.split('\n').orEmpty()
-        return lines.map { line -> message(path) { MessageComponents.render(line, placeholders, prefixFor(line)) } }
+        val lines = when (get(path)) {
+            null -> throw ConfigException("Missing message '${qualify(path)}'")
+            is List<*> -> getStringList(path)
+            else -> getString(path).orEmpty().split('\n')
+        }
+        return lines.map { line -> message(path) { MessageComponents.render(line, placeholders, prefixFor(path, line)) } }
     }
 
     public fun getComponentList(path: String): List<Component> = getComponentList(path, emptyMap())
@@ -154,8 +160,15 @@ public interface ConfigSection {
     public fun getComponentList(path: String, vararg placeholders: Pair<String, Any?>): List<Component> =
         getComponentList(path, placeholders.toMap())
 
-    private fun prefixFor(text: String): Component? =
-        if ("<prefix>" in text) getString(PREFIX_KEY)?.let { MessageComponents.render(it) } ?: Component.empty() else null
+    /** Renders the nearest `prefix` for the message at [path]; a missing prefix renders as nothing. */
+    private fun prefixFor(path: String, text: String): Component? {
+        if ("<prefix>" !in text) return null
+        val parent = path.substringBeforeLast('.', "")
+        val candidates = generateSequence(parent) { if (it.isEmpty()) null else it.substringBeforeLast('.', "") }
+            .map { if (it.isEmpty()) MESSAGE_PREFIX_KEY else "$it.$MESSAGE_PREFIX_KEY" }
+        val prefix = candidates.firstNotNullOfOrNull { get(it) as? String } ?: enclosingPrefix(this)
+        return prefix?.let { MessageComponents.render(it) } ?: Component.empty()
+    }
 
     private fun message(path: String, render: () -> Component): Component = try {
         render()
@@ -166,8 +179,6 @@ public interface ConfigSection {
     private fun qualify(relative: String): String = if (path.isEmpty()) relative else "$path.$relative"
 
     public companion object {
-        private const val PREFIX_KEY = "prefix"
-
         /**
          * A section over a copy of [values] without a file, for example to run migrations or validators on a tree
          * that comes from another source. Changes affect only the copy; read it back with [toMap].
@@ -176,3 +187,9 @@ public interface ConfigSection {
         public fun of(values: Map<String, Any?>): ConfigSection = detachedSection(deepCopy(values))
     }
 }
+
+/** The key `<prefix>` in messages refers to. */
+internal const val MESSAGE_PREFIX_KEY: String = "prefix"
+
+/** The nearest `prefix` of the sections enclosing [section]; only views of a larger tree know their parents. */
+internal fun enclosingPrefix(section: ConfigSection): String? = (section as? NodeSection)?.enclosingPrefix()

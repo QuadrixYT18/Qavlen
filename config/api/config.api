@@ -24,6 +24,9 @@ public abstract class de/quadrixyt/qavlen/config/ConfigFile : de/quadrixyt/qavle
 	public fun getComponentList (Ljava/lang/String;)Ljava/util/List;
 	public fun getComponentList (Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
 	public fun getComponentList (Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
+	public fun getComponentOrNull (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentOrNull (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentOrNull (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
 	public fun getDouble (Ljava/lang/String;D)D
 	public final fun getFile ()Ljava/nio/file/Path;
@@ -47,9 +50,6 @@ public abstract class de/quadrixyt/qavlen/config/ConfigFile : de/quadrixyt/qavle
 	public final fun reload ()Ljava/util/List;
 	public final fun reloadIfModified ()Z
 	public fun remove (Ljava/lang/String;)Z
-	public fun requireComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
-	public fun requireComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
-	public fun requireComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public final fun save ()Z
 	public final fun saveTo (Ljava/nio/file/Path;)V
 	public final fun saveToString ()Ljava/lang/String;
@@ -161,6 +161,9 @@ public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
 	public fun getComponentList (Ljava/lang/String;)Ljava/util/List;
 	public fun getComponentList (Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
 	public fun getComponentList (Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
+	public fun getComponentOrNull (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentOrNull (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public fun getComponentOrNull (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public fun getDouble (Ljava/lang/String;)Ljava/lang/Double;
 	public fun getDouble (Ljava/lang/String;D)D
 	public fun getInt (Ljava/lang/String;)Ljava/lang/Integer;
@@ -179,9 +182,6 @@ public abstract interface class de/quadrixyt/qavlen/config/ConfigSection {
 	public abstract fun keys (Z)Ljava/util/Set;
 	public static fun of (Ljava/util/Map;)Lde/quadrixyt/qavlen/config/ConfigSection;
 	public abstract fun remove (Ljava/lang/String;)Z
-	public fun requireComponent (Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
-	public fun requireComponent (Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
-	public fun requireComponent (Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public abstract fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun toMap ()Ljava/util/Map;
 }
@@ -199,6 +199,9 @@ public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
 	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
 	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Ljava/util/List;
 	public static fun getComponentList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Ljava/util/List;
+	public static fun getComponentOrNull (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
+	public static fun getComponentOrNull (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
+	public static fun getComponentOrNull (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Double;
 	public static fun getDouble (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;D)D
 	public static fun getInt (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/lang/Integer;
@@ -212,9 +215,6 @@ public final class de/quadrixyt/qavlen/config/ConfigSection$DefaultImpls {
 	public static fun getString (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static fun getStringList (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Ljava/util/List;
 	public static fun keys (Lde/quadrixyt/qavlen/config/ConfigSection;)Ljava/util/Set;
-	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;)Lnet/kyori/adventure/text/Component;
-	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;Ljava/util/Map;)Lnet/kyori/adventure/text/Component;
-	public static fun requireComponent (Lde/quadrixyt/qavlen/config/ConfigSection;Ljava/lang/String;[Lkotlin/Pair;)Lnet/kyori/adventure/text/Component;
 }
 
 public final class de/quadrixyt/qavlen/config/ConfigType : java/lang/Enum {

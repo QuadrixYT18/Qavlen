@@ -8,11 +8,13 @@ import de.quadrixyt.qavlen.config.MessageComponents;
 import de.quadrixyt.qavlen.config.YamlConfig;
 import de.quadrixyt.qavlen.language.Placeholder;
 import de.quadrixyt.qavlen.language.Translations;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,16 +38,29 @@ class ComponentJavaTest {
 
         assertEquals("<gray>[Shop]</gray>", config.getString("prefix"));
         assertEquals("default", config.getString("missing", "default"));
-        Component welcome = config.requireComponent("welcome", Map.of("player", "<red>Alex"));
+        Component welcome = config.getComponent("welcome", Map.of("player", "<red>Alex"));
         assertEquals("[Shop] Welcome, <red>Alex!", plain.serialize(welcome));
-        assertNull(config.getComponent("missing"));
-        assertThrows(ConfigException.class, () -> config.requireComponent("missing"));
+        assertEquals("[Shop] Welcome, {player}!", plain.serialize(config.getComponent("welcome")));
+        assertNull(config.getComponentOrNull("missing"));
+        assertThrows(ConfigException.class, () -> config.getComponent("missing"));
 
         List<Component> lore = config.getComponentList("lore", Map.of("price", 5));
         assertEquals(List.of("Price: 5", "Click to buy"), lore.stream().map(plain::serialize).toList());
 
-        ConfigSection json = JsonConfig.parse("{\"hello\": \"Hi {name}\"}");
-        assertEquals("Hi Bob", plain.serialize(json.requireComponent("hello", Map.of("name", "Bob"))));
+        ConfigSection json = JsonConfig.parse("{\"prefix\": \"[J]\", \"messages\": {\"hello\": \"<prefix> Hi {name}\"}}");
+        assertEquals("[J] Hi Bob", plain.serialize(json.getComponent("messages.hello", Map.of("name", "Bob"))));
+        ConfigSection messages = json.getSection("messages");
+        assertEquals("[J] Hi Bob", plain.serialize(messages.getComponent("hello", Map.of("name", "Bob"))));
+
+        List<Component> sent = new ArrayList<>();
+        Audience player = new Audience() {
+            @Override
+            public void sendMessage(Component message) {
+                sent.add(message);
+            }
+        };
+        player.sendMessage(config.getComponent("welcome", Map.of("player", "Alex")));
+        assertEquals("[Shop] Welcome, Alex!", plain.serialize(sent.get(0)));
     }
 
     @Test

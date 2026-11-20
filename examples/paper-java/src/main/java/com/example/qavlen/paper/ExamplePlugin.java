@@ -34,7 +34,7 @@ public final class ExamplePlugin extends JavaPlugin {
             Player player = event.getPlayer();
             commands.getMessages().send(player, "welcome", Placeholder.of("player", player.getName()));
             if (!player.hasPlayedBefore()) {
-                getServer().broadcast(config.requireComponent("first-join", Map.of("player", player.getName())));
+                getServer().broadcast(config.getComponent("first-join", Map.of("player", player.getName())));
             }
         });
     }
