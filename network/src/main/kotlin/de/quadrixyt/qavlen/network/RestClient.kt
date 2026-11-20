@@ -88,7 +88,7 @@ public class RestClient private constructor(builder: Builder) : AutoCloseable {
     private val maxResponseSize: Long = builder.maxResponseSize
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(builder.connectTimeout)
-        .followRedirects(HttpClient.Redirect.NORMAL)
+        .followRedirects(if (builder.followRedirects) HttpClient.Redirect.NORMAL else HttpClient.Redirect.NEVER)
         .build()
 
     public fun get(path: String): Request = Request("GET", path)
@@ -185,6 +185,7 @@ public class RestClient private constructor(builder: Builder) : AutoCloseable {
         internal var retry: RetryPolicy = RetryPolicy()
         internal var codec: JsonCodec = JsonCodec.default
         internal var maxResponseSize: Long = 16L * 1024 * 1024
+        internal var followRedirects = true
 
         /** Adds a header to every request, for example authorization. */
         public fun header(name: String, value: String): Builder = apply { headers[name] = value }
@@ -202,6 +203,12 @@ public class RestClient private constructor(builder: Builder) : AutoCloseable {
             require(bytes > 0) { "maxResponseSize must be positive" }
             maxResponseSize = bytes
         }
+
+        /**
+         * Follows redirects to other URLs, except from `https` to `http`. Enabled by default; disable it to see `3xx`
+         * responses yourself, for example to accept redirects only within one host.
+         */
+        public fun followRedirects(enabled: Boolean): Builder = apply { followRedirects = enabled }
 
         public fun build(): RestClient = RestClient(this)
     }

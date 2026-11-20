@@ -35,6 +35,7 @@ public final class de/quadrixyt/qavlen/network/RestClient$Builder {
 	public final fun build ()Lde/quadrixyt/qavlen/network/RestClient;
 	public final fun codec (Lde/quadrixyt/qavlen/serialization/JsonCodec;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
 	public final fun connectTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
+	public final fun followRedirects (Z)Lde/quadrixyt/qavlen/network/RestClient$Builder;
 	public final fun header (Ljava/lang/String;Ljava/lang/String;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
 	public final fun maxResponseSize (J)Lde/quadrixyt/qavlen/network/RestClient$Builder;
 	public final fun requestTimeout (Ljava/time/Duration;)Lde/quadrixyt/qavlen/network/RestClient$Builder;
