@@ -136,3 +136,30 @@ public abstract interface class de/quadrixyt/qavlen/storage/TransactionWork {
 	public abstract fun run (Lde/quadrixyt/qavlen/storage/SqlSession;)Ljava/lang/Object;
 }
 
+public abstract interface class de/quadrixyt/qavlen/storage/dialect/DatabaseDialect {
+	public abstract fun quote (Ljava/lang/String;)Ljava/lang/String;
+	public abstract fun targetType (III)Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/dialect/DatabaseDialectKt {
+	public static final fun dialect (Lde/quadrixyt/qavlen/storage/DatabaseType;)Lde/quadrixyt/qavlen/storage/dialect/DatabaseDialect;
+}
+
+public final class de/quadrixyt/qavlen/storage/dialect/MySQLDialect : de/quadrixyt/qavlen/storage/dialect/DatabaseDialect {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/storage/dialect/MySQLDialect;
+	public fun quote (Ljava/lang/String;)Ljava/lang/String;
+	public fun targetType (III)Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/dialect/PostgreSQLDialect : de/quadrixyt/qavlen/storage/dialect/DatabaseDialect {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/storage/dialect/PostgreSQLDialect;
+	public fun quote (Ljava/lang/String;)Ljava/lang/String;
+	public fun targetType (III)Ljava/lang/String;
+}
+
+public final class de/quadrixyt/qavlen/storage/dialect/SQLiteDialect : de/quadrixyt/qavlen/storage/dialect/DatabaseDialect {
+	public static final field INSTANCE Lde/quadrixyt/qavlen/storage/dialect/SQLiteDialect;
+	public fun quote (Ljava/lang/String;)Ljava/lang/String;
+	public fun targetType (III)Ljava/lang/String;
+}
+
