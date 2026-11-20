@@ -12,7 +12,7 @@ Qavlen compiles against Adventure but does not bring it along: `compileOnly` mea
 
 ```kotlin
 dependencies {
-    implementation("com.github.QuadrixYT18.Qavlen:qavlen-config:VERSION")
+    implementation("com.github.QuadrixYT18.Qavlen:qavlen-config:v0.4.1")
     implementation("net.kyori:adventure-api:5.2.0")
     implementation("net.kyori:adventure-text-minimessage:5.2.0")
 }
@@ -114,9 +114,11 @@ Translation values work like configuration texts: `<prefix>` renders the transla
 
 ## Migrating from `qavlen-adventure`
 
-Up to 0.4.0, `AdventureMessages` lived in the separate artifact `qavlen-adventure`, and `MessageTemplate` and `ValueFormatter` lived in `qavlen-language`. Since 0.5.0, each class exists in exactly one artifact:
+**0.4.1 is a breaking change for anyone who declares `qavlen-adventure`.** The artifact was removed in this patch release, so a build that still declares it fails to resolve.
 
-| Class | Artifact since 0.5.0 |
+Up to 0.4.0, `AdventureMessages` lived in the separate artifact `qavlen-adventure`, and `MessageTemplate` and `ValueFormatter` lived in `qavlen-language`. Since 0.4.1, each class exists in exactly one artifact:
+
+| Class | Artifact since 0.4.1 |
 | --- | --- |
 | `de.quadrixyt.qavlen.adventure.AdventureMessages` | `qavlen-language` |
 | `de.quadrixyt.qavlen.config.MessageComponents`, `PlaceholderFormatter` | `qavlen-config` |
@@ -130,7 +132,7 @@ dependencies {
     // before
     implementation("com.github.QuadrixYT18.Qavlen:qavlen-adventure:v0.4.0")
     // after: translations and AdventureMessages
-    implementation("com.github.QuadrixYT18.Qavlen:qavlen-language:VERSION")
+    implementation("com.github.QuadrixYT18.Qavlen:qavlen-language:v0.4.1")
     // or, for components from configurations only
     implementation("com.github.QuadrixYT18.Qavlen:qavlen-config:VERSION")
 }
