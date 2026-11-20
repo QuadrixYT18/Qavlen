@@ -15,7 +15,7 @@
 - [Language & Localization](Language-and-Localization)
 - [Commands](Commands)
 - [Annotations](Annotations)
-- [Adventure](Adventure)
+- [Adventure & MiniMessage](Adventure)
 - [Brigadier](Brigadier)
 - [Paper](Paper)
 - [Velocity](Velocity)

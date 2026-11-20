@@ -2,6 +2,24 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `config`: `getComponent`, `requireComponent` and `getComponentList` render MiniMessage values of any `ConfigSection`, `YamlConfig` or `JsonConfig` as Adventure components. Placeholder values are inserted as plain text and cannot inject tags. Missing values return `null`, throw `ConfigException` or return an empty list. `<prefix>` renders the section's `prefix` value.
+- `config`: `MessageComponents` renders any MiniMessage text with the same rules, for example fields of typed configurations; `PlaceholderFormatter` customizes value formatting.
+- `config`: `ValueFormatter.formatPlaceholder` formats a single placeholder including `choice` styles; `Translations.formatPlaceholder` delegates to it.
+
+### Changed
+
+- **Breaking:** the `qavlen-adventure` artifact is gone. `AdventureMessages` now ships with `qavlen-language`, and `qavlen-paper` and `qavlen-velocity` include it as before. Replace a direct `qavlen-adventure` dependency with `qavlen-language`. Package and class names are unchanged, so imports and code compiled against 0.4.0 keep working. `qavlen-language` declares the `qavlen-adventure` capability, so Gradle reports a conflict instead of loading `AdventureMessages` twice when the old artifact is still declared.
+- `MessageTemplate` and `ValueFormatter` moved from `qavlen-language` to `qavlen-config` under their existing names. `qavlen-language` exposes `qavlen-config` as an API dependency, so nothing changes for its users.
+- Adventure stays `compileOnly`: Paper and Velocity provide it, other applications add `adventure-api` and `adventure-text-minimessage`.
+
+### Build
+
+- Releases publish 15 modules.
+
 ## 0.4.0 - 2026-11-19
 
 ### Added

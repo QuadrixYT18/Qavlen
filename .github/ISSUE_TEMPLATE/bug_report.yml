@@ -13,7 +13,7 @@ body:
     id: module
     attributes:
       label: Module
-      options: [core, config, language, commands, commands-processor, adventure, brigadier, paper, velocity, jda, storage, cache, cache-redis, serialization, network, scheduler]
+      options: [core, config, language, commands, commands-processor, brigadier, paper, velocity, jda, storage, cache, cache-redis, serialization, network, scheduler]
     validations:
       required: true
   - type: input

@@ -31,7 +31,7 @@ public void onEnable() {
 
 ## Messages
 
-Use `AdventureMessages` from `qavlen-adventure` (see [Language & Localization](Language-and-Localization)) for chat, titles and action bars. Placeholder values are inserted as text and cannot inject MiniMessage tags.
+Use `AdventureMessages` (see [Adventure](Adventure)) for translations and `config.getComponent(path)` for texts in configurations in chat, titles and action bars. Placeholder values are inserted as text and cannot inject MiniMessage tags.
 
 ## Scheduling and Folia
 

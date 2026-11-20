@@ -3,11 +3,11 @@ Qavlen is a set of Kotlin and Java libraries for JVM applications, with integrat
 | Module | Artifact | Purpose |
 | --- | --- | --- |
 | [Core](Core) | `qavlen-core` | Resource scopes, atomic file writes, duration parsing |
-| [Configuration](Configuration) | `qavlen-config` | YAML and JSON files by path, with defaults, schemas, migrations and safe reloads |
+| [Configuration](Configuration) | `qavlen-config` | YAML and JSON files by path, with defaults, schemas, migrations, safe reloads and MiniMessage components |
 | [Language](Language-and-Localization) | `qavlen-language` | Translations with locale fallbacks, namespaces and typed placeholders |
 | [Commands](Commands) | `qavlen-commands` | Command trees, typed arguments, permissions, cooldowns, localized errors |
 | [Annotations](Annotations) | `qavlen-commands-processor` | KSP and javac processor for `@Command` classes |
-| [Adventure](Adventure) | `qavlen-adventure` | MiniMessage rendering of translations with injection-safe placeholders |
+| [Adventure](Adventure) | `qavlen-config`, `qavlen-language` | MiniMessage components from configurations and translations, with injection-safe placeholders |
 | [Brigadier](Brigadier) | `qavlen-brigadier` | Shared Brigadier tree builder used by Paper and Velocity |
 | [Paper](Paper) | `qavlen-paper` | Brigadier commands, menus, items, plugin messaging, Folia-aware scheduling, events, persistent data, safe teleports |
 | [Velocity](Velocity) | `qavlen-velocity` | Proxy commands and plugin messaging |

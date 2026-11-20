@@ -25,6 +25,20 @@ int port = config.getInt("database.port", 3306);
 
 Paths are dot-separated. Typed getters (`getString`, `getInt`, `getLong`, `getDouble`, `getBoolean`, `getList`, `getStringList`, `getIntList`, `getMap`) return `null` when the value is absent, or the given default. A value of the wrong type throws `ConfigValueException` naming the path, so a typo such as `port: 33o6` is reported instead of silently replaced. `getSection` returns a live view of a nested section.
 
+## Messages and components
+
+Values can be rendered as MiniMessage components with injection-safe placeholders. Adventure must be on the classpath; see [Adventure & MiniMessage](Adventure) for the dependency and the exact rules.
+
+```kotlin
+config.getComponent("messages.welcome", "player" to player.name)   // null when missing
+config.requireComponent("messages.welcome")                        // ConfigException when missing
+config.getComponentList("shop.lore", "price" to 250)
+```
+
+```java
+Component welcome = config.requireComponent("messages.welcome", Map.of("player", player.getName()));
+```
+
 ## Data classes
 
 With `qavlen-serialization` on the classpath, sections can be read into Kotlin data classes, records or Java beans:

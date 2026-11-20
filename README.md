@@ -51,16 +51,22 @@ config.save()
 
 The file is created with comments from the defaults, missing values are added without touching existing ones, every value is validated before it becomes active, and environment overrides never end up in the file.
 
+Messages in a configuration render as MiniMessage components. Placeholder values are inserted as plain text, so a player named `<click:run_command:/op me>` cannot inject tags:
+
+```kotlin
+val messages = YamlConfig.load(dataPath.resolve("messages.yml"))
+player.sendMessage(messages.requireComponent("welcome", "player" to player.name))
+```
+
 ## Modules
 
 | Artifact | Purpose |
 | --- | --- |
 | `qavlen-core` | Resource scopes, atomic file writes, duration parsing |
-| `qavlen-config` | YAML/JSON files with defaults, validation, migrations, backups and safe reloads |
-| `qavlen-language` | Translations with locale fallbacks, namespaces and typed placeholders |
+| `qavlen-config` | YAML/JSON files with defaults, validation, migrations, backups and safe reloads; MiniMessage components with injection-safe placeholders |
+| `qavlen-language` | Translations with locale fallbacks, namespaces and typed placeholders, rendered as Adventure components |
 | `qavlen-commands` | Command definitions, typed arguments, permissions, cooldowns, localized errors |
 | `qavlen-commands-processor` | Annotation processor for `ksp` and `annotationProcessor` |
-| `qavlen-adventure` | MiniMessage rendering with injection-safe placeholders |
 | `qavlen-brigadier` | Brigadier tree builder shared by Paper and Velocity |
 | `qavlen-paper` | Brigadier commands, menus, items, plugin messaging, Folia-aware scheduling, events, persistent data, safe teleports |
 | `qavlen-velocity` | Proxy commands and plugin messaging |
