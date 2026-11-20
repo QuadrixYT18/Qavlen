@@ -2,6 +2,16 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Changed
+
+- `config`, `serialization`: `save()` keeps edits made to the file while the program runs instead of throwing `ConfigConflictException`. Edits and changes in memory are merged key by key, and the configuration takes the edits over. When both changed the same value, the file wins and the discarded change is logged. Only an edit that makes the file unreadable still throws `ConfigConflictException`, and nothing is written. `save(true)` still replaces the file.
+
+### Added
+
+- `config`: `ConfigMerge.merge(base, file, memory)`, the three-way merge `save()` uses.
+
 ## 0.5.0 - 2026-11-20
 
 > **Behavior change:** `ConfigFile.save()` (`YamlConfig`, `JsonConfig`) no longer overwrites edits made to the file on disk since it was loaded. It throws `ConfigConflictException` instead. Call `reload()` before saving, or `save(true)` to replace the file deliberately.

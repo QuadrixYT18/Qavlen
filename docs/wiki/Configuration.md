@@ -124,7 +124,16 @@ Defaults only add missing keys; existing values are never replaced. Missing keys
 - A file that cannot be parsed is never overwritten.
 - Loading and `reload()` parse, migrate, merge and validate a copy first. If any step fails, a `ConfigException` is thrown and the previous values stay in place.
 - `save()` validates, writes atomically and skips the write when the content did not change. `isDirty` tells whether there are unsaved changes.
-- `save()` does not overwrite edits made to the file on disk since it was loaded, reloaded or saved. It throws `ConfigConflictException` instead; call `reload()` to take over the edit, or `save(true)` to replace it. Any change to the text counts, even one that only removes quotes.
+- **`save()` keeps edits made to the file while the program runs.** It merges them with the changes in memory, and the configuration takes them over:
+
+  | Since loading | Result of `save()` |
+  | --- | --- |
+  | The program changed `a`, someone edited `b` in the file | both changes end up in the file |
+  | Only the file was edited | the file stays as it is; its values become current |
+  | Both changed the same value | the file's value wins; the discarded change is logged with its path |
+  | The edit broke the file | nothing is written; `ConfigConflictException` |
+
+  Comments added to the file stay as well. `save(true)` replaces the file with the values in memory. Listeners receive the taken-over values as a reload. `ConfigMerge.merge(base, file, memory)` exposes the same merge.
 - Duplicate keys are rejected in YAML and JSON.
 - Values are kept as written: unquoted YAML dates stay text, and numbers that do not fit `Long` or `Double` exactly are kept as `BigInteger` or `BigDecimal`.
 - An explicit `null` is a stored value: `contains` returns `true`, getters return `null`, and defaults do not replace it. JSON parsing is strict (no comments or trailing commas). YAML alias expansion is limited.

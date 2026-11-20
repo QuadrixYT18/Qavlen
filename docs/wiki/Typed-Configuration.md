@@ -62,7 +62,7 @@ Every load and reload runs the same steps on a copy: read the file, parse it, ru
 - A missing file is created from the defaults.
 - Missing values are added with their defaults (`writeDefaults(false)` turns this off); existing values are never replaced. The file is only rewritten when something was added, migrated or removed.
 - `update { ... }` validates the new value and keeps it in memory. Nothing is written until `save()`.
-- `save()` refuses to overwrite a file that was changed on disk since it was loaded and throws `ConfigConflictException`. Call `reload()` to take over the external change, or `save(true)` to replace it.
+- `save()` keeps edits made to the file since it was loaded: they are merged with your `update`s and validated, and the value takes them over. If both changed the same value, the file wins and the discarded change is logged. An edit that breaks the file throws `ConfigConflictException`, and nothing is written. `save(true)` replaces the file with the current value.
 - `reloadIfModified()` reloads only when the file's modification time or size changed.
 - `addListener { value -> ... }` is called after updates and reloads that changed the value.
 
