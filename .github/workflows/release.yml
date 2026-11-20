@@ -53,21 +53,21 @@ jobs:
       - name: JitPack builds the release
         run: |
           url="https://jitpack.io/com/github/${GITHUB_REPOSITORY}/${GITHUB_REF_NAME}/build.log"
-          for attempt in $(seq 1 30); do
+          # JitPack logs BUILD SUCCESSFUL before it lists the uploaded files, so poll until every module is listed.
+          modules=0
+          for attempt in $(seq 1 40); do
             log="$(curl -fsS --max-time 600 "$url" || true)"
-            if echo "$log" | grep -q 'BUILD SUCCESSFUL'; then
-              modules="$(echo "$log" | grep -oE 'qavlen-[a-z-]+-'"${GITHUB_REF_NAME}"'\.jar' | sort -u | wc -l)"
-              echo "JitPack published ${modules} modules"
-              [ "$modules" -ge 15 ] && exit 0
-              echo "::error::JitPack published only ${modules} modules"
-              exit 1
-            fi
             if echo "$log" | grep -q 'BUILD FAILED'; then
               echo "$log" | tail -50
               echo "::error::JitPack build failed"
               exit 1
             fi
+            if echo "$log" | grep -q 'BUILD SUCCESSFUL'; then
+              modules="$(echo "$log" | grep -oE 'qavlen-[a-z-]+-'"${GITHUB_REF_NAME}"'\.jar' | sort -u | wc -l)"
+              echo "JitPack lists ${modules} modules"
+              [ "$modules" -ge 15 ] && exit 0
+            fi
             sleep 20
           done
-          echo "::error::JitPack did not finish in time"
+          echo "::error::JitPack listed only ${modules} of 15 modules"
           exit 1
