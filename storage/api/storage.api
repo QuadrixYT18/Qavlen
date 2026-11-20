@@ -93,6 +93,7 @@ public final class de/quadrixyt/qavlen/storage/DatabaseSettings {
 public final class de/quadrixyt/qavlen/storage/DatabaseType : java/lang/Enum {
 	public static final field MARIADB Lde/quadrixyt/qavlen/storage/DatabaseType;
 	public static final field POSTGRESQL Lde/quadrixyt/qavlen/storage/DatabaseType;
+	public static final field SQLITE Lde/quadrixyt/qavlen/storage/DatabaseType;
 	public final fun getDefaultPort ()I
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lde/quadrixyt/qavlen/storage/DatabaseType;

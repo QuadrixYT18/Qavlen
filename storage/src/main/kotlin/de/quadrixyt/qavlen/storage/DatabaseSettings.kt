@@ -9,6 +9,9 @@ public enum class DatabaseType(public val defaultPort: Int, internal val scheme:
 
     /** PostgreSQL through `org.postgresql:postgresql`. */
     POSTGRESQL(5432, "postgresql", "org.postgresql.Driver"),
+
+    /** SQLite through `org.xerial:sqlite-jdbc`. `database` is the file path; host, port and credentials are ignored. */
+    SQLITE(0, "sqlite", "org.sqlite.JDBC"),
 }
 
 /**
@@ -38,7 +41,10 @@ public data class DatabaseSettings @JvmOverloads constructor(
     val url: String? = null,
 ) {
     /** The JDBC URL these settings connect to. A function, so serializers do not write it into configuration files. */
-    public fun jdbcUrl(): String = url ?: "jdbc:${type.scheme}://$host:$port/$database"
+    public fun jdbcUrl(): String = url ?: when (type) {
+        DatabaseType.SQLITE -> "jdbc:sqlite:$database"
+        else -> "jdbc:${type.scheme}://$host:$port/$database"
+    }
 
     override fun toString(): String =
         "DatabaseSettings(url=${jdbcUrl()}, username=$username, password=${if (password.isEmpty()) "" else "***"}, poolSize=$poolSize)"
