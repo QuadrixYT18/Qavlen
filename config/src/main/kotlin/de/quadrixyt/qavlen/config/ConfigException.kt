@@ -26,3 +26,6 @@ private fun describe(value: Any?): String = when (value) {
     is String -> "the string \"$value\""
     else -> "${value.javaClass.simpleName.lowercase()} $value"
 }
+
+/** The file was changed by someone else since it was loaded, so saving would overwrite those changes. */
+public open class ConfigConflictException(message: String) : ConfigException(message)

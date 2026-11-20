@@ -9,6 +9,8 @@ internal class NodeSection(
     private val lock: ReentrantReadWriteLock,
     override val path: String,
     private val changed: ((String) -> Unit)? = null,
+    /** Parsed messages of the file this view belongs to, or `null` for detached trees. */
+    val messages: MessageCache? = null,
     private val root: () -> Node,
 ) : ConfigSection {
     private val prefix = if (path.isEmpty()) emptyList() else segments(path)
@@ -47,7 +49,7 @@ internal class NodeSection(
 
     override fun getSection(path: String): ConfigSection? = lock.read {
         val absolute = absolute(path)
-        if (lookup(root(), absolute) is Map<*, *>) NodeSection(lock, absolute.joinToString("."), changed, root) else null
+        if (lookup(root(), absolute) is Map<*, *>) NodeSection(lock, absolute.joinToString("."), changed, messages, root) else null
     }
 
     fun enclosingPrefix(): String? = lock.read {

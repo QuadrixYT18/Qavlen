@@ -122,7 +122,7 @@ public interface ConfigSection {
      * @throws ConfigException when [path] is missing, is not text or has malformed placeholders
      */
     public fun getComponent(path: String, placeholders: Map<String, Any?>): Component =
-        getComponentOrNull(path, placeholders) ?: throw ConfigException("Missing message '${qualify(path)}'")
+        getComponentOrNull(path, placeholders) ?: throw ConfigException("Missing message '${qualified(this, path)}'")
 
     public fun getComponent(path: String): Component = getComponent(path, emptyMap())
 
@@ -132,8 +132,8 @@ public interface ConfigSection {
 
     /** Like [getComponent], but returns `null` when [path] is missing, for optional messages. */
     public fun getComponentOrNull(path: String, placeholders: Map<String, Any?>): Component? {
-        val text = getString(path) ?: return null
-        return message(path) { MessageComponents.render(text, placeholders, prefixFor(path, text)) }
+        val cache = messageCache(this)
+        return if (cache != null) cache.component(this, path, placeholders) else renderMessage(this, path, placeholders)
     }
 
     public fun getComponentOrNull(path: String): Component? = getComponentOrNull(path, emptyMap())
@@ -148,33 +148,19 @@ public interface ConfigSection {
      */
     public fun getComponentList(path: String, placeholders: Map<String, Any?>): List<Component> {
         val lines = when (get(path)) {
-            null -> throw ConfigException("Missing message '${qualify(path)}'")
+            null -> throw ConfigException("Missing message '${qualified(this, path)}'")
             is List<*> -> getStringList(path)
             else -> getString(path).orEmpty().split('\n')
         }
-        return lines.map { line -> message(path) { MessageComponents.render(line, placeholders, prefixFor(path, line)) } }
+        return lines.map { line ->
+            invalidMessage(this, path) { MessageComponents.render(line, placeholders, messagePrefix(this, path, line)) }
+        }
     }
 
     public fun getComponentList(path: String): List<Component> = getComponentList(path, emptyMap())
 
     public fun getComponentList(path: String, vararg placeholders: Pair<String, Any?>): List<Component> =
         getComponentList(path, placeholders.toMap())
-
-    /** Renders the nearest `prefix` for the message at [path]; a missing prefix renders as nothing. */
-    private fun prefixFor(path: String, text: String): Component? {
-        if ("<prefix>" !in text) return null
-        val parent = path.substringBeforeLast('.', "")
-        val candidates = generateSequence(parent) { if (it.isEmpty()) null else it.substringBeforeLast('.', "") }
-            .map { if (it.isEmpty()) MESSAGE_PREFIX_KEY else "$it.$MESSAGE_PREFIX_KEY" }
-        val prefix = candidates.firstNotNullOfOrNull { get(it) as? String } ?: enclosingPrefix(this)
-        return prefix?.let { MessageComponents.render(it) } ?: Component.empty()
-    }
-
-    private fun message(path: String, render: () -> Component): Component = try {
-        render()
-    } catch (failure: IllegalArgumentException) {
-        throw ConfigException("Invalid message at '${qualify(path)}': ${failure.message}", failure)
-    }
 
     private fun qualify(relative: String): String = if (path.isEmpty()) relative else "$path.$relative"
 
@@ -187,9 +173,3 @@ public interface ConfigSection {
         public fun of(values: Map<String, Any?>): ConfigSection = detachedSection(deepCopy(values))
     }
 }
-
-/** The key `<prefix>` in messages refers to. */
-internal const val MESSAGE_PREFIX_KEY: String = "prefix"
-
-/** The nearest `prefix` of the sections enclosing [section]; only views of a larger tree know their parents. */
-internal fun enclosingPrefix(section: ConfigSection): String? = (section as? NodeSection)?.enclosingPrefix()

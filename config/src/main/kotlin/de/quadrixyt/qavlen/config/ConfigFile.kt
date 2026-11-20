@@ -1,13 +1,14 @@
 package de.quadrixyt.qavlen.config
 
 import de.quadrixyt.qavlen.core.backupFile
+import de.quadrixyt.qavlen.core.createIfMissing
+import de.quadrixyt.qavlen.core.readBundledResource
 import de.quadrixyt.qavlen.core.writeAtomically
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.Reader
 import java.io.Writer
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
@@ -40,7 +41,17 @@ public sealed class ConfigFile(
     private var persisted: String? = null
     private var fileStamp: FileStamp? = null
     private val listeners = CopyOnWriteArrayList<ConfigListener>()
-    private val view = NodeSection(lock, "", { path -> notify(setOf(path), reload = false) }) { root }
+
+    /** Parsed messages for `getComponent`; every change of the values invalidates them. */
+    internal val messages = MessageCache(this)
+    private val view = NodeSection(lock, "", { path -> changed(path) }, messages) { root }
+
+    /** A file version that failed to reload automatically, so it is reported once instead of on every lookup. */
+    @Volatile
+    private var failedStamp: FileStamp? = null
+
+    /** The file's text as last read or written, to notice edits made by others before [save] overwrites them. */
+    private var diskText: String? = null
 
     /** Text of the bundled resource this file was created from, whose comments new keys receive. */
     private var bundled: String? = null
@@ -109,6 +120,29 @@ public sealed class ConfigFile(
         return AutoCloseable { listeners -= listener }
     }
 
+    private fun changed(path: String) {
+        messages.invalidate()
+        notify(setOf(path), reload = false)
+    }
+
+    /**
+     * Reloads the file when it was edited on disk, for the message cache. Unsaved changes in memory win: the file is
+     * then left alone, and [save] reports the conflict. A file that cannot be loaded keeps the current values and is
+     * logged once per version.
+     */
+    internal fun reloadIfEditedOnDisk() {
+        val target = file ?: return
+        val stamp = FileStamp.of(target) ?: return
+        if (lock.read { stamp == fileStamp } || stamp == failedStamp || isDirty) return
+        try {
+            reload()
+        } catch (exception: ConfigException) {
+            failedStamp = stamp
+            System.getLogger(ConfigFile::class.java.name)
+                .log(System.Logger.Level.WARNING, "$target was edited but could not be reloaded; keeping the previous values", exception)
+        }
+    }
+
     private fun notify(paths: Set<String>, reload: Boolean) {
         if (listeners.isEmpty()) return
         val change = ConfigChange(this, paths, reload)
@@ -125,15 +159,28 @@ public sealed class ConfigFile(
     /**
      * Validates and writes the current values to the backing file.
      *
+     * Edits someone else made to the file since it was loaded, reloaded or saved are not overwritten: [save] throws
+     * [ConfigConflictException] instead. Call [reload] to take them over, or pass `true` to replace them.
+     *
+     * @param overwriteExternalChanges write even when the file was changed on disk in the meantime
      * @return `false` when the file already contained the same content and nothing was written
+     * @throws ConfigConflictException when the file changed on disk and [overwriteExternalChanges] is `false`
      */
-    public fun save(): Boolean {
+    @JvmOverloads
+    public fun save(overwriteExternalChanges: Boolean = false): Boolean {
         val target = file ?: throw ConfigException("This configuration has no backing file; use saveTo(path)")
         return lock.write {
             validate(root)
+            val current = readOrNull(target)
+            if (!overwriteExternalChanges && current != null && current != diskText) {
+                throw ConfigConflictException(
+                    "$target was changed on disk since it was loaded; call reload() to take over those changes " +
+                        "or save(true) to replace them",
+                )
+            }
             val text = format.encode(root)
-            if (text == persisted && Files.exists(target)) return@write false
-            write(target, withComments(readOrNull(target), text))
+            if (text == persisted && current != null) return@write false
+            write(target, withComments(current, text))
             persisted = text
             fileStamp = FileStamp.of(target)
             true
@@ -160,7 +207,13 @@ public sealed class ConfigFile(
      */
     internal fun loadBundled(resource: String) {
         bundled = resource
-        reload(created = copyIfMissing(checkNotNull(file), resource))
+        val target = checkNotNull(file)
+        val created = try {
+            createIfMissing(target, resource)
+        } catch (exception: IOException) {
+            throw ConfigException("Could not create $target from its bundled resource", exception)
+        }
+        reload(created)
     }
 
     private fun apply(text: String?, source: String, created: Boolean = false, stamp: FileStamp? = null): List<String> {
@@ -183,11 +236,13 @@ public sealed class ConfigFile(
             if (migratedFrom != null && options.backups && text != null) backup(target, migratedFrom)
             write(target, withComments(text, content))
         }
+        messages.invalidate()
         persisted = when {
             write -> content
             target == null -> format.encode(candidate)
             else -> loadedText
         }
+        if (!write) diskText = text
         root = candidate
         return added
     }
@@ -255,6 +310,7 @@ public sealed class ConfigFile(
     private fun write(target: Path, text: String) {
         try {
             writeAtomically(target, text)
+            diskText = text
         } catch (exception: IOException) {
             throw ConfigException("Could not write $target", exception)
         }
@@ -280,15 +336,14 @@ public sealed class ConfigFile(
  * @throws ConfigException when the resource does not exist or cannot be read
  */
 internal fun bundledResource(path: Path, loader: ClassLoader): String {
-    val name = path.fileName?.toString() ?: throw ConfigException("$path has no file name")
-    val stream = loader.getResourceAsStream(name) ?: throw ConfigException(
-        "No bundled resource '$name' for $path; add src/main/resources/$name or load the file without a class loader",
-    )
-    return try {
-        stream.use { it.readBytes().toString(Charsets.UTF_8) }
+    val text = try {
+        readBundledResource(path, loader)
     } catch (exception: IOException) {
-        throw ConfigException("Could not read the bundled resource '$name'", exception)
+        throw ConfigException("Could not read the bundled resource '${path.fileName}'", exception)
     }
+    return text ?: throw ConfigException(
+        "No bundled resource '${path.fileName}' for $path; add src/main/resources/${path.fileName} or load the file without a class loader",
+    )
 }
 
 /** The class loader of [owner]; classes of the JDK itself have none, so the system class loader stands in. */
@@ -297,30 +352,6 @@ internal fun resourceLoader(owner: Class<*>): ClassLoader = owner.classLoader ?:
 /** [this] with the values of [resource] as additional defaults; a broken resource fails here, before any file changes. */
 internal fun ConfigOptions.withBundled(format: ConfigFormat, resource: String, path: Path): ConfigOptions =
     toBuilder().defaults(format.decode(resource, "bundled resource ${path.fileName}")).build()
-
-/**
- * Creates [target] with exactly [text] when it does not exist. The text is written to a temporary file first and
- * moved without replacing, so a file someone created in the meantime is kept. Returns `true` when it was created.
- */
-private fun copyIfMissing(target: Path, text: String): Boolean {
-    if (Files.exists(target)) return false
-    val directory = target.toAbsolutePath().parent ?: throw ConfigException("$target has no parent directory")
-    return try {
-        Files.createDirectories(directory)
-        val temporary = Files.createTempFile(directory, ".${target.fileName}", ".tmp")
-        try {
-            Files.writeString(temporary, text)
-            Files.move(temporary, target)
-            true
-        } catch (_: FileAlreadyExistsException) {
-            false
-        } finally {
-            Files.deleteIfExists(temporary)
-        }
-    } catch (exception: IOException) {
-        throw ConfigException("Could not create $target from its bundled resource", exception)
-    }
-}
 
 /** A YAML document. Duplicate keys, aliases bombs and non-section roots are rejected. */
 public class YamlConfig private constructor(file: Path?, options: ConfigOptions) :
