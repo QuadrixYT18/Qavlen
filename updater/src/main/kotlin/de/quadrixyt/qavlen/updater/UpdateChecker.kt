@@ -160,6 +160,25 @@ public class UpdateChecker internal constructor(
         public fun modrinth(projectId: String, currentVersion: String, configure: UpdateOptions.Builder.() -> Unit): UpdateChecker =
             modrinth(projectId, currentVersion, UpdateOptions.builder().apply(configure).build())
 
+        /**
+         * Checks the releases of a GitHub repository, given as `owner/repo`. The release tag is the version, for
+         * example `v1.2.0`; drafts are ignored and pre-releases count as betas. Pass a token with
+         * [UpdateOptions.Builder.githubToken] for private repositories or more than 60 checks per hour and address.
+         */
+        @JvmStatic
+        @JvmOverloads
+        public fun github(repository: String, currentVersion: String, options: UpdateOptions = UpdateOptions.defaults()): UpdateChecker {
+            require(repositoryName.matches(repository)) { "Invalid GitHub repository '$repository'; use owner/repo" }
+            return UpdateChecker(GitHubSource(repository), currentVersion, options, GITHUB)
+        }
+
+        /** Kotlin form of [github] with options. */
+        @JvmSynthetic
+        public fun github(repository: String, currentVersion: String, configure: UpdateOptions.Builder.() -> Unit): UpdateChecker =
+            github(repository, currentVersion, UpdateOptions.builder().apply(configure).build())
+
+        private val repositoryName = Regex("[A-Za-z0-9-]+/[A-Za-z0-9_.-]+")
         internal val MODRINTH: URI = URI.create("https://api.modrinth.com/")
+        internal val GITHUB: URI = URI.create("https://api.github.com/")
     }
 }
