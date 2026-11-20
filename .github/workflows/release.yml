@@ -65,9 +65,9 @@ jobs:
             if echo "$log" | grep -q 'BUILD SUCCESSFUL'; then
               modules="$(echo "$log" | grep -oE 'qavlen-[a-z-]+-'"${GITHUB_REF_NAME}"'\.jar' | sort -u | wc -l)"
               echo "JitPack lists ${modules} modules"
-              [ "$modules" -ge 15 ] && exit 0
+              [ "$modules" -ge 16 ] && exit 0
             fi
             sleep 20
           done
-          echo "::error::JitPack listed only ${modules} of 15 modules"
+          echo "::error::JitPack listed only ${modules} of 16 modules"
           exit 1
