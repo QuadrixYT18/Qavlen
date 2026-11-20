@@ -67,7 +67,7 @@ Values can be rendered as MiniMessage components with injection-safe placeholder
 ```kotlin
 player.sendMessage(config.getComponent("messages.welcome", "player" to player.name))  // ConfigException when missing
 config.getComponentOrNull("messages.motd")                         // null when missing
-config.getComponentList("shop.lore", "price" to 250)
+config.getComponentList("shop.lore", "price" to 250)            // placeholders as {price} or <price>
 ```
 
 ```java

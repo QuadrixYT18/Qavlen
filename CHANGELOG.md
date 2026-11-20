@@ -2,6 +2,17 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
+## Unreleased
+
+### Added
+
+- `config`, `language`: placeholders can also be written as MiniMessage tags, `<player>` and `<coins:number>`, in configuration messages and translations. Values are inserted as text in both forms. Names that are MiniMessage tags (`red`, `bold`, ...) or not valid tag names (uppercase, dots) only work in braces.
+- `config`, `language`: `{prefix}` renders the configured prefix like `<prefix>`. A placeholder named `prefix` passed by the caller replaces it.
+
+### Fixed
+
+- `config`: the message cache reuses a finished component only when no placeholder values are passed, so messages with tag placeholders always receive their values.
+
 ## 0.5.1 - 2026-11-20
 
 ### Changed

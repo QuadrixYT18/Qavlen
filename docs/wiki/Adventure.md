@@ -55,16 +55,30 @@ The rules for each case:
 | Key missing | `getComponent` and `getComponentList` throw `ConfigException("Missing message '<path>'")`; `getComponentOrNull` returns `null`. A missing message never turns into an empty one |
 | Value is a section or list (for `getComponent`) | `ConfigValueException` naming the path |
 | Malformed placeholder such as `{player` | `ConfigException("Invalid message at '<path>': ...")` |
-| Placeholder without a value | stays visible as `{player}` |
+| Placeholder without a value | stays visible as `{player}` or `<player>` |
 | `{{` and `}}` | literal braces |
 
 Values are formatted with `Locale.ROOT`, so `{coins:number}` gives `1,500` on every machine. All styles from [Language & Localization](Language-and-Localization) work, including dates, durations and `choice` plurals. Use translations when the format should follow the player's language.
+
+Placeholders can be written in braces or as MiniMessage tags; both forms work in configurations and translations:
+
+```yaml
+join: "<prefix> <green><player> joined with <coins:number> coins"
+leave: "{prefix} <gray>{player} left"
+```
+
+| Form | Style | Works for |
+| --- | --- | --- |
+| `{player}`, `{coins:number}` | after a colon | every placeholder name |
+| `<player>`, `<coins:number>` | after a colon | lowercase names without dots (`a-z`, `0-9`, `_`, `-`) that are not MiniMessage tags |
+
+A placeholder named like a MiniMessage tag, such as `red`, `bold` or `color`, only works in braces, so `<red>` always stays a color. `<Player>` or `<first.name>` stay as text; use `{Player}` or `{first.name}` for such names. Values are inserted as text in both forms and cannot inject tags.
 
 Placeholder values can be strings, numbers, dates, durations or `ComponentLike`. Java callers pass a `Map`; Kotlin callers can also use `"name" to value` pairs.
 
 Rendered messages are cached per configuration file. Messages without placeholders are built once; others reuse the parsed text. Every `set`, `remove` or reload clears the cache. Before a lookup, the file is checked at most once per second: if it was edited, it is reloaded, so a server owner's change appears without a restart. That reload covers every value, not only messages. If the configuration has unsaved changes, the edited file is left alone until `save()` merges both. An edit that breaks the file keeps the previous messages and is logged once.
 
-`<prefix>` renders the nearest `prefix` key, searched from the section containing the message up to the root. This works the same for `config.getComponent("messages.staff.alert")` and `config.getSection("messages.staff").getComponent("alert")`. A missing prefix renders as nothing, so you can remove the prefix by deleting its key:
+`<prefix>` and `{prefix}` render the nearest `prefix` key, searched from the section containing the message up to the root, with its colors. Passing a placeholder named `prefix` replaces it for that call. This works the same for `config.getComponent("messages.staff.alert")` and `config.getSection("messages.staff").getComponent("alert")`. A missing prefix renders as nothing, so you can remove the prefix by deleting its key:
 
 ```yaml
 prefix: "<gray>[Shop]</gray>"
