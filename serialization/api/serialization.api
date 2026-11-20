@@ -21,6 +21,8 @@ public final class de/quadrixyt/qavlen/serialization/ConfigBinding {
 
 public final class de/quadrixyt/qavlen/serialization/ConfigConflictException : de/quadrixyt/qavlen/config/ConfigConflictException {
 	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public abstract class de/quadrixyt/qavlen/serialization/ConfigFileFormat : java/lang/Enum {

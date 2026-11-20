@@ -1,6 +1,7 @@
 package de.quadrixyt.qavlen.serialization
 
 import de.quadrixyt.qavlen.config.ConfigException
+import de.quadrixyt.qavlen.config.ConfigMerge
 import de.quadrixyt.qavlen.config.ConfigSection
 import de.quadrixyt.qavlen.config.ConfigValidationException
 import de.quadrixyt.qavlen.config.ConfigViolation
@@ -23,7 +24,8 @@ import kotlin.concurrent.withLock
  * The file was changed by someone else since it was loaded, so saving would overwrite those changes. It is a
  * [de.quadrixyt.qavlen.config.ConfigConflictException], which `YamlConfig` and `JsonConfig` throw in the same case.
  */
-public class ConfigConflictException(message: String) : de.quadrixyt.qavlen.config.ConfigConflictException(message)
+public class ConfigConflictException @JvmOverloads constructor(message: String, cause: Throwable? = null) :
+    de.quadrixyt.qavlen.config.ConfigConflictException(message, cause)
 
 /**
  * A configuration bound to a class, typically a Kotlin data class with default values, a record or a Java bean.
@@ -127,25 +129,58 @@ public class TypedConfig<T : Any> internal constructor(
     /**
      * Writes the current value to the file.
      *
-     * @param overwriteExternalChanges write even when the file was changed outside this instance since it was loaded
+     * Edits someone made to the file since it was loaded are kept: they are merged with the changes made through
+     * [update] (see [de.quadrixyt.qavlen.config.ConfigMerge]), and the value takes them over after validation. When
+     * both changed the same value, the file's value wins and the discarded change is logged.
+     *
+     * @param overwriteExternalChanges write the current value even when the file was edited in the meantime
      * @return `false` when the file already had this content
-     * @throws ConfigConflictException when the file changed on disk and [overwriteExternalChanges] is `false`
+     * @throws ConfigConflictException when the file was edited and can no longer be read, so its edits cannot be kept
      */
     @JvmOverloads
     public fun save(overwriteExternalChanges: Boolean = false): Boolean {
         val target = file ?: throw ConfigException("This configuration has no file; use encode() to get its text")
-        return lock.withLock {
-            if (!overwriteExternalChanges && FileStamp.of(target) != stamp) {
-                throw ConfigConflictException(
-                    "$target was changed outside this configuration since it was loaded; " +
-                        "call reload() to take over those changes or save(true) to replace them",
-                )
-            }
+        var previous: T? = null
+        val written = lock.withLock {
+            if (!overwriteExternalChanges && FileStamp.of(target) != stamp) previous = takeOverEdits(target)
             val current = state
             if (current.root == persisted && Files.exists(target)) return@withLock false
             write(target, current.root)
             true
         }
+        previous?.let { notify(it, state.value) }
+        return written
+    }
+
+    /** Merges edits made to [target] with the current value and makes the result current; returns the value before. */
+    private fun takeOverEdits(target: Path): T? {
+        val text = try {
+            if (Files.exists(target)) Files.readString(target) else return null
+        } catch (exception: IOException) {
+            throw ConfigException("Could not read $target", exception)
+        }
+        val disk = try {
+            format.read(text, target.toString())
+        } catch (exception: ConfigException) {
+            throw ConfigConflictException(
+                "$target was edited and can no longer be read, so the edits cannot be kept; fix the file or call save(true)",
+                exception,
+            )
+        }
+        stamp = FileStamp.of(target)
+        val base = persisted ?: emptyMap()
+        if (disk == base) return null
+        val merge = ConfigMerge.merge(base, disk, state.root)
+        if (merge.conflicts.isNotEmpty()) {
+            System.getLogger(TypedConfig::class.java.name).log(
+                System.Logger.Level.WARNING,
+                "$target was edited while the value in memory changed; kept the file's values for ${merge.conflicts.joinToString()}",
+            )
+        }
+        val previous = state
+        state = resolve(merge.values, target.toString(), isNew = false)
+        persisted = disk
+        return previous.value
     }
 
     /**

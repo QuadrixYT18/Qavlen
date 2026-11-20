@@ -63,12 +63,21 @@ class TypedConfigBundledTest {
     }
 
     @Test
-    fun `conflicts of typed configurations are configuration conflicts`() {
+    fun `comments added to the file survive a save`() {
         val file = directory.resolve("settings.yml")
         val config = Configs.open<Settings>(file)
         file.writeText(file.readText() + "# edited\n")
 
-        val conflict = assertFailsWith<ConfigConflictException> { config.update { copy(maxPlayers = 5) }.also { config.save() } }
+        config.update { copy(maxPlayers = 5) }
+        config.save()
+
+        assertTrue("# edited" in file.readText(), file.readText())
+        assertEquals(5, Configs.open<Settings>(file).value.maxPlayers)
+    }
+
+    @Test
+    fun `conflicts of typed configurations are configuration conflicts`() {
+        val conflict: Any = ConfigConflictException("x")
 
         assertIs<de.quadrixyt.qavlen.config.ConfigConflictException>(conflict)
     }

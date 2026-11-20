@@ -176,19 +176,50 @@ class TypedConfigTest {
     }
 
     @Test
-    fun `saving does not overwrite external changes`() {
+    fun `saving keeps edits made to the file`() {
+        val path = directory.resolve("config.yml")
+        val config = Configs.open<PluginConfig>(path)
+        config.update { copy(maxPlayers = 30) }
+        path.writeText(path.readText().replace("difficulty: EASY", "difficulty: HARD"))
+        Files.setLastModifiedTime(path, FileTime.from(Instant.now().plusSeconds(5)))
+
+        assertTrue(config.save())
+
+        assertEquals(30, config.value.maxPlayers)
+        assertEquals(Difficulty.HARD, config.value.difficulty)
+        assertEquals(PluginConfig(maxPlayers = 30, difficulty = Difficulty.HARD), Configs.open<PluginConfig>(path).value)
+        assertFalse(config.reloadIfModified())
+    }
+
+    @Test
+    fun `the file wins when both changed the same value`() {
         val path = directory.resolve("config.yml")
         val config = Configs.open<PluginConfig>(path)
         config.update { copy(maxPlayers = 30) }
         path.writeText(path.readText().replace("max-players: 20", "max-players: 40"))
         Files.setLastModifiedTime(path, FileTime.from(Instant.now().plusSeconds(5)))
 
-        assertFailsWith<ConfigConflictException> { config.save() }
-        assertTrue(config.reloadIfModified())
+        assertFalse(config.save())
+
         assertEquals(40, config.value.maxPlayers)
-        assertFalse(config.reloadIfModified())
+        assertTrue("max-players: 40" in path.readText())
         config.update { copy(maxPlayers = 41) }
         assertTrue(config.save())
+        assertEquals(41, Configs.open<PluginConfig>(path).value.maxPlayers)
+    }
+
+    @Test
+    fun `an edit that breaks the file is never overwritten`() {
+        val path = directory.resolve("config.yml")
+        val config = Configs.open<PluginConfig>(path)
+        config.update { copy(maxPlayers = 30) }
+        path.writeText("max-players: [broken")
+        Files.setLastModifiedTime(path, FileTime.from(Instant.now().plusSeconds(5)))
+
+        assertFailsWith<ConfigConflictException> { config.save() }
+        assertEquals("max-players: [broken", path.readText())
+        assertTrue(config.save(overwriteExternalChanges = true))
+        assertEquals(30, Configs.open<PluginConfig>(path).value.maxPlayers)
     }
 
     @Test

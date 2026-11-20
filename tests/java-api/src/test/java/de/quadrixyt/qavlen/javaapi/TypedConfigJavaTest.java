@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -117,7 +118,9 @@ class TypedConfigJavaTest {
 
         Files.writeString(file, Files.readString(file).replace("limit: 6", "limit: 7"));
         Files.setLastModifiedTime(file, java.nio.file.attribute.FileTime.from(java.time.Instant.now().plusSeconds(5)));
-        assertThrows(de.quadrixyt.qavlen.serialization.ConfigConflictException.class, () -> config.save(false));
+        // An edit made to the file while the program runs is taken over instead of being overwritten.
+        assertFalse(config.save(false));
+        assertEquals(7, config.getValue().limit);
         assertEquals(7, config.reload().limit);
 
         TypedConfig<ShopConfig> validated = Configs.parse(
