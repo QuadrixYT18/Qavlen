@@ -2,7 +2,9 @@
 
 All notable changes are documented here. The project follows [Semantic Versioning](https://semver.org) once 1.0.0 is released.
 
-## Unreleased
+## 0.5.0 - 2026-11-20
+
+> **Behavior change:** `ConfigFile.save()` (`YamlConfig`, `JsonConfig`) no longer overwrites edits made to the file on disk since it was loaded. It throws `ConfigConflictException` instead. Call `reload()` before saving, or `save(true)` to replace the file deliberately.
 
 ### Added
 
